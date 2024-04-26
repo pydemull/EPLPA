@@ -1,0 +1,1807 @@
+---
+title: "Analysis Report of the EPLPA Project"
+author: "Pierre-Yves de Müllenheim"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: cosmo
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+    number_sections: yes
+    df_print: paged
+    code_folding: show
+toc-title: "Sommaire"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{css, echo = FALSE}
+.title {
+  font-weight: bold;
+}
+
+
+h1 {
+  font-size: 25px;
+  font-weight: bold;
+}
+h2 {
+  font-size: 23px;
+  font-weight: bold;
+}
+h3 {
+  font-size: 21px;
+}
+p.caption {
+  color: #777;
+  margin-top: 10px;
+}
+p code {
+  white-space: inherit;
+}
+pre {
+  word-break: normal;
+  word-wrap: normal;
+}
+pre code {
+  white-space: inherit;
+}
+```
+
+```{r load_packages}
+library(corrplot)
+library(dplyr)
+library(flextable)
+library(forcats)
+library(ggplot2)
+library(ggrain)
+library(Hmisc)
+library(lubridate)
+library(patchwork)
+library(RColorBrewer)
+library(scales)
+library(skimr)
+library(rcompanion)
+library(reactable)
+library(tidyr)
+source("R/plot_score_distri.R")
+```
+
+```{r, load_objects}
+targets::tar_load(capl_res)
+targets::tar_load(pa_data)
+```
+
+# Dataset skimming
+
+```{r skim_capl_res}
+skim(capl_res)
+```
+
+# Physical literacy scores & interpretations
+## Whole group of students
+### Scores: Distributions (global, domain and sub-domain scores)
+
+```{r get_plots_pc_scores}
+# Select PC scores
+pc_scores <-
+  capl_res |>
+  select(identifiant,
+         pacer_score,
+         camsa_score,
+         plank_score,
+         pc_score) |>
+  pivot_longer(cols = pacer_score:pc_score,
+               names_to = "Item",
+               values_to = "Score") |>
+  mutate(
+    Item = fct_relevel(Item, "pacer_score", "camsa_score", "plank_score", "pc_score"),
+    Item = fct_recode(
+      Item,
+      "PACER Shuttle Run (/10)" = "pacer_score",
+      "CAMSA Score (/10)" = "camsa_score",
+      "Plank (/10)" = "plank_score",
+      "Physical Competence (/30)" = "pc_score"
+    )
+  ) 
+
+# Get the numbers of students with valid data for each item
+n_pc_scores <-
+  pc_scores |>
+  group_by(Item) |>
+  summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
+
+# Get plots with score distributions
+## Pacer
+p_pc_1 <-
+  plot_score_distri(
+    data1 = pc_scores,
+    data2 = n_pc_scores,
+    item = "PACER Shuttle Run (/10)",
+    color = "#333378",
+    text_y = 0.45,
+    breaks_x = seq(0, 10, 2),
+    limits_x = c(0, 10)
+  )
+
+## CAMSA
+p_pc_2 <-
+  plot_score_distri(
+    data1 = pc_scores,
+    data2 = n_pc_scores,
+    item = "CAMSA Score (/10)",
+    color = "#333378",
+    text_y = 0.45,
+    breaks_x = seq(0, 10, 2),
+    limits_x = c(0, 10)
+  )
+
+## Plank
+p_pc_3 <-
+  plot_score_distri(
+    data1 = pc_scores,
+    data2 = n_pc_scores,
+    item = "Plank (/10)",
+    color = "#333378",
+    text_y = 0.45,
+    breaks_x = seq(0, 10, 2),
+    limits_x = c(0, 10)
+  )
+
+## PC score
+p_pc_4 <-
+  plot_score_distri(
+    data1 = pc_scores,
+    data2 = n_pc_scores,
+    item = "Physical Competence (/30)",
+    color = "#333378",
+    text_y = 0.45,
+    breaks_x = seq(0, 30, 10),
+    limits_x = c(0, 30)
+  )
+```
+
+```{r get_plots_db_scores}
+# Select DB scores
+db_scores <-
+  capl_res |>
+  select(identifiant,
+         step_score,
+         self_report_pa_score,
+         db_score) |>
+  pivot_longer(cols = step_score:db_score,
+               names_to = "Item",
+               values_to = "Score") |>
+  mutate(
+    Item = fct_relevel(Item, "step_score", "self_report_pa_score", "db_score"),
+    Item = fct_recode(
+      Item,
+      "Average Daily Sept Count (/25)" = "step_score",
+      "Self-Rep. Num. of Days with MVPA (/5)" = "self_report_pa_score",
+      "Daily Behaviour (/30)" = "db_score"
+    )
+  ) 
+
+# Get the numbers of students with valid data for each item
+n_db_scores <-
+  db_scores |>
+  group_by(Item) |>
+  summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
+
+# Get plots with score distributions
+## Steps
+p_db_1 <-
+  plot_score_distri(
+    data1 = db_scores,
+    data2 = n_db_scores,
+    item = "Average Daily Sept Count (/25)",
+    color = "#9C8E84",
+    text_y = 0.47,
+    breaks_x = seq(0, 25, 5),
+    limits_x = c(0, 25)
+  )
+  
+## Self-reported PA
+p_db_2 <-
+  plot_score_distri(
+    data1 = db_scores,
+    data2 = n_db_scores,
+    item = "Self-Rep. Num. of Days with MVPA (/5)",
+    color = "#9C8E84",
+    text_y = 0.47,
+    breaks_x = seq(0, 5, 1),
+    limits_x = c(0, 5)
+  )
+
+## DB score
+p_db_3 <-
+  plot_score_distri(
+    data1 = db_scores,
+    data2 = n_db_scores,
+    item = "Daily Behaviour (/30)",
+    color = "#9C8E84",
+    text_y = 0.47,
+    breaks_x = seq(0, 30, 10),
+    limits_x = c(0, 30)
+  )
+```
+
+```{r get_plots_mc_scores}
+# Select MC scores
+mc_scores <-
+  capl_res |>
+  select(
+    identifiant,
+    predilection_score,
+    adequacy_score,
+    intrinsic_motivation_score,
+    pa_competence_score,
+    mc_score
+  ) |>
+  pivot_longer(cols = predilection_score:mc_score,
+               names_to = "Item",
+               values_to = "Score") |>
+  mutate(
+    Item = fct_relevel(
+      Item,
+      "intrinsic_motivation_score",
+      "pa_competence_score",
+      "predilection_score",
+      "adequacy_score",
+      "mc_score"
+    ),
+    Item = fct_recode(
+      Item,
+      "Intrinsic Motivation (/7.5)" = "intrinsic_motivation_score",
+      "Competence (/7.5)" = "pa_competence_score",
+      "Predilection (/7.5)" = "predilection_score",
+      "Adequacy (/7.5)" = "adequacy_score",
+      "Motivation and Confidence (/30)" = "mc_score"
+  )
+  )
+
+# Get the numbers of students with valid data for each item
+n_mc_scores <-
+  mc_scores |>
+  group_by(Item) |>
+  summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
+
+# Get plots with score distributions
+## Intrinsic motivation
+p_mc_1 <-
+  plot_score_distri(
+    data1 = mc_scores,
+    data2 = n_mc_scores,
+    item = "Intrinsic Motivation (/7.5)",
+    color = "#EF6723",
+    text_y = 0.45,
+    breaks_x = seq(0, 7.5, 1.5),
+    limits_x = c(0, 7.5)
+  )
+
+## Competence
+p_mc_2 <-
+  plot_score_distri(
+    data1 = mc_scores,
+    data2 = n_mc_scores,
+    item = "Competence (/7.5)",
+    color = "#EF6723",
+    text_y = 0.45,
+    breaks_x = seq(0, 7.5, 1.5),
+    limits_x = c(0, 7.5)
+  )
+
+## Predilection
+p_mc_3 <-
+  plot_score_distri(
+    data1 = mc_scores,
+    data2 = n_mc_scores,
+    item = "Predilection (/7.5)",
+    color = "#EF6723",
+    text_y = 0.45,
+    breaks_x = seq(0, 7.5, 1.5),
+    limits_x = c(0, 7.5)
+  )
+
+## Adequacy
+p_mc_4 <-
+  plot_score_distri(
+    data1 = mc_scores,
+    data2 = n_mc_scores,
+    item = "Adequacy (/7.5)",
+    color = "#EF6723",
+    text_y = 0.45,
+    breaks_x = seq(0, 7.5, 1.5),
+    limits_x = c(0, 7.5)
+  )
+
+## MC score
+p_mc_5 <-
+  plot_score_distri(
+    data1 = mc_scores,
+    data2 = n_mc_scores,
+    item = "Motivation and Confidence (/30)",
+    color = "#EF6723",
+    text_y = 0.45,
+    breaks_x = seq(0, 30, 10),
+    limits_x = c(0, 30)
+  )
+```
+
+```{r get_plots_ku_scores}
+# Select KU scores
+ku_scores <-
+  capl_res |>
+  select(
+    identifiant,
+    fill_in_the_blanks_score,
+    pa_guideline_score,
+    crf_means_score,
+    ms_means_score,
+    sports_skill_score,
+    ku_score
+  ) |>
+  pivot_longer(cols = fill_in_the_blanks_score:ku_score,
+               names_to = "Item",
+               values_to = "Score") |>
+  mutate(
+    Item = fct_relevel(
+      Item,
+      "fill_in_the_blanks_score",
+      "pa_guideline_score",
+      "crf_means_score",
+      "ms_means_score",
+      "sports_skill_score",
+      "ku_score"
+    ),
+    Item = fct_recode(
+      Item,
+      "PA Comprehension and Understanding (/6)" = "fill_in_the_blanks_score",
+      "Daily PA Guidelines (/1)" = "pa_guideline_score",
+      "Cardiorerspiratory Fitness Definition (/1)" = "crf_means_score",
+      "Muscular Strength & Endurance Definition (/1)" = "ms_means_score",
+      "Improve Sport Skill (/1)" = "sports_skill_score",
+      "Knowledge and Understanding (/10)" = "ku_score"
+    )
+  )
+
+# Get the numbers of students with valid data for each item
+n_ku_scores <-
+  ku_scores |>
+  group_by(Item) |>
+  summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
+
+# Get plots with score distributions
+## Physical activity comprehension and understanding
+p_ku_1 <-
+  plot_score_distri(
+    data1 = ku_scores,
+    data2 = n_ku_scores,
+    item = "PA Comprehension and Understanding (/6)",
+    color = "#00A79F",
+    text_y = 0.45,
+    breaks_x = seq(0, 6, 2),
+    limits_x = c(0, 6)
+  )
+
+## Daily PA guidelines
+p_ku_2 <-
+  plot_score_distri(
+    data1 = ku_scores,
+    data2 = n_ku_scores,
+    type = "disc",
+    item = "Daily PA Guidelines (/1)",
+    color = "#00A79F",
+    breaks_x = seq(0, 1, 1),
+    limits_x = c(0, 1)
+  )
+
+## Cardiorerspiratory fitness definition
+p_ku_3 <-
+  plot_score_distri(
+    data1 = ku_scores,
+    data2 = n_ku_scores,
+    type = "disc",
+    item = "Cardiorerspiratory Fitness Definition (/1)",
+    color = "#00A79F",
+    breaks_x = seq(0, 1, 1),
+    limits_x = c(0, 1)
+  )
+
+## Muscular strength & endurance definition
+p_ku_4 <-
+  plot_score_distri(
+    data1 = ku_scores,
+    data2 = n_ku_scores,
+    type = "disc",
+    item = "Muscular Strength & Endurance Definition (/1)",
+    color = "#00A79F",
+    breaks_x = seq(0, 1, 1),
+    limits_x = c(0, 1)
+  )
+
+## Improve sport skill
+p_ku_5 <-
+  plot_score_distri(
+    data1 = ku_scores,
+    data2 = n_ku_scores,
+    type = "disc",
+    item = "Improve Sport Skill (/1)",
+    color = "#00A79F",
+    breaks_x = seq(0, 1, 1),
+    limits_x = c(0, 1)
+  )
+
+## KU score
+p_ku_6 <-
+  plot_score_distri(
+    data1 = ku_scores,
+    data2 = n_ku_scores,
+    item = "Knowledge and Understanding (/10)",
+    color = "#00A79F",
+    text_y = 0.45,
+    breaks_x = seq(0, 10, 2),
+    limits_x = c(0, 10)
+  )
+```
+
+```{r get_plots_capl_score}
+# Select
+capl_score <-
+  capl_res |>
+  select(
+    identifiant,
+    capl_score
+
+  ) |>
+  pivot_longer(cols = capl_score,
+               names_to = "Item",
+               values_to = "Score") |>
+  mutate(Item = fct_recode(Item, "Physical Literacy (/100)" = "capl_score"))
+
+# Get the numbers of students with valid data
+n_capl_score <-
+  capl_score |>
+  group_by(Item) |>
+  summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
+
+# Get plots with score distributions
+## CAPL
+p_capl <-
+  plot_score_distri(
+    data1 = capl_score,
+    data2 = n_capl_score,
+    item = "Physical Literacy (/100)",
+    color = "#D4D11B",
+    text_y = 0.45,
+    breaks_x = seq(0, 100, 20),
+    limits_x = c(0, 100)
+  )
+```
+
+```{r get_whole_fig_scores}
+# Build blank plot
+blank_plot <-
+  plot_score_distri(
+    data1 = pc_scores,
+    data2 = n_pc_scores,
+    item = "PACER Shuttle Run (/10)",
+    color = "white",
+    text_y = 0.45,
+    breaks_x = seq(0, 10, 2),
+    limits_x = c(0, 10)
+  ) +
+  geom_rect(
+    aes(
+      xmin = -2,
+      xmax = 20,
+      ymin = -2,
+      ymax = 100
+    ),
+    fill  = "white",
+    color = "white"
+  ) 
+  
+# Gather domain plots
+p_pl_domains <-
+  p_pc_4      + p_db_3      + p_mc_5     +  p_ku_6 +
+  p_pc_1      + p_db_1      + p_mc_1     +  p_ku_1 +
+  p_pc_2      + p_db_2      + p_mc_2     +  p_ku_2 +
+  p_pc_3      + blank_plot  + p_mc_3     +  p_ku_3 +
+  blank_plot  + blank_plot  + p_mc_4     +  p_ku_4 +
+  blank_plot  + blank_plot  + blank_plot +  p_ku_5 +
+  plot_layout(
+    nrow = 6,
+    byrow = TRUE,
+    axis_titles  = "collect"
+  )
+
+# Get final figure
+p_pl_all <-
+  (plot_spacer() + (p_capl + labs(y = "")) + plot_spacer()) / p_pl_domains + plot_layout(heights = c(1, 6))
+```
+
+```{r, show_final_fig, fig.height = 15, fig.width = 12, out.width = '100%'}
+p_pl_all
+```
+
+### Scores: Descriptive statistics (global and domain scores)
+
+```{r, desc_stats_capl_all}
+capl_res |> 
+  select(pc_score, db_score, mc_score, ku_score, capl_score) |> 
+  skim() |> 
+  yank("numeric") |> 
+  as_tibble() |> 
+  rename(
+    Score = skim_variable,
+    `Missing values` = n_missing,
+    Mean = mean,
+    SD = sd, 
+    Minimum = p0,
+    `25th perc.` = p25,
+    Median = p50,
+    `75th perc.` = p75,
+    Maximum = p100,
+    Histogram = hist
+  ) |> 
+  select(-complete_rate) |>
+  mutate(
+    across(c(Mean:Maximum), ~round(.x, 2)),
+    Score = as.factor(Score),
+    Score = fct_recode(
+      Score,
+      "Physical Competence (/30)" = "pc_score",
+      "Daily Behaviour (/30)" = "db_score",
+      "Motivation and Confidence (/30)" = "mc_score",
+      "Knowledge and Understanding (/10)" = "ku_score",
+      "Physical Literacy (/100)" = "capl_score"
+    )
+  ) |>
+  flextable() |>
+  theme_zebra() |>
+  width(width = 5)
+```
+
+### Scores: Medians and respective 95% confidence intervals (global and domain scores)
+
+```{r median_cis_all_scores}
+set.seed(123)
+
+capl_res |>
+  select(pc_score, db_score, mc_score, ku_score, capl_score) |>
+  pivot_longer(
+    cols = c(pc_score:capl_score),
+    names_to = "score",
+    values_to = "value"
+  ) |>
+  group_by(score) |>
+  nest() |>
+  mutate(stats =
+           lapply(data, \(x) {
+             x <- x |> filter(!is.na(value))
+             
+             df <- rcompanion::groupwiseMedian(
+               value ~ 1,
+               data = x,
+               bca = TRUE,
+               R = 999,
+               conf = 0.95
+             ) |>
+               mutate(n = nrow(x))
+           })) |>
+  select(-data) |>
+  unnest(stats) |>
+  mutate(
+    score = as.factor(score),
+    score = fct_recode(
+      score,
+      "Physical Competence (/30)" = "pc_score",
+      "Daily Behaviour (/30)" = "db_score",
+      "Motivation and Confidence (/30)" = "mc_score",
+      "Knowledge and Understanding (/10)" = "ku_score",
+      "Physical Literacy (/100)" = "capl_score"
+    ),
+    `Median [95% CI]` = paste0(Median, " [", Bca.lower, "; ", Bca.upper, "]")
+  ) |>
+  rename(Score = score) |>
+  select(Score, `Median [95% CI]`) |> 
+  flextable() |> 
+  theme_zebra() |> 
+  width(width = 5)
+```
+
+### Interpretations: Distributions
+
+```{r distri_interpretations, fig.height = 7, fig.width = 9, fig.align = "center"}
+# Build plot
+p_inter <-
+  capl_res |>
+  select(c(identifiant, ends_with("interpretation"))) |>
+  pivot_longer(
+    cols = c(pacer_interpretation:capl_interpretation),
+    names_to = "score",
+    values_to = "interpretation"
+  ) |>
+  mutate(
+    score = as.factor(score),
+    interpretation = ifelse(is.na(interpretation), "Non available", interpretation),
+    interpretation = as.factor(interpretation),
+    interpretation = fct_relevel(
+      interpretation,
+      "Non available",
+      "beginning",
+      "progressing",
+      "achieving",
+      "excelling"
+    ),
+    interpretation = fct_recode(
+      interpretation,
+      "Beginning" = "beginning",
+      "Progressing" = "progressing",
+      "Achieving" = "achieving",
+      "Excelling" = "excelling"
+    ),
+    score = fct_relevel(
+      score,
+      "pacer_interpretation",
+      "camsa_interpretation",
+      "plank_interpretation",
+      "pc_interpretation",
+      "step_interpretation",
+      "db_interpretation",
+      "mc_interpretation",
+      "ku_interpretation",
+      "capl_interpretation"
+    ),
+    score = fct_recode(
+      score,
+      "PACER Shuttle Run" = "pacer_interpretation",
+      "CAMSA Score" = "camsa_interpretation",
+      "Plank" = "plank_interpretation",
+      "Physical Competence" = "pc_interpretation",
+      "Average Daily Step Count" = "step_interpretation",
+      "Daily Behaviour" = "db_interpretation",
+      "Motivation and Confidence" = "mc_interpretation",
+      "Knowledge and Understanding" = "ku_interpretation",
+      "Physical Literacy" = "capl_interpretation"
+    )
+  ) |>
+  count(score, interpretation, .drop = FALSE) |>
+  group_by(score) |>
+  mutate(prop = round(n / sum(n) * 100, 1)) |> 
+  ggplot(aes(x = interpretation, y = prop)) +
+  geom_bar(stat = "identity", aes(fill = interpretation)) +
+  geom_text(aes(label = paste0(prop, "%")), size = 3, vjust = -0.3) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  coord_cartesian(ylim = c(0, 100)) +
+  labs(x = "", y = "%", fill = "Interpretation") +
+  facet_wrap( ~ score) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+    legend.title = element_text(face = "bold"),
+    strip.background = element_rect(fill = "black"),
+    strip.text = element_text(color = "white", face = "bold")
+    )
+
+# Show plot
+p_inter
+```
+
+## By sex
+### Scores: Distributions (global, domain and sub-domain scores)
+
+```{r get_plots_pc_scores_by_sex}
+# Select PC scores
+pc_scores_by_sex <-
+  capl_res |>
+  select(identifiant,
+         gender,
+         pacer_score,
+         camsa_score,
+         plank_score,
+         pc_score) |>
+  pivot_longer(cols = pacer_score:pc_score,
+               names_to = "Item",
+               values_to = "Score") |>
+  mutate(
+    Item = fct_relevel(Item, "pacer_score", "camsa_score", "plank_score", "pc_score"),
+    Item = fct_recode(
+      Item,
+      "PACER Shuttle Run (/10)" = "pacer_score",
+      "CAMSA Score (/10)" = "camsa_score",
+      "Plank (/10)" = "plank_score",
+      "Physical Competence (/30)" = "pc_score"
+    )
+  ) 
+
+# Get the numbers of students with valid data for each item
+n_pc_scores_by_sex <-
+  pc_scores_by_sex |>
+  group_by(gender, Item) |>
+  summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
+
+# Get plots with score distributions
+## Pacer
+p_pc_1_by_sex  <-
+  plot_score_distri(
+    data1 = pc_scores_by_sex ,
+    data2 = n_pc_scores_by_sex ,
+    item = "PACER Shuttle Run (/10)",
+    by_sex = "yes",
+    color = "#333378",
+    text_y = 1.55,
+    breaks_x = seq(0, 10, 2),
+    limits_x = c(0, 10)
+  )
+
+## CAMSA
+p_pc_2_by_sex  <-
+  plot_score_distri(
+    data1 = pc_scores_by_sex ,
+    data2 = n_pc_scores_by_sex ,
+    item = "CAMSA Score (/10)",
+    by_sex = "yes",
+    color = "#333378",
+    text_y = 1.55,
+    breaks_x = seq(0, 10, 2),
+    limits_x = c(0, 10)
+  )
+
+## Plank
+p_pc_3_by_sex <-
+  plot_score_distri(
+    data1 = pc_scores_by_sex ,
+    data2 = n_pc_scores_by_sex ,
+    item = "Plank (/10)",
+    by_sex = "yes",
+    color = "#333378",
+    text_y = 1.55,
+    breaks_x = seq(0, 10, 2),
+    limits_x = c(0, 10)
+  )
+
+## PC score
+p_pc_4_by_sex  <-
+  plot_score_distri(
+    data1 = pc_scores_by_sex ,
+    data2 = n_pc_scores_by_sex ,
+    item = "Physical Competence (/30)",
+    by_sex = "yes",
+    color = "#333378",
+    text_y = 1.55,
+    breaks_x = seq(0, 30, 10),
+    limits_x = c(0, 30)
+  )
+
+```
+
+```{r get_plots_db_scores_by_sex}
+# Select DB scores
+db_scores_by_sex <-
+  capl_res |>
+  select(identifiant,
+         gender,
+         step_score,
+         self_report_pa_score,
+         db_score) |>
+  pivot_longer(cols = step_score:db_score,
+               names_to = "Item",
+               values_to = "Score") |>
+  mutate(
+    Item = fct_relevel(Item, "step_score", "self_report_pa_score", "db_score"),
+    Item = fct_recode(
+      Item,
+      "Average Daily Sept Count (/25)" = "step_score",
+      "Self-Rep. Num. of Days with MVPA (/5)" = "self_report_pa_score",
+      "Daily Behaviour (/30)" = "db_score"
+    )
+  ) 
+
+# Get the numbers of students with valid data for each item
+n_db_scores_by_sex <-
+  db_scores_by_sex |>
+  group_by(gender, Item) |>
+  summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
+
+# Get plots with score distributions
+## Steps
+p_db_1_by_sex <-
+  plot_score_distri(
+    data1 = db_scores_by_sex,
+    data2 = n_db_scores_by_sex,
+    item = "Average Daily Sept Count (/25)",
+    by_sex = "yes",
+    color = "#9C8E84",
+    text_y = 1.55,
+    breaks_x = seq(0, 25, 5),
+    limits_x = c(0, 25)
+  )
+  
+## Self-reported PA
+p_db_2_by_sex <-
+  plot_score_distri(
+    data1 = db_scores_by_sex,
+    data2 = n_db_scores_by_sex,
+    item = "Self-Rep. Num. of Days with MVPA (/5)",
+    by_sex = "yes",
+    color = "#9C8E84",
+    text_y = 1.55,
+    breaks_x = seq(0, 5, 1),
+    limits_x = c(0, 5)
+  )
+
+## DB score
+p_db_3_by_sex <-
+  plot_score_distri(
+    data1 = db_scores_by_sex,
+    data2 = n_db_scores_by_sex,
+    item = "Daily Behaviour (/30)",
+    by_sex = "yes",
+    color = "#9C8E84",
+    text_y = 1.55,
+    breaks_x = seq(0, 30, 10),
+    limits_x = c(0, 30)
+  )
+```
+
+```{r get_plots_mc_scores_by_sex}
+# Select MC scores
+mc_scores_by_sex <-
+  capl_res |>
+  select(
+    identifiant,
+    gender,
+    predilection_score,
+    adequacy_score,
+    intrinsic_motivation_score,
+    pa_competence_score,
+    mc_score
+  ) |>
+  pivot_longer(cols = predilection_score:mc_score,
+               names_to = "Item",
+               values_to = "Score") |>
+  mutate(
+    Item = fct_relevel(
+      Item,
+      "intrinsic_motivation_score",
+      "pa_competence_score",
+      "predilection_score",
+      "adequacy_score",
+      "mc_score"
+    ),
+    Item = fct_recode(
+      Item,
+      "Intrinsic Motivation (/7.5)" = "intrinsic_motivation_score",
+      "Competence (/7.5)" = "pa_competence_score",
+      "Predilection (/7.5)" = "predilection_score",
+      "Adequacy (/7.5)" = "adequacy_score",
+      "Motivation and Confidence (/30)" = "mc_score"
+  )
+  )
+
+# Get the numbers of students with valid data for each item
+n_mc_scores_by_sex <-
+  mc_scores_by_sex |>
+  group_by(gender, Item) |>
+  summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
+
+# Get plots with score distributions
+## Intrinsic motivation
+p_mc_1_by_sex <-
+  plot_score_distri(
+    data1 = mc_scores_by_sex,
+    data2 = n_mc_scores_by_sex,
+    item = "Intrinsic Motivation (/7.5)",
+    by_sex = "yes",
+    color = "#EF6723",
+    text_y = 1.55,
+    breaks_x = seq(0, 7.5, 1.5),
+    limits_x = c(0, 7.5)
+  )
+
+## Competence
+p_mc_2_by_sex <-
+  plot_score_distri(
+    data1 = mc_scores_by_sex,
+    data2 = n_mc_scores_by_sex,
+    item = "Competence (/7.5)",
+    by_sex = "yes", 
+    color = "#EF6723",
+    text_y = 1.55,
+    breaks_x = seq(0, 7.5, 1.5),
+    limits_x = c(0, 7.5)
+  )
+
+## Predilection
+p_mc_3_by_sex <-
+  plot_score_distri(
+    data1 = mc_scores_by_sex,
+    data2 = n_mc_scores_by_sex,
+    item = "Predilection (/7.5)",
+    by_sex = "yes", 
+    color = "#EF6723",
+    text_y = 1.55,
+    breaks_x = seq(0, 7.5, 1.5),
+    limits_x = c(0, 7.5)
+  )
+
+## Adequacy
+p_mc_4_by_sex <-
+  plot_score_distri(
+    data1 = mc_scores_by_sex,
+    data2 = n_mc_scores_by_sex,
+    item = "Adequacy (/7.5)",
+    by_sex = "yes", 
+    color = "#EF6723",
+    text_y = 1.55,
+    breaks_x = seq(0, 7.5, 1.5),
+    limits_x = c(0, 7.5)
+  )
+
+## MC score
+p_mc_5_by_sex <-
+  plot_score_distri(
+    data1 = mc_scores_by_sex,
+    data2 = n_mc_scores_by_sex,
+    item = "Motivation and Confidence (/30)",
+    by_sex = "yes", 
+    color = "#EF6723",
+    text_y = 1.55,
+    breaks_x = seq(0, 30, 10),
+    limits_x = c(0, 30)
+  )
+```
+
+```{r get_plots_ku_scores_by_sex}
+# Select KU scores
+ku_scores_by_sex <-
+  capl_res |>
+  select(
+    identifiant,
+    gender,
+    fill_in_the_blanks_score,
+    pa_guideline_score,
+    crf_means_score,
+    ms_means_score,
+    sports_skill_score,
+    ku_score
+  ) |>
+  pivot_longer(cols = fill_in_the_blanks_score:ku_score,
+               names_to = "Item",
+               values_to = "Score") |>
+  mutate(
+    Item = fct_relevel(
+      Item,
+      "fill_in_the_blanks_score",
+      "pa_guideline_score",
+      "crf_means_score",
+      "ms_means_score",
+      "sports_skill_score",
+      "ku_score"
+    ),
+    Item = fct_recode(
+      Item,
+      "PA Comprehension and Understanding (/6)" = "fill_in_the_blanks_score",
+      "Daily PA Guidelines (/1)" = "pa_guideline_score",
+      "Cardiorerspiratory Fitness Definition (/1)" = "crf_means_score",
+      "Muscular Strength & Endurance Definition (/1)" = "ms_means_score",
+      "Improve Sport Skill (/1)" = "sports_skill_score",
+      "Knowledge and Understanding (/10)" = "ku_score"
+    )
+  )
+
+# Get the numbers of students with valid data for each item
+n_ku_scores_by_sex <-
+  ku_scores_by_sex |>
+  group_by(gender, Item) |>
+  summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
+
+# Get plots with score distributions
+## Physical activity comprehension and understanding
+p_ku_1_by_sex <-
+  plot_score_distri(
+    data1 = ku_scores_by_sex,
+    data2 = n_ku_scores_by_sex,
+    item = "PA Comprehension and Understanding (/6)",
+    by_sex = "yes", 
+    color = "#00A79F",
+    text_y = 1.55,
+    breaks_x = seq(0, 6, 2),
+    limits_x = c(0, 6)
+  )
+
+## Daily PA guidelines
+p_ku_2_by_sex <-
+  plot_score_distri(
+    data1 = ku_scores_by_sex,
+    data2 = n_ku_scores_by_sex,
+    type = "disc",
+    item = "Daily PA Guidelines (/1)",
+    by_sex = "yes", 
+    color = "#00A79F",
+    breaks_x = seq(0, 1, 1),
+    limits_x = c(0, 1)
+  )
+
+## Cardiorerspiratory fitness definition
+p_ku_3_by_sex <-
+  plot_score_distri(
+    data1 = ku_scores_by_sex,
+    data2 = n_ku_scores_by_sex,
+    type = "disc",
+    item = "Cardiorerspiratory Fitness Definition (/1)",
+    by_sex = "yes", 
+    color = "#00A79F",
+    breaks_x = seq(0, 1, 1),
+    limits_x = c(0, 1)
+  )
+
+## Muscular strength & endurance definition
+p_ku_4_by_sex <-
+  plot_score_distri(
+    data1 = ku_scores_by_sex,
+    data2 = n_ku_scores_by_sex,
+    type = "disc",
+    item = "Muscular Strength & Endurance Definition (/1)",
+    by_sex = "yes", 
+    color = "#00A79F",
+    breaks_x = seq(0, 1, 1),
+    limits_x = c(0, 1)
+  )
+
+## Improve sport skill
+p_ku_5_by_sex <-
+  plot_score_distri(
+    data1 = ku_scores_by_sex,
+    data2 = n_ku_scores_by_sex,
+    type = "disc",
+    item = "Improve Sport Skill (/1)",
+    by_sex = "yes",
+    color = "#00A79F",
+    breaks_x = seq(0, 1, 1),
+    limits_x = c(0, 1)
+  )
+
+## KU score
+p_ku_6_by_sex <-
+  plot_score_distri(
+    data1 = ku_scores_by_sex,
+    data2 = n_ku_scores_by_sex,
+    item = "Knowledge and Understanding (/10)",
+    by_sex = "yes", 
+    color = "#00A79F",
+    text_y = 1.55,
+    breaks_x = seq(0, 10, 2),
+    limits_x = c(0, 10)
+  )
+```
+
+```{r get_plots_capl_score_by_sex}
+# Select
+capl_score_by_sex <-
+  capl_res |>
+  select(
+    identifiant,
+    gender,
+    capl_score
+
+  ) |>
+  pivot_longer(cols = capl_score,
+               names_to = "Item",
+               values_to = "Score") |>
+  mutate(Item = fct_recode(Item, "Physical Literacy (/100)" = "capl_score"))
+
+# Get the numbers of students with valid data
+n_capl_score_by_sex <-
+  capl_score_by_sex |>
+  group_by(gender, Item) |>
+  summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
+
+# Get plots with score distributions
+## CAPL
+p_capl_by_sex <-
+  plot_score_distri(
+    data1 = capl_score_by_sex,
+    data2 = n_capl_score_by_sex,
+    item = "Physical Literacy (/100)",
+    by_sex = "yes", 
+    color = "#D4D11B",
+    text_y = 1.55,
+    breaks_x = seq(0, 100, 20),
+    limits_x = c(0, 100)
+  )
+```
+
+```{r get_whole_fig_scores_by_sex}
+# Build blank plot
+blank_plot_by_sex <-
+  plot_score_distri(
+    data1 = pc_scores_by_sex,
+    data2 = n_pc_scores_by_sex,
+    item = "PACER Shuttle Run (/10)",
+    color = "white",
+    text_y = 1.555,
+    breaks_x = seq(0, 10, 2),
+    limits_x = c(0, 10)
+  ) +
+  geom_rect(
+    aes(
+      xmin = -2,
+      xmax = 20,
+      ymin = -2,
+      ymax = 100
+    ),
+    fill  = "white",
+    color = "white"
+  ) 
+  
+# Gather domain plots
+p_pl_domains_by_sex <-
+  p_pc_4_by_sex      + p_db_3_by_sex      + p_mc_5_by_sex     +  p_ku_6_by_sex +
+  p_pc_1_by_sex      + p_db_1_by_sex      + p_mc_1_by_sex     +  p_ku_1_by_sex +
+  p_pc_2_by_sex      + p_db_2_by_sex     + p_mc_2_by_sex     +  p_ku_2_by_sex +
+  p_pc_3_by_sex      + blank_plot_by_sex  + p_mc_3_by_sex     +  p_ku_3_by_sex +
+  blank_plot_by_sex  + blank_plot_by_sex  + p_mc_4_by_sex     +  p_ku_4_by_sex +
+  blank_plot_by_sex  + blank_plot_by_sex  + blank_plot_by_sex +  p_ku_5_by_sex +
+  plot_layout(
+    nrow = 6,
+    byrow = TRUE,
+    axis_titles  = "collect"
+  )
+
+# Get final figure
+p_pl_by_sex <-
+  (plot_spacer() + (p_capl_by_sex + labs(y = "")) + plot_spacer()) / p_pl_domains_by_sex + plot_layout(heights = c(1, 6), guides = 'collect')
+```
+
+```{r, show_final_fig_by_sex, fig.height = 15, fig.width = 13, out.width = '100%'}
+p_pl_by_sex
+```
+
+### Scores: Descriptive statistics (global and domain scores)
+
+```{r, desc_stats_capl_by_sex}
+capl_res |> 
+  select(gender, pc_score, db_score, mc_score, ku_score, capl_score) |> 
+  group_by(gender) |> 
+  skim() |> 
+  yank("numeric") |> 
+  as_tibble() |> 
+  rename(
+    Score = skim_variable,
+    Sex = gender, 
+    `Missing values` = n_missing,
+    Mean = mean,
+    SD = sd, 
+    Minimum = p0,
+    `25th perc.` = p25,
+    Median = p50,
+    `75th perc.` = p75,
+    Maximum = p100,
+    Histogram = hist
+  ) |> 
+  select(-complete_rate) |>
+  mutate(
+    across(c(Mean:Maximum), ~round(.x, 2)),
+    Score = as.factor(Score),
+    Score = fct_recode(
+      Score,
+      "Physical Competence (/30)" = "pc_score",
+      "Daily Behaviour (/30)" = "db_score",
+      "Motivation and Confidence (/30)" = "mc_score",
+      "Knowledge and Understanding (/10)" = "ku_score",
+      "Physical Literacy (/100)" = "capl_score"
+    ),
+    Sex = fct_recode(
+      Sex, "Girl" = "girl", "Boy" = "boy"
+    )
+  ) |>
+  flextable() |>
+  theme_zebra() |>
+  width(width = 5) |> 
+  merge_v(j = "Score")
+```
+
+### Scores: Medians and respective 95% confidence intervals (global and domain scores)
+
+```{r median_cis_all_scores_by_sex}
+set.seed(123)
+
+capl_res |>
+  select(gender, pc_score, db_score, mc_score, ku_score, capl_score) |>
+  pivot_longer(
+    cols = c(pc_score:capl_score),
+    names_to = "score",
+    values_to = "value"
+  ) |>
+  group_by(score) |>
+  nest() |>
+  mutate(stats =
+           lapply(data, \(x) {
+             x <- x |> filter(!is.na(value))
+             
+             df <- rcompanion::groupwiseMedian(
+               value ~ gender,
+               data = x,
+               bca = TRUE,
+               R = 999,
+               conf = 0.95
+             ) |>
+               mutate(n = nrow(x))
+           })) |>
+  select(-data) |>
+  unnest(stats) |>
+  mutate(
+    score = as.factor(score),
+    score = fct_recode(
+      score,
+      "Physical Competence (/30)" = "pc_score",
+      "Daily Behaviour (/30)" = "db_score",
+      "Motivation and Confidence (/30)" = "mc_score",
+      "Knowledge and Understanding (/10)" = "ku_score",
+      "Physical Literacy (/100)" = "capl_score"
+    ),
+    gender = fct_recode(gender, "Girl" = "girl", "Boy" = "boy"),
+    `Median [95% CI]` = paste0(Median, " [", Bca.lower, "; ", Bca.upper, "]")
+  ) |>
+  rename(Score = score, Sex = gender) |>
+  select(Score, Sex, `Median [95% CI]`) |>
+  flextable() |>
+  theme_zebra() |>
+  width(width = 5) |> 
+  merge_v(j = "Score")
+```
+
+### Interpretations: Distributions
+
+```{r distri_interpretations_by_sex, fig.height = 7, fig.width = 9, fig.align = "center"}
+# Build plot
+p_inter_by_sex <-
+  capl_res |>
+  select(c(identifiant, gender, ends_with("interpretation"))) |>
+  pivot_longer(
+    cols = c(pacer_interpretation:capl_interpretation),
+    names_to = "score",
+    values_to = "interpretation"
+  ) |>
+  mutate(
+    score = as.factor(score),
+    interpretation = ifelse(is.na(interpretation), "Non available", interpretation),
+    interpretation = as.factor(interpretation),
+    interpretation = fct_relevel(
+      interpretation,
+      "Non available",
+      "beginning",
+      "progressing",
+      "achieving",
+      "excelling"
+    ),
+    interpretation = fct_recode(
+      interpretation,
+      "Beginning" = "beginning",
+      "Progressing" = "progressing",
+      "Achieving" = "achieving",
+      "Excelling" = "excelling"
+    ),
+    score = fct_relevel(
+      score,
+      "pacer_interpretation",
+      "camsa_interpretation",
+      "plank_interpretation",
+      "pc_interpretation",
+      "step_interpretation",
+      "db_interpretation",
+      "mc_interpretation",
+      "ku_interpretation",
+      "capl_interpretation"
+    ),
+    score = fct_recode(
+      score,
+      "PACER Shuttle Run" = "pacer_interpretation",
+      "CAMSA Score" = "camsa_interpretation",
+      "Plank" = "plank_interpretation",
+      "Physical Competence" = "pc_interpretation",
+      "Average Daily Step Count" = "step_interpretation",
+      "Daily Behaviour" = "db_interpretation",
+      "Motivation and Confidence" = "mc_interpretation",
+      "Knowledge and Understanding" = "ku_interpretation",
+      "Physical Literacy" = "capl_interpretation"
+    )
+  ) |>
+  count(gender, score, interpretation, .drop = FALSE) |>
+  group_by(gender, score) |>
+  mutate(prop = round(n / sum(n) * 100, 0)) |> 
+  ggplot(aes(x = interpretation, y = prop)) +
+  geom_bar(stat = "identity", aes(fill = gender), position = position_dodge(width = 0.9)) +
+  geom_text(aes(label = paste0(prop, "%"), group = gender), position = position_dodge(width = 0.9), size = 2, vjust = -0.3) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  scale_fill_manual(values = c("hotpink", "royalblue2"), labels = c("Girl", "Boy")) +
+  coord_cartesian(ylim = c(0, 100)) +
+  labs(x = "", y = "%", fill = "Sex") +
+  facet_wrap( ~ score) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+    legend.title = element_text(face = "bold"),
+    strip.background = element_rect(fill = "black"),
+    strip.text = element_text(color = "white", face = "bold")
+    )
+
+# Show plot
+p_inter_by_sex
+```
+
+# Relationships between the physical literacy scores (global and domain scores)
+
+```{r get_corr_matrix_capl, results = "hide", fig.keep = "none"}
+# Rename variables and keep only the subjects with complete observations for
+# all variables
+df_corr_capl <-
+  capl_res |> 
+  select(pc_score, db_score, mc_score, ku_score, capl_score) |> 
+  rename(
+    "Physical Competence" = pc_score,
+    "Daily Behaviour" = db_score,
+    "Motivation and Confidence" = mc_score,
+    "Knowledge & Understanding" = ku_score,
+    "Physical Literacy" = capl_score
+  ) |> 
+  drop_na()
+
+# Get matrix of correlations
+mat_corr_capl  <- cor(df_corr_capl, method = "spearman")
+
+# Get matrix of p-values
+mat_corr_p_capl <- (cor.mtest(df_corr_capl, method = "spearman"))$p
+
+# Get corrplot infos
+corrplot_capl_infos <- 
+  corrplot(
+    mat_corr_capl,
+    order = 'hclust',
+    method = "color",
+    tl.col = "black",
+    addCoef.col = "black",
+    mar = c(0, 0, 0, 0),
+    tl.srt = 45,
+    tl.cex = 0.6,
+    number.cex = 0.5,
+    col = COL2('PuOr', 10),
+    p.mat = mat_corr_p_capl,
+    sig.level = 0.05
+  )
+```
+
+```{r build_plot_corr_matrix_capl}
+p_corr_capl <-
+  ggplot(corrplot_capl_infos$corrPos, aes(x = x, y = y)) +
+  geom_tile(aes(fill = corr), color = "grey90") +
+  geom_text(
+    aes(label = round(corr, 2)),
+    size = 4,
+    color = ifelse(corrplot_capl_infos$corrPos$corr == 1, NA,
+      ifelse(corrplot_capl_infos$corrPos$p.value <= 0.05, "black","grey30"))
+  ) +
+    geom_text(
+    aes(y = y - 0.25, label = ifelse(p.value <= 0.001, "(p<=0.001)", paste0("(p=", format(round(p.value, 3), nsmall = 3), ")"))),
+    size = 2,
+    color = ifelse(corrplot_capl_infos$corrPos$corr == 1, NA,
+      ifelse(corrplot_capl_infos$corrPos$p.value <= 0.05, "black","grey30"))
+  ) +
+  geom_text(
+    aes(y = 0.2, label = xName),
+    angle = 90,
+    hjust = 1,
+    vjust = 0.5,
+    size = 3
+  ) +
+  geom_text(aes(x = 0.3, label = yName), hjust = 1, size = 3) +
+  scale_fill_gradient2(
+    low = "red",
+    high = "blue",
+    mid = "white",
+    midpoint = 0,
+    breaks = seq(-1, 1, 0.2),
+    limits = c(-1, 1)
+  ) +
+  guides(fill = guide_legend(title = NULL, reverse = TRUE)) +
+  theme_classic() +
+  coord_cartesian(xlim = c(-1.65, 6), ylim = c(-1.65, 6)) +
+  theme(
+    legend.position = c(0.955, 0.6),
+    legend.spacing.x = unit(0, 'cm'),
+    legend.key.size = unit(0.6,"line"),
+    axis.line = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank()
+    ) 
+```
+
+The matrix of correlations shown below is based on `r nrow(df_corr_capl)` students with complete data. Values are Spearman rho correlation coefficients.
+
+```{r show_plot_corr_matrix_capl, fig.align = "center", out.width = '80%', fig.width = 6, fig.height = 6}
+p_corr_capl
+```
+
+# Physical behaviour metrics (using students with \>=4 valid days)
+## Whole group of students
+### Metrics: Descriptive statistics
+
+The power low exponent alpha coefficient, the median bout duration, the usual bout duration, and the Gini index are computed using the week as a whole. All the other metrics represent daily averages.
+
+```{r pa_data_selection}
+pa_data_select <-
+  pa_data$all_metrics |>
+  filter(valid_days >= 4)
+```
+
+```{r pa_metrics_desc}
+pa_data_select |>
+  select(-c(id, total_kcal, pal)) |>
+  skim() |>
+  yank("numeric") |>
+  as_tibble() |>
+  rename(
+    Metric = skim_variable,
+    `Missing values` = n_missing,
+    Mean = mean,
+    SD = sd,
+    Minimum = p0,
+    `25th perc.` = p25,
+    Median = p50,
+    `75th perc.` = p75,
+    Maximum = p100,
+    Histogram = hist
+  ) |>
+  select(-complete_rate) |>
+  mutate(
+    across(c(Mean:Maximum), ~ round(.x, 2)),
+    Metric = as.factor(Metric),
+    Metric = fct_recode(Metric,
+      "Num. of valid days" = "valid_days",
+      "Wear time (min)" = "wear_time",
+      "VA total counts" = "total_counts_axis1",
+      "VM total counts" = "total_counts_vm",
+      "VA counts/min" = "axis1_per_min",
+      "VM counts/min" = "vm_per_min",
+      "SED time (min)" = "minutes_SED",
+      "LPA time (min)" = "minutes_LPA",
+      "MPA time (min)" = "minutes_MPA",
+      "VPA time (min)" = "minutes_VPA",
+      "MVPA time (min)" = "minutes_MVPA",
+      "% Wear time SED" = "percent_SED",
+      "% Wear time LPA" = "percent_LPA",
+      "% Wear time MPA" = "percent_MPA",
+      "% Wear time VPA" = "percent_VPA",
+      "% Wear time MVPA" = "percent_MVPA",
+      "Ratio MVPA / SED" = "ratio_mvpa_sed",
+      "MVPA MET-hr" = "mets_hours_mvpa",
+      "Total steps" = "total_steps",
+      "Max steps accum. / min over 60 min" = "max_steps_60min",
+      "Max steps accum. / min over 30 min" = "max_steps_30min",
+      "Max steps accum. / min over 20 min" = "max_steps_20min",
+      "Max steps accum. / min over 5 min" = "max_steps_5min",
+      "Max steps accum. / min over 1 min" = "max_steps_1min",
+      "Peak steps accum. / min over 60 min" = "peak_steps_60min",
+      "Peak steps accum. / min over 30 min" = "peak_steps_30min",
+      "Peak steps accum. / min over 20 min" = "peak_steps_20min",
+      "Peak steps accum. / min over 5 min" = "peak_steps_5min",
+      "Peak steps accum. / min over 1 min" = "peak_steps_1min",
+      "Intensity gradient" = "ig",
+      "Min. of counts/epoch over the best 8 hrs" = "M1/3",
+      "Min. of counts/epoch over the best 120 min" = "M120",
+      "Min. of counts/epoch over the best 60 min" = "M60",
+      "Min. of counts/epoch over the best 30 min" = "M30",
+      "Min. of counts/epoch over the best 15 min" = "M15",
+      "Min. of counts/epoch over the best 5 min" = "M5",
+      "Number of breaks" = "mean_breaks",
+      "Power low exponent alpha" = "alpha",
+      "Median bout duration (min)" = "MBD",
+      "Usual bout duration (min)" = "UBD",
+      "Gini index" = "gini"
+    )
+  ) |>
+  reactable(
+    defaultColDef = colDef(
+      minWidth = 95,
+      headerStyle = list(background = "#f7f7f8")
+    ),
+    columns = list(Metric = colDef(
+      sticky = "left",
+      style = list(borderRight = "1px solid #eee"),
+      headerStyle = list(borderRight = "1px solid #eee", background = "#f7f7f8"),
+      minWidth = 170
+    )
+  ),
+highlight = TRUE, bordered = TRUE
+)
+```
+
+# Relationships between the global physical literacy scores and the physical behaviour metrics
+
+```{r get_corr_matrix_pa, results = "hide", fig.keep = "none"}
+# Rename variables and keep only the subjects with complete observations for
+# all variables
+df_corr_pa <-
+  pa_data_select |>
+  rename(identifiant = id) |>
+  mutate(identifiant = as.factor(identifiant)) |>
+  left_join(capl_res |> select(c(-valid_days)), by = "identifiant") |>
+  select(wear_time:gini,
+         -minutes_VPA,
+         -percent_VPA,
+         -total_kcal,
+         -pal,
+         -mets_hours_mvpa,
+         pc_score,
+         db_score,
+         mc_score,
+         ku_score,
+         capl_score)  |>
+  drop_na() |> 
+  rename(
+      "Daily Wear time (min)" = "wear_time",
+      "Daily VA total counts" = "total_counts_axis1",
+      "Daily VM total counts" = "total_counts_vm",
+      "Daily VA counts/min" = "axis1_per_min",
+      "Daily VM counts/min" = "vm_per_min",
+      "Daily SED time (min)" = "minutes_SED",
+      "Daily LPA time (min)" = "minutes_LPA",
+      "Daily MPA time (min)" = "minutes_MPA",
+      "Daily MVPA time (min)" = "minutes_MVPA",
+      "Daily % Wear time SED" = "percent_SED",
+      "Daily % Wear time LPA" = "percent_LPA",
+      "Daily % Wear time MPA" = "percent_MPA",
+      "Daily % Wear time MVPA" = "percent_MVPA",
+      "Daily Ratio MVPA / SED" = "ratio_mvpa_sed",
+      "Daily Total steps" = "total_steps",
+      "Daily Max steps accum. 60 min" = "max_steps_60min",
+      "Daily Max steps accum. 30 min" = "max_steps_30min",
+      "Daily Max steps accum. 20 min" = "max_steps_20min",
+      "Daily Max steps accum. 5 min" = "max_steps_5min",
+      "Daily Max steps accum. 1 min" = "max_steps_1min",
+      "Daily Peak steps accum. 60 min" = "peak_steps_60min",
+      "Daily Peak steps accum. 30 min" = "peak_steps_30min",
+      "Daily Peak steps accum. 20 min" = "peak_steps_20min",
+      "Daily Peak steps accum. 5 min" = "peak_steps_5min",
+      "Daily Peak steps accum. 1 min" = "peak_steps_1min",
+      "Daily Intensity gradient" = "ig",
+      "Daily MX 8hrs" = "M1/3",
+      "Daily MX 120 min" = "M120",
+      "Daily MX 60 min" = "M60",
+      "Daily MX 30 min" = "M30",
+      "Daily MX 15 min" = "M15",
+      "Daily MX 5" = "M5",
+      "Daily Number of breaks" = "mean_breaks",
+      "Power low exponent alpha" = "alpha",
+      "Median bout duration (min)" = "MBD",
+      "Usual bout duration (min)" = "UBD",
+      "Gini index" = "gini",
+      "Physical Competence" = pc_score,
+      "Daily Behaviour" = db_score,
+      "Motivation and Confidence" = mc_score,
+      "Knowledge & Understanding" = ku_score,
+      "Physical Literacy" = capl_score
+
+  )
+
+# Get matrix of correlations
+mat_corr_pa  <- cor(df_corr_pa, method = "spearman")
+
+# Get matrix of p-values
+mat_corr_p_pa <- (cor.mtest(df_corr_pa, method = "spearman"))$p
+
+# Get corrplot infos
+corrplot_pa_infos <- 
+  corrplot(
+    mat_corr_pa,
+    order = 'hclust',
+    method = "color",
+    tl.col = "black",
+    addCoef.col = "black",
+    mar = c(0, 0, 0, 0),
+    tl.srt = 45,
+    tl.cex = 0.6,
+    number.cex = 0.5,
+    col = COL2('PuOr', 10),
+    p.mat = mat_corr_p_pa,
+    sig.level = 0.05
+  )
+```
+
+```{r build_plot_corr_matrix_pa}
+p_corr_pa <-
+  ggplot(corrplot_pa_infos$corrPos, aes(x = x, y = y)) +
+  geom_tile(aes(fill = corr), color = "grey90") +
+  geom_text(
+    aes(label = round(corr, 2)),
+    size = 2.6,
+    color = ifelse(corrplot_pa_infos$corrPos$corr == 1, NA,
+      ifelse(corrplot_pa_infos$corrPos$p.value <= 0.05, "black","grey30"))
+  ) +
+    geom_text(
+    aes(y = y - 0.25, label = ifelse(p.value <= 0.001, "(p<=0.001)", paste0("(p=", format(round(p.value, 3), nsmall = 3), ")"))),
+    size = 1,
+    color = ifelse(corrplot_pa_infos$corrPos$corr == 1, NA,
+      ifelse(corrplot_pa_infos$corrPos$p.value <= 0.05, "black","grey30"))
+  ) +
+  geom_text(
+    aes(y = 0.2, label = xName),
+    angle = 90,
+    hjust = 1,
+    vjust = 0.5,
+    size = 3
+  ) +
+  geom_text(aes(x = 0.3, label = yName), hjust = 1, size = 3) +
+  scale_fill_gradient2(
+    low = "red",
+    high = "blue",
+    mid = "white",
+    midpoint = 0,
+    breaks = seq(-1, 1, 0.2),
+    limits = c(-1, 1)
+  ) +
+  guides(fill = guide_legend(title = NULL, reverse = TRUE)) +
+  theme_classic() +
+  coord_cartesian(xlim = c(-4, 44), ylim = c(-4, 42)) +
+  theme(
+    legend.position = c(0.955, 0.6),
+    legend.spacing.x = unit(0, 'cm'),
+    legend.key.size = unit(0.6,"line"),
+    axis.line = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank()
+    ) 
+```
+
+The matrix of correlations shown below is based on `r nrow(df_corr_pa)` students with complete data. Values are Spearman rho correlation coefficients.
+
+```{r show_plot_corr_matrix_pa, fig.align = "center", out.width = '100%', fig.width = 14, fig.height = 14}
+p_corr_pa
+```
+
+# Patterns of steps during the days of the week for the students with at least 4 valid days
+## Patterns for all students as a whole
+
+```{r get_pa_pattern_all, fig = "center", out.width = '100%'}
+# Get the IDs of the students
+ids_pa_valid <-
+  pa_data$all_metrics |> 
+  filter(valid_days >= 4) |> 
+  pull(id) 
+
+# Get a dataset of total steps per hour for each student and day
+step_per_hour <-
+  pa_data$data_with_intensity_marks |>
+  filter(id %in% ids_pa_valid) |>
+  mutate(hour = hour(time)) |>
+  mutate(
+    weekday = fct_relevel(
+      weekday,
+      "lundi",
+      "mardi",
+      "mercredi",
+      "jeudi",
+      "vendredi",
+      "samedi",
+      "dimanche"
+    )
+  ) |>
+  group_by(id, weekday, hour) |>
+  summarise(tot_steps = sum(steps))
+
+# Get statistics summaries
+step_per_hour_stats <- 
+  step_per_hour |> 
+  group_by(weekday, hour) |> 
+  summarise(
+    mean = mean(tot_steps),
+    sd = sd(tot_steps)
+    ) |> 
+  mutate(
+    lower_bound = mean - sd,
+    upper_bound = mean + sd
+  )
+
+# Plot data
+ggplot(data = step_per_hour) +
+  geom_point(aes(x = hour, y = tot_steps), alpha = 0.3, size = 1) +
+  geom_ribbon(data = step_per_hour_stats, 
+            aes(x = hour, ymin = lower_bound, ymax = upper_bound, fill = "Mean ± SD"),
+            alpha = 0.3
+            ) +
+  geom_point(data = step_per_hour_stats, aes(x = hour, y = mean, color = "Mean ± SD"), size = 2) +
+  geom_line(data = step_per_hour_stats, aes(x = hour, y = mean, color = "Mean ± SD"), linewidth = 0.5) +
+ scale_x_continuous(breaks = seq(0, 24, 2)) +
+  scale_color_manual(name ="", values = c("black", "black")) +
+  scale_fill_manual(name ="", values = "blue") +
+  labs(x = "Hour of the day", y = "Total number of steps") + 
+  facet_wrap(~ weekday) +
+  theme(legend.position = "bottom")
+```
+
+## Patterns for the students according to the quartiles
+
+```{r get_pa_pattern_quart, fig = "center", out.width = '100%'}
+# Get the quantiles for total steps
+quant <- 
+  pa_data$all_metrics |>
+  filter(valid_days >= 4) |>
+  summarise_at(vars(total_steps), list(
+    Q1 =  ~ quantile(., probs = 0.25),
+    median = median,
+    Q3 =  ~ quantile(., probs = 0.75)
+  )
+  )
+
+# Bind the IDs and Quartiles of the students with their data
+step_per_hour_quart <-
+  pa_data$all_metrics |> 
+  filter(valid_days >= 4) |> 
+  mutate(Quartile = case_when(
+    total_steps <= quant$Q1 ~ "Q1",
+    total_steps > quant$Q1 & total_steps <= quant$median  ~ "Q2",
+    total_steps > quant$median & total_steps <= quant$Q3  ~ "Q3",
+    total_steps > quant$Q3 ~ "Q4"
+  )) |> 
+  select(id, Quartile) |> 
+  left_join(step_per_hour)
+
+# Get statistics summaries
+step_per_hour_quart_stats <- 
+  step_per_hour_quart |> 
+  group_by(Quartile, weekday, hour) |> 
+  summarise(
+    mean = mean(tot_steps),
+    sd = sd(tot_steps)
+    ) |> 
+  mutate(
+    lower_bound = mean - sd,
+    upper_bound = mean + sd
+  )
+
+# Plot data
+ggplot(data = step_per_hour_quart) +
+  geom_point(aes(x = hour, y = tot_steps, color = Quartile), alpha = 0.3, size = 1) +
+  #geom_ribbon(data = step_per_hour_quart_stats, 
+            #aes(x = hour, ymin = lower_bound, ymax = upper_bound, fill = Quartile),
+            #alpha = 0.3
+            #) +
+  geom_point(data = step_per_hour_quart_stats, aes(x = hour, y = mean, color = Quartile), size = 2) +
+  geom_line(data = step_per_hour_quart_stats, aes(x = hour, y = mean, color = Quartile), linewidth = 0.5) +
+ scale_x_continuous(breaks = seq(0, 24, 2)) +
+  labs(x = "Hour of the day", y = "Total number of steps", color = "Mean") + 
+  facet_wrap(~ weekday) +
+  theme(legend.position = "bottom")
+```
+
+```{r export_results, include = FALSE}
+# Export PA metrics
+write_csv2(pa_data$all_metrics, "out/pa_all_metrics.csv")
+
+# Export PA results by day
+write_csv2(pa_data$results_by_day, "out/pa_results_by_day.csv")
+
+# Export PA marked data
+write_csv2(pa_data$data_with_intensity_marks, "out/pa_data_with_intensity_marks.csv")
+
+# Export CAPL results
+write_csv2(capl_res, "out/capl_results.csv")
+```
+
+```{r export_figures}
+ggsave("out/pl_all.png", p_pl_all, height = 20, width = 15, unit = "cm", dpi = 300, scale = 2)
+ggsave("out/pl_by_sex.png", p_pl_by_sex, height = 20, width = 16, unit = "cm", dpi = 300, scale = 2)
+ggsave("out/inter.png", p_inter, height = 8, width = 11, unit = "cm", dpi = 300, scale = 2)
+ggsave("out/inter_by_sex.png", p_inter_by_sex, height = 8, width = 11, unit = "cm", dpi = 300, scale = 2)
+ggsave("out/corr_capl.png", p_corr_capl, height = 7, width = 7, unit = "cm", dpi = 300, scale = 2.6)
+ggsave("out/corr_pa.png", p_corr_pa, height = 12, width = 12, unit = "cm", dpi = 300, scale = 3)
+
+```

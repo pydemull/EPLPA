@@ -1,0 +1,55 @@
+CODE_NAME;USER_VALUE;COMMENTS
+ID;identifiant;
+AGE;age;
+SEX;genre;
+SEX_MALE;H;
+SEX_FEMALE;F;
+WEIGHT;poids;
+AXIS_PRESCHOOLER;vm;
+AXIS_CHILD;vm;
+AXIS_ADOLESCENT;vm;
+AXIS_ADULT;vm;
+AXIS_OLDER;vm;
+SED_CUTPOINT_PRESCHOOLER;820;"For VM/Hip (Butte et al., 2014); Original cut-point: 820 counts/min; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+SED_CUTPOINT_CHILD;180;"For VM/Hip (Hänggi et al., 2013); Original cut-point: 3 counts/s; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+SED_CUTPOINT_ADOLESCENT;721;"For VM/Hip (Romanzini et al., 2014); Original cut-point: 180 counts/15s; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+SED_CUTPOINT_ADULT;150;"For VM/Hip (Peterson et al., 2015; DOI: 10.1002/nur.21694); Original cut-point: 150 counts/min"
+SED_CUTPOINT_OLDER;200;"For VM/Hip (Aguilar-Farias et al., 2014);  Original cut-point: 200 counts/min; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+MPA_CUTPOINT_PRESCHOOLER;3908;"For VM/Hip (Butte et al., 2014); Original cut-point: 3908 counts/min; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+MPA_CUTPOINT_CHILD;3420;"For VM/Hip (Hänggi et al., 2013); Original cut-point: 56 counts/s; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+MPA_CUTPOINT_ADOLESCENT;3028;"For VM/Hip (Romanzini et al., 2014); Original cut-point: 756 counts/15s; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+MPA_CUTPOINT_ADULT;2690;"For VM/Hip (Sasaki et al.; 2011); Original cut-point: 2690 counts/min; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+MPA_CUTPOINT_OLDER;2690;"For VM/Hip (Sasaki et al.; 2011); Original cut-point: 2690 counts/min; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+VPA_CUTPOINT_PRESCHOOLER;6112;"For VM/Hip (Butte et al., 2014); Original cut-point: 6112 counts/min; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+VPA_CUTPOINT_CHILD;Inf;"No VPA cut-point from Hänggi et al. (2013); Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+VPA_CUTPOINT_ADOLESCENT;4448;"For VM/Hip (Romanzini et al., 2014); Original cut-point: 1112 counts/15s; Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+VPA_CUTPOINT_ADULT;6167;"For VM/Hip (Sasaki et al., 2011); Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+VPA_CUTPOINT_OLDER;6167;"For VM/Hip (Sasaki et al., 2011); Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+EQUATION_EE_PRESCHOOLER;Santos-Lozano et al. (2013) [Adults];Arbitrary choice (not appropriate but constrained by activAnalyzer package)
+EQUATION_EE_CHILD;Santos-Lozano et al. (2013) [Adults];Arbitrary choice (not appropriate but constrained by activAnalyzer package)
+EQUATION_EE_ADOLESCENT;Santos-Lozano et al. (2013) [Adults];Arbitrary choice (not appropriate but constrained by activAnalyzer package)
+EQUATION_EE_ADULT;Santos-Lozano et al. (2013) [Adults];Arbitrary choice (not appropriate but constrained by activAnalyzer package)
+EQUATION_EE_OLDER;Santos-Lozano et al. (2013) [Older adults];"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+EPOCH_TARGET_PRESCHOOLER;15;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0) and Ahmadi et al. (2022; DOI: 10.1371/journal.pone.0266970)"
+EPOCH_TARGET_CHILD;60;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+EPOCH_TARGET_ADOLESCENT;15;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+EPOCH_TARGET_ADULT;60;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+EPOCH_TARGET_OLDER;60;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+FRAME_PRESCHOOLER;60;Arbitrary choice
+FRAME_CHILD;60;Arbitrary choice
+FRAME_ADOLESCENT;60;Arbitrary choice
+FRAME_ADULT;60;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+FRAME_OLDER;90;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+ALLOWANCE_FRAME_PRESCHOOLER;0;Arbitrary choice
+ALLOWANCE_FRAME_CHILD;0;Arbitrary choice
+ALLOWANCE_FRAME_ADOLESCENT;0;Arbitrary choice
+ALLOWANCE_FRAME_ADULT;0;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+ALLOWANCE_FRAME_OLDER;30;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+STREAM_FRAME_PRESCHOOLER;0;Arbitrary choice
+STREAM_FRAME_CHILD;0;Arbitrary choice
+STREAM_FRAME_ADOLESCENT;0;Arbitrary choice
+STREAM_FRAME_ADULT;0;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+STREAM_FRAME_OLDER;2;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+VALID_WEAR_TIME_START;00:00:00;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+VALID_WEAR_TIME_END;23:59:59;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+MINIMUM_WEAR_TIME;10;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
