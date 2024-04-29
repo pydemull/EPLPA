@@ -10,6 +10,7 @@ tar_option_set(
     "capl",
     "dplyr",
     "forcats",
+    "hms",
     "purrr",
     "readr",
     "tidyr"
@@ -60,25 +61,41 @@ list(
     command = import_capl_data("./data/BASE.xlsx", sheet_name = "COMP_PHY") # Self-reported PA
   ),
   
-  # Select and transpose the steps data required for getting CAPL results
+  # Select and transpose the steps and time data required for getting CAPL results
   tar_target(
     name = PA_METRICS,
     command = pa_data$results_by_day |>
       group_by(id) |>
       mutate(
         num_day = seq_along(id),
-        non_wear_time = 24 - wear_time / 60
+        non_wear_time = 0
       ) |>
       ungroup() |>
       filter(num_day <= 7) |>
-      select(id, num_day, non_wear_time, total_steps) |>
+      select(id, num_day, non_wear_time, wear_time, total_steps) |>
       rename(steps = total_steps) |>
       pivot_wider(
         id_cols = id,
         names_from = num_day,
-        values_from = c(non_wear_time, steps),
+        values_from = c(non_wear_time:steps),
         names_sep = ""
       ) |>
+      mutate(
+        time_on1 = "06:00",
+        time_on2 = "06:00",
+        time_on3 = "06:00",
+        time_on4 = "06:00",
+        time_on5 = "06:00",
+        time_on6 = "06:00",
+        time_on7 = "06:00",
+        time_off1 = substr(as.character(as_hms(6 * 3600 + wear_time1 * 60)), 1, 5),
+        time_off2 = substr(as.character(as_hms(6 * 3600 + wear_time2 * 60)), 1, 5),
+        time_off3 = substr(as.character(as_hms(6 * 3600 + wear_time3 * 60)), 1, 5),
+        time_off4 = substr(as.character(as_hms(6 * 3600 + wear_time4 * 60)), 1, 5),
+        time_off5 = substr(as.character(as_hms(6 * 3600 + wear_time5 * 60)), 1, 5),
+        time_off6 = substr(as.character(as_hms(6 * 3600 + wear_time6 * 60)), 1, 5),
+        time_off7 = substr(as.character(as_hms(6 * 3600 + wear_time7 * 60)), 1, 5)
+      ) |> 
       rename(identifiant = id)
   ), 
   
@@ -282,22 +299,7 @@ list(
         heart_rate = "Réponse Q.5 - 6eme espace"
       ) |>
       mutate(
-        across(c(camsa_skill_score1:self_report_pa), as.integer),
-        # Add dummy time_on/time_off data so that steps score can be computed
-        time_on1 = "06:00",
-        time_on2 = "06:00",
-        time_on3 = "06:00",
-        time_on4 = "06:00",
-        time_on5 = "06:00",
-        time_on6 = "06:00",
-        time_on7 = "06:00",
-        time_off1 = "23:00",
-        time_off2 = "23:00",
-        time_off3 = "23:00",
-        time_off4 = "23:00",
-        time_off5 = "23:00",
-        time_off6 = "23:00",
-        time_off7 = "23:00"
+        across(c(camsa_skill_score1:self_report_pa), as.integer)
       ) |> 
       arrange(identifiant)
   ), 
