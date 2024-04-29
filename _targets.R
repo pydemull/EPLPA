@@ -19,6 +19,12 @@ tar_option_set(
 # Define pipeline
 list(
   
+  # Get physical activity metrics config
+  tar_target(
+    name = pa_metrics_config,
+    command = read_csv2("config.csv")
+  ),
+  
   # Get physical activity metrics
   tar_target(
     name = pa_data,
@@ -47,7 +53,7 @@ list(
   ),
   tar_target(
     name = MOTIV_CONF, 
-    command = import_capl_data("./data/BASE.xlsx", sheet_name = "MOTIV_CONF") # Motivation & confidences
+    command = import_capl_data("./data/BASE.xlsx", sheet_name = "MOTIV_CONF") # Motivation & confidence
   ),
   tar_target(
     name = COMP_PHY, 
@@ -301,7 +307,7 @@ list(
     name = capl_res,
     command =
       get_capl(df_cleaned) |>
-      # Keep participants with complete measurements only
+      # Keep the participants who have completed the study only
       filter(as.numeric(as.character(identifiant)) <= 98)
   ), 
   

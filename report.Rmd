@@ -70,10 +70,53 @@ library(tidyr)
 source("R/plot_score_distri.R")
 ```
 
-```{r, load_objects}
+```{r load_objects}
 targets::tar_load(capl_res)
 targets::tar_load(pa_data)
+targets::tar_load(pa_metrics_config)
 ```
+
+```{r manage_problematic_capl_scores}
+# Adjust Predilection score for ID 55
+predilection_score_55 <-
+  as.numeric(format(capl_res[capl_res$identifiant == "55", "predilection_score"][[1]], digits = 3))
+
+# Adjust Adequacy score for ID 55
+adequacy_score_55 <-
+  as.numeric(format(capl_res[capl_res$identifiant == "55", "adequacy_score"][[1]]), digits = 3)
+
+# Adjust Intrinsic motivation score for ID 55
+intrinsic_motivation_score_55 <-
+  as.numeric(format(capl_res[capl_res$identifiant == "55", "intrinsic_motivation_score"][[1]]), digits = 3)
+
+# Adjust PA competence score for ID 55
+pa_competence_score_55 <-
+  capl_res[capl_res$identifiant == "55", "pa_competence_score"][[1]]
+
+# Adjust MC score for ID 55
+capl_res[capl_res$identifiant == "55", "mc_score"] <-
+  get_mc_score(
+    predilection_score_55,
+    adequacy_score_55,
+    intrinsic_motivation_score_55,
+    pa_competence_score_55
+  )[[1]]
+
+# Adjust MC score interpretation for ID 55
+capl_res[capl_res$identifiant == "55", "mc_interpretation"] <-
+  get_capl_interpretation(capl_res[capl_res$identifiant == "55", "age"][[1]],
+                          capl_res[capl_res$identifiant == "55", "gender"][[1]],
+                          capl_res[capl_res$identifiant == "55", "mc_score"][[1]],
+                          "mc")[[1]]
+
+# Adjust CPAL status for ID 55
+capl_res[capl_res$identifiant == "55", "capl_status"] <- "complete"
+```
+
+```{r}
+capl_res <- capl_res |> mutate(capl_score = ifelse(capl_status != "complete", NA, capl_score))
+```
+
 
 # Dataset skimming
 
@@ -83,7 +126,7 @@ skim(capl_res)
 
 # Physical literacy scores & interpretations
 ## Whole group of students
-### Scores: Distributions (global, domain and sub-domain scores)
+### Scores: Distributions
 
 ```{r get_plots_pc_scores}
 # Select PC scores
@@ -524,13 +567,13 @@ p_pl_all <-
   (plot_spacer() + (p_capl + labs(y = "")) + plot_spacer()) / p_pl_domains + plot_layout(heights = c(1, 6))
 ```
 
-```{r, show_final_fig, fig.height = 15, fig.width = 12, out.width = '100%'}
+```{r show_final_fig, fig.height = 15, fig.width = 12, out.width = '100%'}
 p_pl_all
 ```
 
-### Scores: Descriptive statistics (global and domain scores)
+### Scores: Descriptive statistics
 
-```{r, desc_stats_capl_all}
+```{r desc_stats_capl_all}
 capl_res |> 
   select(pc_score, db_score, mc_score, ku_score, capl_score) |> 
   skim() |> 
@@ -566,7 +609,7 @@ capl_res |>
   width(width = 5)
 ```
 
-### Scores: Medians and respective 95% confidence intervals (global and domain scores)
+### Scores: Medians and respective 95% confidence intervals
 
 ```{r median_cis_all_scores}
 set.seed(123)
@@ -693,7 +736,7 @@ p_inter
 ```
 
 ## By sex
-### Scores: Distributions (global, domain and sub-domain scores)
+### Scores: Distributions
 
 ```{r get_plots_pc_scores_by_sex}
 # Select PC scores
@@ -1159,13 +1202,13 @@ p_pl_by_sex <-
   (plot_spacer() + (p_capl_by_sex + labs(y = "")) + plot_spacer()) / p_pl_domains_by_sex + plot_layout(heights = c(1, 6), guides = 'collect')
 ```
 
-```{r, show_final_fig_by_sex, fig.height = 15, fig.width = 13, out.width = '100%'}
+```{r show_final_fig_by_sex, fig.height = 15, fig.width = 13, out.width = '100%'}
 p_pl_by_sex
 ```
 
-### Scores: Descriptive statistics (global and domain scores)
+### Scores: Descriptive statistics
 
-```{r, desc_stats_capl_by_sex}
+```{r desc_stats_capl_by_sex}
 capl_res |> 
   select(gender, pc_score, db_score, mc_score, ku_score, capl_score) |> 
   group_by(gender) |> 
@@ -1207,7 +1250,7 @@ capl_res |>
   merge_v(j = "Score")
 ```
 
-### Scores: Medians and respective 95% confidence intervals (global and domain scores)
+### Scores: Medians and respective 95% confidence intervals
 
 ```{r median_cis_all_scores_by_sex}
 set.seed(123)
@@ -1336,7 +1379,7 @@ p_inter_by_sex <-
 p_inter_by_sex
 ```
 
-# Relationships between the physical literacy scores (global and domain scores)
+# Relationships between the physical literacy scores
 
 ```{r get_corr_matrix_capl, results = "hide", fig.keep = "none"}
 # Rename variables and keep only the subjects with complete observations for
@@ -1429,11 +1472,31 @@ The matrix of correlations shown below is based on `r nrow(df_corr_capl)` studen
 p_corr_capl
 ```
 
-# Physical behaviour metrics (using students with \>=4 valid days)
-## Whole group of students
-### Metrics: Descriptive statistics
+# Physical behaviour metrics
+## Analysis settings
+```{r}
+pa_metrics_config[grep("CHILD", pa_metrics_config$CODE_NAME), ] |> 
+  filter(CODE_NAME != "EQUATION_EE_CHILD") |> 
+  select(-COMMENTS) |> 
+  bind_rows(pa_metrics_config |> filter(CODE_NAME %in% c("VALID_WEAR_TIME_START", "VALID_WEAR_TIME_END", "MINIMUM_WEAR_TIME")) |> select(-COMMENTS)) |> 
+  reactable(
+    defaultColDef = colDef(
+      minWidth = 95,
+      headerStyle = list(background = "#D1D3D5")
+    ),
+    columns = list(CODE_NAME = colDef(
+      sticky = "left",
+      style = list(borderRight = "1px solid #eee"),
+      headerStyle = list(borderRight = "1px solid #eee", background = "#D1D3D5"),
+      minWidth = 180
+    )
+  ),
+striped = TRUE, bordered = TRUE, defaultPageSize = 11
+)
+```
 
-The power low exponent alpha coefficient, the median bout duration, the usual bout duration, and the Gini index are computed using the week as a whole. All the other metrics represent daily averages.
+
+The cut-points are in counts/min. The `FRAME` settings are in minutes. This information is used to detect nonwear time. The minimum wear time is in hours.
 
 ```{r pa_data_selection}
 pa_data_select <-
@@ -1441,9 +1504,143 @@ pa_data_select <-
   filter(valid_days >= 4)
 ```
 
-```{r pa_metrics_desc}
+The following analyses are based on students who had at least 4 valid days (n = `r nrow(pa_data_select)`). The power low exponent alpha coefficient, the median bout duration, the usual bout duration, and the Gini index are computed using the week as a whole. All the other metrics represent daily averages.
+
+## Whole group of students
+### Metrics: Distributions
+
+```{r get_pivot_pa_data_select}
+pivot_pa_data_select <-
+  pa_data_select |> 
+  select(-c(total_kcal, pal, mets_hours_mvpa)) |>
+  rename(
+    "Valid days" = "valid_days",
+    "Wear time (min)" = "wear_time",
+    "VA total counts" = "total_counts_axis1",
+    "VM total counts" = "total_counts_vm",
+    "VA counts/min" = "axis1_per_min",
+    "VM counts/min" = "vm_per_min",
+    "SED time (min)" = "minutes_SED",
+    "LPA time (min)" = "minutes_LPA",
+    "MPA time (min)" = "minutes_MPA",
+    "VPA time (min)" = "minutes_VPA",
+    "MVPA time (min)" = "minutes_MVPA",
+    "% Wear time SED" = "percent_SED",
+    "% Wear time LPA" = "percent_LPA",
+    "% Wear time MPA" = "percent_MPA",
+    "% Wear time VPA" = "percent_VPA",
+    "% Wear time MVPA" = "percent_MVPA",
+    "Ratio MVPA / SED" = "ratio_mvpa_sed",
+    "Total steps" = "total_steps",
+    "60 min-Max step accum." = "max_steps_60min",
+    "30 min-Max step accum." = "max_steps_30min",
+    "20 min-Max step accum." = "max_steps_20min",
+    "5 min-Max step accum." = "max_steps_5min",
+    "1 min-Max step accum." = "max_steps_1min",
+    "60 min-Peak step accum." = "peak_steps_60min",
+    "30 min-Peak step accum." = "peak_steps_30min",
+    "20 min-Peak step accum." = "peak_steps_20min",
+    "5 min-Peak step accum." = "peak_steps_5min",
+    "1 min-Peak step accum." = "peak_steps_1min",
+    "Intensity gradient" = "ig",
+    "MX 8 hrs" = "M1/3",
+    "MX 120 min" = "M120",
+    "MX 60 min" = "M60",
+    "MX 30 min" = "M30",
+    "MX 15 min" = "M15",
+    "MX 5 min" = "M5",
+    "Number of breaks" = "mean_breaks",
+    "Power low exponent alpha" = "alpha",
+    "Median bout duration (min)" = "MBD",
+    "Usual bout duration (min)" = "UBD",
+    "Gini index" = "gini"
+  ) |>
+  pivot_longer(cols = c(everything(), -id),
+               names_to = "Metric",
+               values_to = "Value") |>
+  mutate(
+    Metric = as.factor(Metric),
+    Metric = fct_relevel(
+      Metric,
+      "Valid days",
+      "Wear time (min)",
+      "VA total counts",
+      "VM total counts",
+      "VA counts/min",
+      "VM counts/min",
+      "SED time (min)",
+      "LPA time (min)",
+      "MPA time (min)",
+      "VPA time (min)",
+      "MVPA time (min)",
+      "% Wear time SED",
+      "% Wear time LPA",
+      "% Wear time MPA",
+      "% Wear time VPA",
+      "% Wear time MVPA",
+      "Ratio MVPA / SED",
+      "Total steps",
+      "60 min-Max step accum.",
+      "30 min-Max step accum.",
+      "20 min-Max step accum.",
+      "5 min-Max step accum.",
+      "1 min-Max step accum.",
+      "60 min-Peak step accum.",
+      "30 min-Peak step accum.",
+      "20 min-Peak step accum.",
+      "5 min-Peak step accum.",
+      "1 min-Peak step accum.",
+      "Intensity gradient",
+      "MX 8 hrs",
+      "MX 120 min",
+      "MX 60 min",
+      "MX 30 min",
+      "MX 15 min",
+      "MX 5 min",
+      "Number of breaks",
+      "Power low exponent alpha",
+      "Median bout duration (min)",
+      "Usual bout duration (min)",
+      "Gini index"
+    )
+  ) 
+```
+
+```{r get_plots_pa_metrics}
+p_pa_metrics <-
+  pivot_pa_data_select |> 
+  ggplot(aes(x = 0, y = Value, fill = Metric)) +
+  geom_rain(
+            point.args = rlang::list2(
+              alpha = 0.3,
+              size = 2
+            )) +
+  facet_wrap( ~ Metric, scales = "free")  +
+  coord_flip(xlim = c(-0.1, 0.55)) +
+  labs(x = NULL) +
+  theme_bw() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(color = "grey40", angle = 90, hjust = 1, vjust = 0.5),
+    axis.ticks.x = element_line(color = "grey40"),
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank(),
+    strip.background = element_rect(fill = "grey40", color = "grey40"),
+    strip.text = element_text(color = "white", face = "bold", size = 10),
+    panel.border = element_rect(color = "grey40")
+  )
+```
+
+```{r show_pa_metrics, fig.height = 15, fig.width = 17, out.width = '100%'}
+p_pa_metrics
+```
+
+
+### Metrics: Descriptive statistics
+
+```{r desc_stats_pa_metrics}
 pa_data_select |>
-  select(-c(id, total_kcal, pal)) |>
+  select(-c(id, total_kcal, pal, mets_hours_mvpa)) |>
   skim() |>
   yank("numeric") |>
   as_tibble() |>
@@ -1464,47 +1661,46 @@ pa_data_select |>
     across(c(Mean:Maximum), ~ round(.x, 2)),
     Metric = as.factor(Metric),
     Metric = fct_recode(Metric,
-      "Num. of valid days" = "valid_days",
-      "Wear time (min)" = "wear_time",
-      "VA total counts" = "total_counts_axis1",
-      "VM total counts" = "total_counts_vm",
-      "VA counts/min" = "axis1_per_min",
-      "VM counts/min" = "vm_per_min",
-      "SED time (min)" = "minutes_SED",
-      "LPA time (min)" = "minutes_LPA",
-      "MPA time (min)" = "minutes_MPA",
-      "VPA time (min)" = "minutes_VPA",
-      "MVPA time (min)" = "minutes_MVPA",
-      "% Wear time SED" = "percent_SED",
-      "% Wear time LPA" = "percent_LPA",
-      "% Wear time MPA" = "percent_MPA",
-      "% Wear time VPA" = "percent_VPA",
-      "% Wear time MVPA" = "percent_MVPA",
-      "Ratio MVPA / SED" = "ratio_mvpa_sed",
-      "MVPA MET-hr" = "mets_hours_mvpa",
-      "Total steps" = "total_steps",
-      "Max steps accum. / min over 60 min" = "max_steps_60min",
-      "Max steps accum. / min over 30 min" = "max_steps_30min",
-      "Max steps accum. / min over 20 min" = "max_steps_20min",
-      "Max steps accum. / min over 5 min" = "max_steps_5min",
-      "Max steps accum. / min over 1 min" = "max_steps_1min",
-      "Peak steps accum. / min over 60 min" = "peak_steps_60min",
-      "Peak steps accum. / min over 30 min" = "peak_steps_30min",
-      "Peak steps accum. / min over 20 min" = "peak_steps_20min",
-      "Peak steps accum. / min over 5 min" = "peak_steps_5min",
-      "Peak steps accum. / min over 1 min" = "peak_steps_1min",
-      "Intensity gradient" = "ig",
-      "Min. of counts/epoch over the best 8 hrs" = "M1/3",
-      "Min. of counts/epoch over the best 120 min" = "M120",
-      "Min. of counts/epoch over the best 60 min" = "M60",
-      "Min. of counts/epoch over the best 30 min" = "M30",
-      "Min. of counts/epoch over the best 15 min" = "M15",
-      "Min. of counts/epoch over the best 5 min" = "M5",
-      "Number of breaks" = "mean_breaks",
-      "Power low exponent alpha" = "alpha",
-      "Median bout duration (min)" = "MBD",
-      "Usual bout duration (min)" = "UBD",
-      "Gini index" = "gini"
+    "Num. of valid days" = "valid_days",
+    "Wear time (min)" = "wear_time",
+    "VA total counts" = "total_counts_axis1",
+    "VM total counts" = "total_counts_vm",
+    "VA counts/min" = "axis1_per_min",
+    "VM counts/min" = "vm_per_min",
+    "SED time (min)" = "minutes_SED",
+    "LPA time (min)" = "minutes_LPA",
+    "MPA time (min)" = "minutes_MPA",
+    "VPA time (min)" = "minutes_VPA",
+    "MVPA time (min)" = "minutes_MVPA",
+    "% Wear time SED" = "percent_SED",
+    "% Wear time LPA" = "percent_LPA",
+    "% Wear time MPA" = "percent_MPA",
+    "% Wear time VPA" = "percent_VPA",
+    "% Wear time MVPA" = "percent_MVPA",
+    "Ratio MVPA / SED" = "ratio_mvpa_sed",
+    "Total steps" = "total_steps",
+    "60 min-Max step accum." = "max_steps_60min",
+    "30 min-Max step accum." = "max_steps_30min",
+    "20 min-Max step accum." = "max_steps_20min",
+    "5 min-Max step accum." = "max_steps_5min",
+    "1 min-Max step accum." = "max_steps_1min",
+    "60 min-Peak step accum." = "peak_steps_60min",
+    "30 min-Peak step accum." = "peak_steps_30min",
+    "20 min-Peak step accum." = "peak_steps_20min",
+    "5 min-Peak step accum." = "peak_steps_5min",
+    "1 min-Peak step accum." = "peak_steps_1min",
+    "Intensity gradient" = "ig",
+    "MX 8 hrs" = "M1/3",
+    "MX 120 min" = "M120",
+    "MX 60 min" = "M60",
+    "MX 30 min" = "M30",
+    "MX 15 min" = "M15",
+    "MX 5 min" = "M5",
+    "Number of breaks" = "mean_breaks",
+    "Power low exponent alpha" = "alpha",
+    "Median bout duration (min)" = "MBD",
+    "Usual bout duration (min)" = "UBD",
+    "Gini index" = "gini"
     )
   ) |>
   reactable(
@@ -1516,7 +1712,286 @@ pa_data_select |>
       sticky = "left",
       style = list(borderRight = "1px solid #eee"),
       headerStyle = list(borderRight = "1px solid #eee", background = "#f7f7f8"),
-      minWidth = 170
+      minWidth = 180
+    )
+  ),
+highlight = TRUE, bordered = TRUE
+)
+```
+
+### Pattern of steps during the days of the week
+#### Pattern of all students as a whole
+
+```{r get_pa_pattern_all, fig = "center", out.width = '100%', fig.height=5}
+# Get the IDs of the students
+ids_pa_valid <-
+  pa_data_select |> 
+  pull(id) 
+
+# Get a dataset of total steps per hour for each student and day
+step_per_hour <-
+  pa_data$data_with_intensity_marks |>
+  filter(id %in% ids_pa_valid) |>
+  mutate(
+    hour = hour(time),
+    weekday = fct_relevel(
+      weekday,
+      "lundi",
+      "mardi",
+      "mercredi",
+      "jeudi",
+      "vendredi",
+      "samedi",
+      "dimanche"
+    )
+  ) |>
+  group_by(id, weekday, hour) |>
+  summarise(tot_steps = sum(steps))
+
+# Plot data
+ggplot(data = step_per_hour, aes(x = hour, y = tot_steps)) +
+  geom_boxplot(aes(group = hour)) +
+  stat_summary(aes(group = 1), geom = "line", fun = "median", linewidth = 0.2) +
+  scale_x_continuous(breaks = seq(0, 24, 2)) +
+  labs(x = "Hour of the day", y = "Total number of steps") + 
+  facet_wrap(~ weekday) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+#### Pattern of the students according to the quartiles of the daily total step count
+
+```{r get_pa_pattern_quart, fig = "center", out.width = '100%', fig.width = 12, fig.height=7}
+# Get the quantiles for total steps
+quant_tot_steps <- 
+  pa_data_select |>
+  summarise_at(vars(total_steps), list(
+    Q1 =  ~ quantile(., probs = 0.25),
+    median = median,
+    Q3 =  ~ quantile(., probs = 0.75)
+  )
+  )
+
+# Bind the IDs and Quartiles of the students with their data
+step_per_hour_quart <-
+  pa_data_select |> 
+  mutate(Quartile = case_when(
+    total_steps <= quant_tot_steps$Q1 ~ "Q1",
+    total_steps > quant_tot_steps$Q1 & total_steps <= quant_tot_steps$median  ~ "Q2",
+    total_steps > quant_tot_steps$median & total_steps <= quant_tot_steps$Q3  ~ "Q3",
+    total_steps > quant_tot_steps$Q3 ~ "Q4"
+  )) |> 
+  select(id, Quartile) |> 
+  left_join(step_per_hour)
+
+# Plot data
+ggplot(data = step_per_hour_quart, aes(x = hour, y = tot_steps, color = Quartile)) +
+  #geom_boxplot(aes(color = Quartile, group = hour)) +
+  stat_summary(geom = "point", fun = "median", size = 2) +
+  stat_summary(geom = "line", fun = "median", linewidth = 0.2) +
+  scale_x_continuous(breaks = seq(0, 24, 2)) +
+  labs(x = "Hour of the day", y = "Median total number of steps", color = "Quartile of the \naverage daily \nstep count") + 
+  facet_wrap(~ weekday) +
+  theme_bw() +
+  theme(legend.position = "right")
+```
+
+## By sex
+### Metrics: Distributions
+
+```{r get_pa_metrics_by_sex}
+# Join PA metrics and CAPL datasets for getting gender
+pivot_pa_data_select_by_sex <-
+  pivot_pa_data_select |>
+  rename(identifiant = id) |>
+  mutate(identifiant = as.factor(identifiant)) |>
+  left_join(capl_res |> select(identifiant, gender), by = "identifiant")
+
+# Count the number of boys and girls
+pivot_pa_data_select_by_sex_n <-
+  pivot_pa_data_select_by_sex |> 
+  group_by(gender, Metric) |>
+  summarise(n = sum(ifelse(!is.na(Metric), 1, 0)))
+
+# Get plot
+p_pa_metrics_by_sex <-
+  ggplot(data = pivot_pa_data_select_by_sex,
+         aes(
+           x = 1,
+           y = Value,
+           fill = gender,
+           color = gender
+         )) +
+  geom_rain(
+    alpha = .5,
+    rain.side = 'r',
+    boxplot.args = list(
+      color = "black",
+      outlier.shape = NA,
+      width = 0.05
+    ),
+    boxplot.args.pos = list(position = ggpp::position_dodgenudge(x = .1, width = 0.08)),
+    point.args = list(
+      color = "black",
+      shape = NA,
+      size = 0
+    )
+  ) +
+  geom_point(
+    aes(x = 0.998),
+    alpha = 0.5,
+    position = position_jitterdodge(
+      jitter.width = 0.05,
+      dodge.width = 0.08,
+      seed = 123
+    )
+  ) +
+  geom_text(
+    data = pivot_pa_data_select_by_sex_n |>  filter(gender == "girl"),
+    aes(
+      x = 1.55,
+      y = -Inf,
+      hjust = -0.2,
+      label = paste0("N=", n)
+    ),
+    color = "hotpink",
+    fontface = "bold"
+  ) +
+  geom_text(
+    data = pivot_pa_data_select_by_sex_n |>  filter(gender == "boy"),
+    aes(
+      x = 1.55 - 0.09,
+      y = -Inf,
+      hjust = -0.2,
+      label = paste0("N=", n)
+    ),
+    color = "royalblue2",
+    fontface = "bold"
+  ) +
+  facet_wrap(~ Metric, scales = "free")  +
+  scale_fill_manual(values = c("hotpink", "royalblue2"),
+                    labels = c("Girl", "Boy")) +
+  scale_color_manual(values = c("hotpink", "royalblue2"),
+                     labels = c("Girl", "Boy")) +
+  theme_bw() +
+  coord_flip(xlim = c(0.9, 1.6)) +
+  labs(x = NULL, fill = "", color = "") +
+  theme(
+    axis.text.x = element_text(
+      color = "grey40",
+      angle = 90,
+      hjust = 1,
+      vjust = 0.5
+    ),
+    axis.ticks.x = element_line(color = "grey40"),
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank(),
+    strip.background = element_rect(fill = "grey40", color = "grey40"),
+    strip.text = element_text(
+      color = "white",
+      face = "bold",
+      size = 10
+    ),
+    panel.border = element_rect(color = "grey40")
+  )
+```
+
+```{r show_pa_metrics_by_sex, fig.height = 15, fig.width = 17, out.width = '100%'}
+p_pa_metrics_by_sex
+```
+
+### Metrics: Descriptive statistics
+
+```{r desc_stats_pa_metrics_by_sex}
+# Build table
+tab_pa_metrics_by_sex <-
+  pa_data_select |>
+  select(-c(total_kcal, pal, mets_hours_mvpa)) |>
+  rename(identifiant = id) |>
+  mutate(identifiant = as.factor(identifiant)) |>
+  left_join(capl_res |> select(identifiant, gender), by = "identifiant") |> 
+  select(-identifiant) |> 
+  group_by(gender) |> 
+  skim() |>
+  yank("numeric") |>
+  as_tibble() |>
+  rename(
+    Metric = skim_variable,
+    `Missing values` = n_missing,
+    Mean = mean,
+    SD = sd,
+    Minimum = p0,
+    `25th perc.` = p25,
+    Median = p50,
+    `75th perc.` = p75,
+    Maximum = p100,
+    Histogram = hist
+  ) |>
+  select(-complete_rate) |>
+  rename(Gender = gender) |> 
+  mutate(
+    across(c(Mean:Maximum), ~ round(.x, 2)),
+    Gender = fct_recode(Gender, "Girl" = "girl", "Boy" = "boy"),
+    Metric = as.factor(Metric),
+    Metric = fct_recode(Metric,
+    "Num. of valid days" = "valid_days",
+    "Wear time (min)" = "wear_time",
+    "VA total counts" = "total_counts_axis1",
+    "VM total counts" = "total_counts_vm",
+    "VA counts/min" = "axis1_per_min",
+    "VM counts/min" = "vm_per_min",
+    "SED time (min)" = "minutes_SED",
+    "LPA time (min)" = "minutes_LPA",
+    "MPA time (min)" = "minutes_MPA",
+    "VPA time (min)" = "minutes_VPA",
+    "MVPA time (min)" = "minutes_MVPA",
+    "% Wear time SED" = "percent_SED",
+    "% Wear time LPA" = "percent_LPA",
+    "% Wear time MPA" = "percent_MPA",
+    "% Wear time VPA" = "percent_VPA",
+    "% Wear time MVPA" = "percent_MVPA",
+    "Ratio MVPA / SED" = "ratio_mvpa_sed",
+    "Total steps" = "total_steps",
+    "60 min-Max step accum." = "max_steps_60min",
+    "30 min-Max step accum." = "max_steps_30min",
+    "20 min-Max step accum." = "max_steps_20min",
+    "5 min-Max step accum." = "max_steps_5min",
+    "1 min-Max step accum." = "max_steps_1min",
+    "60 min-Peak step accum." = "peak_steps_60min",
+    "30 min-Peak step accum." = "peak_steps_30min",
+    "20 min-Peak step accum." = "peak_steps_20min",
+    "5 min-Peak step accum." = "peak_steps_5min",
+    "1 min-Peak step accum." = "peak_steps_1min",
+    "Intensity gradient" = "ig",
+    "MX 8 hrs" = "M1/3",
+    "MX 120 min" = "M120",
+    "MX 60 min" = "M60",
+    "MX 30 min" = "M30",
+    "MX 15 min" = "M15",
+    "MX 5 min" = "M5",
+    "Number of breaks" = "mean_breaks",
+    "Power low exponent alpha" = "alpha",
+    "Median bout duration (min)" = "MBD",
+    "Usual bout duration (min)" = "UBD",
+    "Gini index" = "gini"
+    )
+  )
+
+# Show table
+reactable(tab_pa_metrics_by_sex, 
+    defaultColDef = colDef(
+      minWidth = 95,
+      headerStyle = list(background = "#f7f7f8")
+    ),
+    columns = list(Metric = colDef(
+      sticky = "left",
+      style = function(value, index) {
+      if (tab_pa_metrics_by_sex$Gender[index] == "Boy") {
+        color <- "white"} else {color <- "black"}
+        list(color = color)
+      },
+      headerStyle = list(borderRight = "1px solid #eee", background = "#f7f7f8"),
+      minWidth = 180
     )
   ),
 highlight = TRUE, bordered = TRUE
@@ -1561,16 +2036,16 @@ df_corr_pa <-
       "Daily % Wear time MVPA" = "percent_MVPA",
       "Daily Ratio MVPA / SED" = "ratio_mvpa_sed",
       "Daily Total steps" = "total_steps",
-      "Daily Max steps accum. 60 min" = "max_steps_60min",
-      "Daily Max steps accum. 30 min" = "max_steps_30min",
-      "Daily Max steps accum. 20 min" = "max_steps_20min",
-      "Daily Max steps accum. 5 min" = "max_steps_5min",
-      "Daily Max steps accum. 1 min" = "max_steps_1min",
-      "Daily Peak steps accum. 60 min" = "peak_steps_60min",
-      "Daily Peak steps accum. 30 min" = "peak_steps_30min",
-      "Daily Peak steps accum. 20 min" = "peak_steps_20min",
-      "Daily Peak steps accum. 5 min" = "peak_steps_5min",
-      "Daily Peak steps accum. 1 min" = "peak_steps_1min",
+      "Daily 60 min-Max step accum." = "max_steps_60min",
+      "Daily 30 min-Max step accum." = "max_steps_30min",
+      "Daily 20 min-Max step accum." = "max_steps_20min",
+      "Daily 5 min-Max step accum." = "max_steps_5min",
+      "Daily 1 min-Max step accum." = "max_steps_1min",
+      "Daily 60 min-Peak step accum." = "peak_steps_60min",
+      "Daily 30 min-Peak step accum." = "peak_steps_30min",
+      "Daily 20 min-Peak step accum." = "peak_steps_20min",
+      "Daily 5 min-Peak step accum." = "peak_steps_5min",
+      "Daily 1 min-Peak step accum." = "peak_steps_1min",
       "Daily Intensity gradient" = "ig",
       "Daily MX 8hrs" = "M1/3",
       "Daily MX 120 min" = "M120",
@@ -1588,7 +2063,6 @@ df_corr_pa <-
       "Motivation and Confidence" = mc_score,
       "Knowledge & Understanding" = ku_score,
       "Physical Literacy" = capl_score
-
   )
 
 # Get matrix of correlations
@@ -1653,7 +2127,7 @@ p_corr_pa <-
   theme(
     legend.position = c(0.955, 0.6),
     legend.spacing.x = unit(0, 'cm'),
-    legend.key.size = unit(0.6,"line"),
+    legend.key.size = unit(0.9,"line"),
     axis.line = element_blank(),
     axis.text = element_blank(),
     axis.title = element_blank(),
@@ -1661,125 +2135,10 @@ p_corr_pa <-
     ) 
 ```
 
-The matrix of correlations shown below is based on `r nrow(df_corr_pa)` students with complete data. Values are Spearman rho correlation coefficients.
+The matrix of correlations shown below is based on `r nrow(df_corr_pa)` students with complete data for all the variables. Values are Spearman rho correlation coefficients.
 
 ```{r show_plot_corr_matrix_pa, fig.align = "center", out.width = '100%', fig.width = 14, fig.height = 14}
 p_corr_pa
-```
-
-# Patterns of steps during the days of the week for the students with at least 4 valid days
-## Patterns for all students as a whole
-
-```{r get_pa_pattern_all, fig = "center", out.width = '100%'}
-# Get the IDs of the students
-ids_pa_valid <-
-  pa_data$all_metrics |> 
-  filter(valid_days >= 4) |> 
-  pull(id) 
-
-# Get a dataset of total steps per hour for each student and day
-step_per_hour <-
-  pa_data$data_with_intensity_marks |>
-  filter(id %in% ids_pa_valid) |>
-  mutate(hour = hour(time)) |>
-  mutate(
-    weekday = fct_relevel(
-      weekday,
-      "lundi",
-      "mardi",
-      "mercredi",
-      "jeudi",
-      "vendredi",
-      "samedi",
-      "dimanche"
-    )
-  ) |>
-  group_by(id, weekday, hour) |>
-  summarise(tot_steps = sum(steps))
-
-# Get statistics summaries
-step_per_hour_stats <- 
-  step_per_hour |> 
-  group_by(weekday, hour) |> 
-  summarise(
-    mean = mean(tot_steps),
-    sd = sd(tot_steps)
-    ) |> 
-  mutate(
-    lower_bound = mean - sd,
-    upper_bound = mean + sd
-  )
-
-# Plot data
-ggplot(data = step_per_hour) +
-  geom_point(aes(x = hour, y = tot_steps), alpha = 0.3, size = 1) +
-  geom_ribbon(data = step_per_hour_stats, 
-            aes(x = hour, ymin = lower_bound, ymax = upper_bound, fill = "Mean ± SD"),
-            alpha = 0.3
-            ) +
-  geom_point(data = step_per_hour_stats, aes(x = hour, y = mean, color = "Mean ± SD"), size = 2) +
-  geom_line(data = step_per_hour_stats, aes(x = hour, y = mean, color = "Mean ± SD"), linewidth = 0.5) +
- scale_x_continuous(breaks = seq(0, 24, 2)) +
-  scale_color_manual(name ="", values = c("black", "black")) +
-  scale_fill_manual(name ="", values = "blue") +
-  labs(x = "Hour of the day", y = "Total number of steps") + 
-  facet_wrap(~ weekday) +
-  theme(legend.position = "bottom")
-```
-
-## Patterns for the students according to the quartiles
-
-```{r get_pa_pattern_quart, fig = "center", out.width = '100%'}
-# Get the quantiles for total steps
-quant <- 
-  pa_data$all_metrics |>
-  filter(valid_days >= 4) |>
-  summarise_at(vars(total_steps), list(
-    Q1 =  ~ quantile(., probs = 0.25),
-    median = median,
-    Q3 =  ~ quantile(., probs = 0.75)
-  )
-  )
-
-# Bind the IDs and Quartiles of the students with their data
-step_per_hour_quart <-
-  pa_data$all_metrics |> 
-  filter(valid_days >= 4) |> 
-  mutate(Quartile = case_when(
-    total_steps <= quant$Q1 ~ "Q1",
-    total_steps > quant$Q1 & total_steps <= quant$median  ~ "Q2",
-    total_steps > quant$median & total_steps <= quant$Q3  ~ "Q3",
-    total_steps > quant$Q3 ~ "Q4"
-  )) |> 
-  select(id, Quartile) |> 
-  left_join(step_per_hour)
-
-# Get statistics summaries
-step_per_hour_quart_stats <- 
-  step_per_hour_quart |> 
-  group_by(Quartile, weekday, hour) |> 
-  summarise(
-    mean = mean(tot_steps),
-    sd = sd(tot_steps)
-    ) |> 
-  mutate(
-    lower_bound = mean - sd,
-    upper_bound = mean + sd
-  )
-
-# Plot data
-ggplot(data = step_per_hour_quart) +
-  geom_point(aes(x = hour, y = tot_steps, color = Quartile), alpha = 0.3, size = 1) +
-  #geom_ribbon(data = step_per_hour_quart_stats, 
-            #aes(x = hour, ymin = lower_bound, ymax = upper_bound, fill = Quartile),
-            #alpha = 0.3
-            #) +
-  geom_point(data = step_per_hour_quart_stats, aes(x = hour, y = mean, color = Quartile), size = 2) +
-  geom_line(data = step_per_hour_quart_stats, aes(x = hour, y = mean, color = Quartile), linewidth = 0.5) +
- scale_x_continuous(breaks = seq(0, 24, 2)) +
-  labs(x = "Hour of the day", y = "Total number of steps", color = "Mean") + 
-  facet_wrap(~ weekday) +
-  theme(legend.position = "bottom")
 ```
 
 ```{r export_results, include = FALSE}
@@ -1803,5 +2162,6 @@ ggsave("out/inter.png", p_inter, height = 8, width = 11, unit = "cm", dpi = 300,
 ggsave("out/inter_by_sex.png", p_inter_by_sex, height = 8, width = 11, unit = "cm", dpi = 300, scale = 2)
 ggsave("out/corr_capl.png", p_corr_capl, height = 7, width = 7, unit = "cm", dpi = 300, scale = 2.6)
 ggsave("out/corr_pa.png", p_corr_pa, height = 12, width = 12, unit = "cm", dpi = 300, scale = 3)
-
+ggsave("out/pa_metrics.png", p_pa_metrics, height = 12, width = 16, unit = "cm", dpi = 300, scale = 3)
+ggsave("out/pa_metrics_by_sex.png", p_pa_metrics_by_sex, height = 12, width = 16, unit = "cm", dpi = 300, scale = 3)
 ```
