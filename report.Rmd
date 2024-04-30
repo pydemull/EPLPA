@@ -1549,11 +1549,11 @@ pivot_pa_data_select <-
     "MX 30 min" = "M30",
     "MX 15 min" = "M15",
     "MX 5 min" = "M5",
-    "Number of breaks" = "mean_breaks",
+    "Number of SED breaks" = "mean_breaks",
     "Power low exponent alpha" = "alpha",
-    "Median bout duration (min)" = "MBD",
-    "Usual bout duration (min)" = "UBD",
-    "Gini index" = "gini"
+    "Median SED bout duration (min)" = "MBD",
+    "Usual SED bout duration (min)" = "UBD",
+    "Gini index for SED" = "gini"
   ) |>
   pivot_longer(cols = c(everything(), -id),
                names_to = "Metric",
@@ -1597,11 +1597,11 @@ pivot_pa_data_select <-
       "MX 30 min",
       "MX 15 min",
       "MX 5 min",
-      "Number of breaks",
+      "Number of SED breaks",
       "Power low exponent alpha",
-      "Median bout duration (min)",
-      "Usual bout duration (min)",
-      "Gini index"
+      "Median SED bout duration (min)",
+      "Usual SED bout duration (min)",
+      "Gini index for SED"
     )
   ) 
 ```
@@ -1696,11 +1696,11 @@ pa_data_select |>
     "MX 30 min" = "M30",
     "MX 15 min" = "M15",
     "MX 5 min" = "M5",
-    "Number of breaks" = "mean_breaks",
+    "Number of SED breaks" = "mean_breaks",
     "Power low exponent alpha" = "alpha",
-    "Median bout duration (min)" = "MBD",
-    "Usual bout duration (min)" = "UBD",
-    "Gini index" = "gini"
+    "Median SED bout duration (min)" = "MBD",
+    "Usual SED bout duration (min)" = "UBD",
+    "Gini index for SED" = "gini"
     )
   ) |>
   reactable(
@@ -1896,7 +1896,7 @@ p_pa_metrics_by_sex <-
   )
 ```
 
-```{r show_pa_metrics_by_sex, fig.height = 15, fig.width = 17, out.width = '100%'}
+```{r show_pa_metrics_by_sex, fig.height = 15, fig.width = 18, out.width = '100%'}
 p_pa_metrics_by_sex
 ```
 
@@ -1969,11 +1969,11 @@ tab_pa_metrics_by_sex <-
     "MX 30 min" = "M30",
     "MX 15 min" = "M15",
     "MX 5 min" = "M5",
-    "Number of breaks" = "mean_breaks",
+    "Number of SED breaks" = "mean_breaks",
     "Power low exponent alpha" = "alpha",
-    "Median bout duration (min)" = "MBD",
-    "Usual bout duration (min)" = "UBD",
-    "Gini index" = "gini"
+    "Median SED bout duration (min)" = "MBD",
+    "Usual SED bout duration (min)" = "UBD",
+    "Gini index for SED" = "gini"
     )
   )
 
@@ -2053,11 +2053,11 @@ df_corr_pa <-
       "Daily MX 30 min" = "M30",
       "Daily MX 15 min" = "M15",
       "Daily MX 5" = "M5",
-      "Daily Number of breaks" = "mean_breaks",
+      "Daily Number of SED breaks" = "mean_breaks",
       "Power low exponent alpha" = "alpha",
-      "Median bout duration (min)" = "MBD",
-      "Usual bout duration (min)" = "UBD",
-      "Gini index" = "gini",
+      "Median SED bout duration (min)" = "MBD",
+      "Usual SED bout duration (min)" = "UBD",
+      "Gini index for SED" = "gini",
       "Physical Competence" = pc_score,
       "Daily Behaviour" = db_score,
       "Motivation and Confidence" = mc_score,
