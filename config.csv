@@ -31,7 +31,7 @@ EQUATION_EE_ADOLESCENT;Santos-Lozano et al. (2013) [Adults];Arbitrary choice (no
 EQUATION_EE_ADULT;Santos-Lozano et al. (2013) [Adults];Arbitrary choice (not appropriate but constrained by activAnalyzer package)
 EQUATION_EE_OLDER;Santos-Lozano et al. (2013) [Older adults];"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
 EPOCH_TARGET_PRESCHOOLER;15;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0) and Ahmadi et al. (2022; DOI: 10.1371/journal.pone.0266970)"
-EPOCH_TARGET_CHILD;60;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
+EPOCH_TARGET_CHILD;15;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
 EPOCH_TARGET_ADOLESCENT;15;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
 EPOCH_TARGET_ADULT;60;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
 EPOCH_TARGET_OLDER;60;"Based on Migueles et al. (2017; DOI: 10.1007/s40279-017-0716-0)"
