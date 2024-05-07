@@ -113,7 +113,7 @@ capl_res[capl_res$identifiant == "55", "mc_interpretation"] <-
 capl_res[capl_res$identifiant == "55", "capl_status"] <- "complete"
 ```
 
-```{r}
+```{r adjust_capl_status}
 capl_res <- capl_res |> mutate(capl_score = ifelse(capl_status != "complete", NA, capl_score))
 ```
 
@@ -2141,6 +2141,11 @@ The matrix of correlations shown below is based on `r nrow(df_corr_pa)` students
 p_corr_pa
 ```
 
+# Session info
+```{r show_session_info}
+sessionInfo()
+```
+
 ```{r export_results, include = FALSE}
 # Export PA metrics
 write_csv2(pa_data$all_metrics, "out/pa_all_metrics.csv")
@@ -2154,7 +2159,6 @@ write_csv2(pa_data$data_with_intensity_marks, "out/pa_data_with_intensity_marks.
 # Export CAPL results
 write_csv2(capl_res, "out/capl_results.csv")
 ```
-
 ```{r export_figures}
 ggsave("out/pl_all.png", p_pl_all, height = 20, width = 15, unit = "cm", dpi = 300, scale = 2)
 ggsave("out/pl_by_sex.png", p_pl_by_sex, height = 20, width = 16, unit = "cm", dpi = 300, scale = 2)
