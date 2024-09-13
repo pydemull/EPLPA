@@ -3,7 +3,7 @@
 library(targets)
 library(tarchetypes)
 
-# Set target options:
+# Set target options
 tar_option_set(
   packages = c(
     "activAnalyzer.batch",
@@ -20,20 +20,55 @@ tar_option_set(
 # Define pipeline
 list(
   
-  # Get physical activity metrics config
+  # Set config file path
+  tar_target(
+    name = config_file,
+    command = "config.csv",
+    format = "file"
+  ),
+  
+  # Set BASE file path
+  tar_target(
+    name = base_file,
+    command = "./data/BASE.xlsx",
+    format = "file"
+  ),
+  
+  # Set DEMO file path
+  tar_target(
+    name = demo_file,
+    command = "./data/DEMO.csv",
+    format = "file"
+  ),
+  
+  # Set DATES file path
+  tar_target(
+    name = dates_file,
+    command = "./data/DATES.csv",
+    format = "file"
+  ),
+  
+  # Set AGD files directory path
+  tar_target(
+    name = agd_dir,
+    command = "./data/agd/",
+    format = "file"
+  ),
+  
+  # Get physical activity analysis config
   tar_target(
     name = pa_metrics_config,
-    command = read_csv2("config.csv")
+    command = read_csv2(config_file)
   ),
   
   # Get physical activity metrics
   tar_target(
     name = pa_data,
     command = process_all_agd(
-      agd_dir = "./data/agd/",
-      config_path = "./config.csv",
-      demo_path = "./data/DEMO.csv",
-      dates_path = "./data/DATES.csv",
+      agd_dir = agd_dir,
+      config_path = config_file,
+      demo_path = demo_file,
+      dates_path = dates_file,
       id_config = 3,
       content = "option_3"
     )
@@ -42,23 +77,23 @@ list(
   # Import data
   tar_target(
     name = DEMO, 
-    command = read_csv2("./data/DEMO.csv") # Demographic data
+    command = read_csv2(demo_file) # Demographic data
   ),
   tar_target(
     name = COMPT_PHY, 
-    command = import_capl_data("./data/BASE.xlsx", sheet_name = "COMPT_PHY") # Physical skills
+    command = import_capl_data(base_file, sheet_name = "COMPT_PHY") # Physical skills
   ),
   tar_target(
     name = CONN_COMPR, 
-    command = import_capl_data("./data/BASE.xlsx", sheet_name = "CONN_COMPR") # Knowledge
+    command = import_capl_data(base_file, sheet_name = "CONN_COMPR") # Knowledge
   ),
   tar_target(
     name = MOTIV_CONF, 
-    command = import_capl_data("./data/BASE.xlsx", sheet_name = "MOTIV_CONF") # Motivation & confidence
+    command = import_capl_data(base_file, sheet_name = "MOTIV_CONF") # Motivation & confidence
   ),
   tar_target(
     name = COMP_PHY, 
-    command = import_capl_data("./data/BASE.xlsx", sheet_name = "COMP_PHY") # Self-reported PA
+    command = import_capl_data(base_file, sheet_name = "COMP_PHY") # Self-reported PA
   ),
   
   # Select and transpose the steps and time data required for getting CAPL results
@@ -308,9 +343,7 @@ list(
   tar_target(
     name = capl_res,
     command =
-      get_capl(df_cleaned) |>
-      # Keep the participants who have completed the study only
-      filter(as.numeric(as.character(identifiant)) <= 98)
+      get_capl(df_cleaned)
   ), 
   
   # Render report
