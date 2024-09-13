@@ -7,4 +7,5 @@ data/
 .quarto
 article/
 litt/
+out/
 temp/
