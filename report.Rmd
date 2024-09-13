@@ -22,8 +22,6 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 .title {
   font-weight: bold;
 }
-
-
 h1 {
   font-size: 25px;
   font-weight: bold;
@@ -52,6 +50,7 @@ pre code {
 ```
 
 ```{r load_packages}
+library(capl)
 library(corrplot)
 library(dplyr)
 library(flextable)
@@ -1202,7 +1201,7 @@ p_pl_by_sex <-
   (plot_spacer() + (p_capl_by_sex + labs(y = "")) + plot_spacer()) / p_pl_domains_by_sex + plot_layout(heights = c(1, 6), guides = 'collect')
 ```
 
-```{r show_final_fig_by_sex, fig.height = 15, fig.width = 13, out.width = '100%'}
+```{r show_final_fig_by_sex, fig.height = 16, fig.width = 13, out.width = '100%'}
 p_pl_by_sex
 ```
 
