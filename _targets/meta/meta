@@ -1,18 +1,39 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-agd_dir|stem|8905fcde0213df71|0fccc5198120acec|ef46db3751d8e999|-205611500|./data/agd/|t19870.6646064815s|e09716acd3d676fb|3094312960|file|local|vector|||3.88||
-base_file|stem|d660fad9f8eceac8|4053455712c29d92|ef46db3751d8e999|515637225|./data/BASE.xlsx|t19887.3686720251s|34a425cb5d886c1e|31145|file|local|vector|||0.85||
-capl_res|stem|f92b12859d97755e|b8f004a3bdf23f40|5e27681774553a1d|1220896122||t19887.8304796415s|ba5c388534fecbaf|13016|rds|local|vector|||6.94||
-COMP_PHY|stem|68437627c78072b8|2ad56fd447f835b3|fab461f0a68ef611|582130122||t19887.3690517016s|87e3ef3a53fda0c0|510|rds|local|vector|||0.15||
-COMPT_PHY|stem|be729570c9d282b5|19960b061aa1a3c1|fab461f0a68ef611|-24628419||t19887.3690528071s|f472faf16093f488|1317|rds|local|vector|||0.06||
-config_file|stem|93ada0a2ae37671d|ae6fbe385d1f78ec|ef46db3751d8e999|-615108176|config.csv|t19842.8161745207s|a849198315cfe9ae|4885|file|local|vector|||0.81||
-CONN_COMPR|stem|df204488546466f1|5d779e5290e6e39c|fab461f0a68ef611|55203614||t19887.3690535848s|8db44bc8a23a91c1|1595|rds|local|vector|||0.05||
-dates_file|stem|53fd62936207783e|9e3880e8c6dd5d21|ef46db3751d8e999|-200338467|./data/DATES.csv|t19886.4317796825s|6d5a2afd968fde8b|2676|file|local|vector|||1.15||
-DEMO|stem|b3ab909fb3395654|59dcd6a97fbdd2b6|c62ad22892de6588|900896527||t19886.2320242895s|5804f0d9761a796e|792|rds|local|vector|||0.47||
-demo_file|stem|f77c274784a6eaed|2842e45e20a11879|ef46db3751d8e999|1907734460|./data/DEMO.csv|t19886.2315277513s|5afdb49dee04148d|2640|file|local|vector|||0.98||
-df_cleaned|stem|6629944eda3c663a|a7ab45ab8677e868|acefe1f71b596a5f|-2036021726||t19887.8303983439s|1df3163e2cd582c5|8391|rds|local|vector|||0.8|There was 1 warning in mutate.ℹ In argument acrossccamsa_skill_score1self_report_pa, as.integer.Caused by warning NAs introduits lors de la conversion automatique|
-df_raw|stem|417259422e925502|15d09754c4c33d50|bc213120bd36965c|-796806726||t19887.830388368s|d6e2317da437d885|10177|rds|local|vector|||0.05||
-MOTIV_CONF|stem|b0afee1c5325719f|d29773cac5b2148d|fab461f0a68ef611|-818849535||t19887.369054548s|e73ff698ed2d36bd|1970|rds|local|vector|||0.05||
-pa_data|stem|278b1ae02c05a418|ae613bbf7c2207c7|8579512ee2830d06|-1817921912||t19887.8303771082s|1677a7c6d4c365c6|34854889|rds|local|vector|||1551.67||
-PA_METRICS|stem|ee33498528dcce65|578fa652466a93cf|8f3d0ca2588cc115|2034792696||t19887.8303859493s|180026d0aba62899|5565|rds|local|vector|||0.18||
-pa_metrics_config|stem|3d4564a800d41d8d|4dbaa5444a95b9b4|1996c0f01daeb802|908103177||t19885.8971833467s|efc41887cf3e9bfa|1262|rds|local|vector|||0.52||
-report|stem|c3d5505a02791bf3|ed8b9121cecc8523|223db35a36efbb1b|787668912|out/report.html*report.Rmd|t19887.834410767s|bf8c112197e405e0|5570477|file|local|vector|||340.8||
+.Random.seed|object|4b63283b079d564c|||||||||||||||
+agd_dir|stem|e2479c2b3fe9e2c3|bc10a632207bcb93|2c530c1562a7fbd1|-205611500|./data/agd/|t19920.99369242s|d3256ba881f5d4b7|65536|file|local|vector|||0||
+base_file|stem|fb8971e17f8df4e7|73a0d5dcd141950f|2c530c1562a7fbd1|515637225|./data/BASE.xlsx|t19887.3686720251s|59a2d0883e281a39|31145|file|local|vector|||0||
+capl_comp_sex|stem|485b0f8e1e93a670|073cb15e803f8999|b30422dccc4b916d|1727083662||t19999.9270080409s|3b08e2f63a5e0c0d|300|rds|local|vector|||0|impossible de calculer la pvalue exacte avec des exaequos|
+capl_res|stem|9c3c421b3619a216|adc125b729c7ee29|510b5a5f27a90fa5|1220896122||t19984.878059742s|039972fe338be6ee|13571|rds|local|vector|||2.6||
+COMP_PHY|stem|04fc8a580e03b33c|c51ed14a596adde7|0753d36f9ae42bb9|582130122||t19979.9232318088s|217acb30fc8580a5|509|rds|local|vector|||0.08||
+COMPT_PHY|stem|beafb28a11ec8481|4a0b060e903a8a66|0753d36f9ae42bb9|-24628419||t19979.9232344824s|19a229a1bd3fe534|1317|rds|local|vector|||0.08||
+config_file|stem|a61a1b9fec824994|ea35d26add459a59|2c530c1562a7fbd1|-615108176|config.csv|t19842.8161745207s|5562c863032fa468|4885|file|local|vector|||1.67||
+CONN_COMPR|stem|992f5d766ba5cfca|99594d3ccd8bc804|0753d36f9ae42bb9|55203614||t19979.9232356607s|75a0f9c2827471f8|1595|rds|local|vector|||0.08||
+dates_file|stem|288478c57bbc6a4e|68fc4e010143295d|2c530c1562a7fbd1|-200338467|./data/DATES.csv|t19886.4317796825s|daab79578ab85206|2676|file|local|vector|||0||
+DEMO|stem|aff6a75c9c910155|b13056191534be9b|d5810bd9bd0461f9|900896527||t19979.9232388401s|fcc047ad9204673a|792|rds|local|vector|||0.1||
+demo_file|stem|9f6d249466bdfdce|e0bb25c9946507ca|2c530c1562a7fbd1|1907734460|./data/DEMO.csv|t19886.2315277513s|0dbb4a462d554e7b|2640|file|local|vector|||0||
+desc_stats_capl_all|stem|a0ea3029dfe8435c|3afecc68d80f620d|b30422dccc4b916d|1302310336||t19998.93355821s|40540a3b40d6cc2d|5075|rds|local|vector|||2.58||
+desc_stats_capl_by_sex|stem|8daf958439990ab1|804efa428821fad2|b30422dccc4b916d|-604049058||t19999.9390322237s|16f25faf45d85584|5756|rds|local|vector|||2.98|The update argument of modify_header is deprecated as of gtsummary 2.0.0.ℹ Use modify_header... input instead. Dynamic dots allow for syntax like  modify_headerlist....ℹ The deprecated feature was likely used in the gtsummary package.  Please report the issue at httpsgithub.comddsjoberggtsummaryissues.|
+df_cleaned|stem|8110dbb3ea91a472|c450ed712d85532b|e13eee1cbea45ab8|-2036021726||t19984.8780281334s|8f2ffe2109837253|8367|rds|local|vector|||0.2|There was 1 warning in mutate.ℹ In argument acrossccamsa_skill_score1self_report_pa, as.integer.Caused by warning NAs introduits lors de la conversion automatique|
+df_raw|stem|8d6d65545fa61b82|d5f26e865d1f3711|12c7560cb5a8a1ed|-796806726||t19979.9398077072s|9d3e4d5b5c639e99|10177|rds|local|vector|||0.11||
+domain_global_multicomp_sex|stem|ccb600df9e0ca1c7|fece7e08f3b1adf1|b30422dccc4b916d|69707313||t19999.9270355294s|ea1d32cbd7b30853|481|rds|local|vector|||2.28|Rank covariance matrix is singular, only ANOVA test returned|
+domain_local_multicomp_sex|stem|3e6d6a4dda60d6db|4269e6e99b3a5ec4|b30422dccc4b916d|1790769197||t19999.9270367938s|d21be8cf0dd771ce|44|rds|local|vector|||0.02||
+item_global_multicomp_sex|stem|0b95f47620c5de4b|e260c3e896fe3e23|b30422dccc4b916d|-2042516848||t19999.9270739921s|4c3faccc6eb36ff9|835|rds|local|vector|||3.17||
+item_local_multicomp_sex|stem|3e6d6a4dda60d6db|f94d187ab106894a|b30422dccc4b916d|-748609189||t19999.9271038713s|d21be8cf0dd771ce|44|rds|local|vector|||2.55||
+MOTIV_CONF|stem|82743e7bb6af84d9|e82aa91c9db5fdb9|0753d36f9ae42bb9|-818849535||t19979.9232369873s|f4babbe5a883258e|1970|rds|local|vector|||0.08||
+multicomp_sex|stem|ccb600df9e0ca1c7|27975fd5c95e21f0|b30422dccc4b916d|-817438296||t19999.8850181207s|ea1d32cbd7b30853|481|rds|local|vector|||2.25|Rank covariance matrix is singular, only ANOVA test returned|
+n_boys|stem|a015c2aedbfeb514|5b0e932ef03faf88|b30422dccc4b916d|-2062011951||t19988.9544927292s|3afeaaa6061de512|49|rds|local|vector|||0.03||
+n_girls|stem|52ff55a1673175e9|ac771f65693a5f69|b30422dccc4b916d|-1510713464||t19988.9544959051s|3afeaaa6061de512|49|rds|local|vector|||0||
+nonpartest_sex|stem|3e6d6a4dda60d6db|0ab449838575834a|b30422dccc4b916d|333492451||t19999.8849911429s|d21be8cf0dd771ce|44|rds|local|vector|||0.06||
+p_capl_all_domain_by_sex|stem|c1e191fe562b3303|d7e4480b4a9598a4|9934b3118028f3f8|1225703219||t19988.8057352229s|9f8f8f0f3ab2bd5f|1296025|rds|local|vector|||1.54||
+p_capl_all_domains|stem|43b6f334000c5ac0|10832c80ab48b919|9934b3118028f3f8|-1880886451||t19984.8780784752s|50d91b31addb705e|909201|rds|local|vector|||0.47||
+p_capl_all_domains_by_sex|stem|b6ec652188094dca|d7e4480b4a9598a4|9934b3118028f3f8|-1251687582||t19988.8272680008s|043d8a9a06b0a651|1296027|rds|local|vector|||0.98||
+p_interpretation|stem|e7a674f2e87ae905|b52c0be40307dc91|b30422dccc4b916d|1248640847||t19988.6629588444s|01e45230820e0fc4|194617|rds|local|vector|||0.12||
+p_interpretation_by_sex|stem|ba51533e5316c8f8|9c69d217d3c1c0b9|b30422dccc4b916d|-1355073409||t19988.8957419703s|92e1452085f6ca92|210823|rds|local|vector|||0.07||
+p_multiv_comp_sex|stem|f9658c0597a62f9a|45959241761727d7|b30422dccc4b916d|-28550615||t19999.8700510273s|f1fc62008df47831|396880|rds|local|vector|||0.06||
+pa_data|stem|21310844cb9077b8|7c1f7445df9fed3c|29562fa45cac2be5|-1817921912||t19979.9397862883s|1dc0ff35f8edb50b|34854889|rds|local|vector|||1403.1||
+PA_METRICS|stem|857c4b9d49a53504|229e3e421f2811a6|5968be77d020f4ce|2034792696||t19979.9398051824s|6f8fa4820c7a8730|5567|rds|local|vector|||0.76||
+pa_metrics_config|stem|3a13bc337d6cece6|57aeb28b4e0a11a4|e4ec6efb9f32486f|908103177||t19979.9232298485s|0c4eed8eddbc9945|1262|rds|local|vector|||0.66||
+plot_score_distri|function|bc610da2a17ab48b|||||||||||||||
+report|stem|adc6dbdf07156bdc|aa945ffd0f7e3bd7|ea83c7a9765a34c7|787668912|report.html*report.qmd|t19999.9395199669s|0aefcd9f6d117dde|2543291|file|local|vector|||36.64||
+skim_capl_res|stem|5801d6330b62355f|d5f51964c6999926|b30422dccc4b916d|-730587033||t19984.8780679611s|1d6d18f80405edb2|3684|rds|local|vector|||0.69||
+tab_pa_metrics_config|stem|23f8d6e7a204f2cd|3d366075122a1cfe|c98116b21245b52e|633582058||t19989.9192934546s|eb0bdafacbaf0878|309|rds|local|vector|||0.01||

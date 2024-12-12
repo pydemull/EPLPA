@@ -1,8 +1,250 @@
 ---
-title: "EPLPA"
-author: "Pierre-Yves de Müllenheim"
-format: html
-editor: visual
+title: "EPLPA Project"
+authors:
+  - name: Henri Moncanis
+    affiliation: 
+      - ref: ifepsa_etud
+    corresponding: false
+  - name: Pierre-Yves de Müllenheim
+    orcid: 0000-0001-9157-7371
+    affiliation: 
+      - ref: ifepsa_pro
+    email: pydemull@uco.fr
+    corresponding: false
+  - name: Nicolas Hauw
+    affiliation: 
+      - ref: ifepsa_pro
+    country: France
+    email: nhauw@uco.fr
+    corresponding: true
+affiliations:
+  - id: ifepsa_etud
+    name: UCO-IFEPSA | Student
+    city: Les Ponts-de-Cé
+    country: France
+  - id: ifepsa_pro
+    name: UCO-IFEPSA | APCoSS
+    city: Les Ponts-de-Cé
+    country: France
+date: today
+date-format: "long"
+format:
+  html:
+    code-fold: true
+    theme: cosmo
+    toc: true
+    toc-depth: 5
+    toc-location: right
+    number-depth: 5
+    number-sections: true
+    self-contained: true
+    css: styles.css
+title-block-banner: true
+execute: 
+  warning: false
+  freeze: true
+editor: source
 ---
 
-## 
+```{r load_packages_and_targets}
+#| echo: false
+
+# Packages
+library(flextable)
+library(ggplot2)
+library(targets)
+
+# Targets
+tar_load(capl_res)
+tar_load(p_capl_all_domains)
+tar_load(desc_stats_capl_all)
+tar_load(p_interpretation)
+tar_load(p_capl_all_domains_by_sex)
+tar_load(desc_stats_capl_by_sex)
+tar_load(p_interpretation_by_sex)
+tar_load(pa_data)
+tar_load(tab_pa_metrics_config)
+tar_load(p_multiv_comp_sex)
+tar_load(capl_comp_sex)
+```
+
+## Accelerometer data analysis settings
+
+The settings that have been used to process the accelerometer data files are shown in the table below. The `EPOCH_TARGET_CHILD` setting is in seconds. The cut-points settings are in counts/min. The `FRAME` settings are in minutes (these last settings were used to detect nonwear time). The `MINIMUM_WEAR_TIME` setting is in hours.
+
+```{r show_pa_metrics_config}
+rmarkdown::paged_table(tab_pa_metrics_config, options = list(rows.print = 11))
+```
+
+## CAPL-2
+
+### Data skimming
+
+#### Raw data
+
+Navigation in the raw data is possible through the interactive table shown below. 
+
+```{r show_capl_database}
+rmarkdown::paged_table(capl_res)
+```
+
+#### Variable summaries
+
+This section proposes an overview of the final study dataset. Below the tables display information about the dataset structure as well as descriptive statistics for all the variables from the dataset.
+
+```{r skim_capl_res}
+skimr::skim(capl_res)
+```
+
+### Score and interpretation categories distributions
+
+#### Whole group of students
+
+##### Scores
+
+###### Graphical view
+
+```{r show_capl_scores}
+#| fig.height: 15
+#| fig.width: 12
+#| out.width: '100%'
+#| fig.align: "center"
+
+p_capl_all_domains
+```
+
+###### Tabular view
+
+```{r desc_stats_capl_all}
+desc_stats_capl_all |>
+  italic(i = 1, j = 2, part = "header") |>
+  bold(i = c(1, 5, 8, 13, 19), j = 1:3)
+```
+
+##### Interpretation categories
+
+```{r show_interpretations}
+#| fig.height: 7
+#| fig.width: 9
+#| out.width: '100%'
+#| fig.align: "center"
+
+p_interpretation
+```
+
+#### By sex
+
+##### Scores
+
+###### Graphical view
+
+```{r show_capl_scores_by_sex}
+#| fig.height: 16
+#| fig.width: 13
+#| out.width: '100%'
+#| fig.align: "center"
+
+p_capl_all_domains_by_sex
+```
+
+###### Tabular view
+
+```{r desc_stats_capl_by_sex}
+desc_stats_capl_by_sex |>
+  italic(i = 1, j = 2, part = "header") |> 
+  bold(i = c(1, 5, 8, 13, 19), j = 1:4)
+  
+```
+
+##### Interpretation categories
+
+```{r show_interpretations_by_sex}
+#| fig.height: 7
+#| fig.width: 9
+#| out.width: '100%'
+#| fig.align: "center"
+
+p_interpretation_by_sex
+```
+
+##### Between-sex score comparisons
+
+###### Visualize multivariate distributions
+
+```{r p_multiv_comp_sex}
+p_multiv_comp_sex
+```
+
+###### Compare CAPL-2 scores
+
+```{r capl_comp_sex}
+capl_comp_sex
+```
+
+###### Compare physical literacy domain scores
+
+```{r domain_local_multicomp_sex}
+npmv::ssnonpartest(
+  pc_score | db_score | mc_score | ku_score ~ gender,
+  data = capl_res,
+  test = c(1, 0, 0, 0),
+  alpha = 0.05,
+  factors.and.variables = TRUE
+)
+```
+
+###### Compare physical literacy item scores
+
+```{r item_local_multicomp_sex}
+npmv::ssnonpartest(
+      step_score	| self_report_pa_score |
+        predilection_score | adequacy_score | intrinsic_motivation_score |
+        pa_competence_score | pa_guideline_score | crf_means_score |
+        ms_means_score | sports_skill_score | fill_in_the_blanks_score ~ gender,
+      data = capl_res,
+      test = c(1, 0, 0, 0),
+      alpha = 0.05,
+      factors.and.variables = TRUE
+    )
+```
+
+## Physical behaviour
+
+### Data skimming
+
+#### Raw data
+
+Navigation in the raw data is possible through the interactive table shown below. 
+
+```{r show_pa_database}
+pa_data$all_metrics$id <- as.factor(pa_data$all_metrics$id)
+rmarkdown::paged_table(pa_data$all_metrics)
+```
+
+#### Variable summaries
+
+```{r skim_pa_data_all_metrics}
+skimr::skim(pa_data$all_metrics)
+```
+
+### Total step by sew
+
+```{r}
+pa_data$all_metrics |> 
+  dplyr::mutate(id = as.factor(id)) |> 
+  dplyr::left_join(capl_res |>  dplyr::select(-valid_days), by = "id") |> 
+  dplyr::filter(valid_days >= 3) |> 
+  dplyr::group_by(gender) |> 
+  dplyr::summarise(median = median(total_steps, na.rm = TRUE),
+                   q1 = quantile(total_steps, na.rm = TRUE, probs = 0.25),
+                   q3 = quantile(total_steps, na.rm = TRUE, probs = 0.75))
+```
+
+
+## Export datasets
+
+```{r}
+# Export CAPL results
+readr::write_csv2(capl_res, "out/capl_res.csv")
+```
+
