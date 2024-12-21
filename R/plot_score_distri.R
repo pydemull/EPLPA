@@ -1,3 +1,20 @@
+#' Plot CAPL-2 data
+#'
+#' @param data1 
+#' @param data2 
+#' @param item 
+#' @param by_sex 
+#' @param type 
+#' @param color 
+#' @param text_x 
+#' @param text_y 
+#' @param breaks_x 
+#' @param limits_x 
+#'
+#' @return
+#' @export
+#'
+
 plot_score_distri <-
   function(data1,
            data2,
@@ -27,12 +44,12 @@ plot_score_distri <-
           geom_text(data = data2 |>  filter(Item == item),
                     aes(
                       x = 0.5,
-                      y = length(unique(data1$identifiant)) * 5.9 / 7,
+                      y = length(unique(data1$id)) * 5.9 / 7,
                       hjust = 0.2,
                       label = paste0("N=", n)
                     ),  color = color) +
           geom_text(stat='count', aes(y = after_stat(count / 2), label = after_stat(count)), color = "white") +
-          coord_cartesian(ylim = c(0, length(unique(data1$identifiant)))) +
+          coord_cartesian(ylim = c(0, length(unique(data1$id)))) +
           theme_bw() +
           facet_wrap( ~ Item, scales = "free")  +
           labs(y = NULL) +
@@ -120,14 +137,14 @@ plot_score_distri <-
           geom_text(data = data2 |>  filter(Item == item & gender == "girl"),
                     aes(
                       x = 0.5,
-                      y = length(unique(data1$identifiant)) / 2 * 6.6 / 7,
+                      y = length(unique(data1$id)) / 2 * 6.6 / 7,
                       hjust = 0.2,
                       label = paste0("N=", n)
                     ), color = "hotpink", fontface = "bold") +
           geom_text(data = data2 |>  filter(Item == item & gender == "boy"),
                     aes(
                       x = 0.5,
-                      y = length(unique(data1$identifiant)) / 2 * 5.6 / 7,
+                      y = length(unique(data1$id)) / 2 * 5.6 / 7,
                       hjust = 0.2,
                       label = paste0("N=", n)
                     ), color = "royalblue2", fontface = "bold") +
@@ -135,7 +152,7 @@ plot_score_distri <-
                                       group = gender), 
                     color = "white", position = position_dodge(width = .9)) +
           scale_fill_manual(values = c("hotpink", "royalblue2"), labels = c("Girl", "Boy")) +
-          coord_cartesian(ylim = c(0, length(unique(data1$identifiant)) /2)) +
+          coord_cartesian(ylim = c(0, length(unique(data1$id)) /2)) +
           theme_bw() +
           facet_wrap( ~ Item, scales = "free")  +
           labs(y = NULL, fill = "") +

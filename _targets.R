@@ -9,16 +9,21 @@ tar_option_set(
     "activAnalyzer.batch",
     "capl",
     "dplyr",
+    "flextable",
     "forcats",
-    "ggplot2",
+    "ggalluvial",
+    "ggdist",
     "ggh4x",
     "ggrain",
+    "ggplot2",
     "gtsummary",
     "hms",
+    "lcmm",
     "npmv",
     "patchwork",
     "purrr",
     "readr",
+    "scales",
     "skimr",
     "tidyr"
     )
@@ -29,35 +34,35 @@ tar_source()
 # Define pipeline ----
 list(
   
-  ## Set config file path ----
+  ## Set config file path (for accelerometer data analysis) ----
   tar_target(
     name = config_file,
     command = "config.csv",
     format = "file"
   ),
   
-  ## Set BASE file path ----
+  ## Set BASE file path (for CAPL-2 data analysis) ----
   tar_target(
     name = base_file,
     command = "./data/BASE.xlsx",
     format = "file"
   ),
   
-  ## Set DEMO file path ----
+  ## Set DEMO file path (for demographic data analysis) ----
   tar_target(
     name = demo_file,
     command = "./data/DEMO.csv",
     format = "file"
   ),
   
-  ## Set DATES file path ----
+  ## Set DATES file path  (for accelerometer data analysis) ----
   tar_target(
     name = dates_file,
     command = "./data/DATES.csv",
     format = "file"
   ),
   
-  ## Set AGD files directory path ----
+  ## Set AGD files directory path (for accelerometer data analysis) ----
   tar_target(
     name = agd_dir,
     command = "./data/agd/",
@@ -76,12 +81,14 @@ list(
     command = pa_metrics_config[grep("CHILD", pa_metrics_config$CODE_NAME), ] |>
       filter(CODE_NAME != "EQUATION_EE_CHILD") |>
       select(-COMMENTS) |>
-      bind_rows(pa_metrics_config |> filter(
-        CODE_NAME %in% c(
-          "VALID_WEAR_TIME_START",
-          "VALID_WEAR_TIME_END",
-          "MINIMUM_WEAR_TIME"
-        )
+      bind_rows(
+        pa_metrics_config |>
+          filter(
+            CODE_NAME %in% c(
+              "VALID_WEAR_TIME_START",
+              "VALID_WEAR_TIME_END",
+              "MINIMUM_WEAR_TIME"
+            )
       ) |> select(-COMMENTS))
   ),
   
@@ -125,7 +132,7 @@ list(
     command = import_capl_data(base_file, sheet_name = "COMP_PHY")
   ),
   
-  ## Select and transpose steps and time data required for getting CAPL results ----
+  ## Select and transpose steps and time data required for getting CAPL-2 results ----
   tar_target(
     name = PA_METRICS,
     command = pa_data$results_by_day |>
@@ -135,7 +142,7 @@ list(
         non_wear_time = 0
       ) |>
       ungroup() |>
-      filter(num_day <= 7) |>
+      filter(num_day <= 7) |> # keep only the 7 first days of the measurement
       select(id, num_day, non_wear_time, wear_time, total_steps) |>
       rename(steps = total_steps) |>
       pivot_wider(
@@ -144,7 +151,8 @@ list(
         values_from = c(non_wear_time:steps),
         names_sep = ""
       ) |>
-      mutate(
+      mutate( 
+        # Set dummy starting wear times
         time_on1 = "06:00",
         time_on2 = "06:00",
         time_on3 = "06:00",
@@ -152,6 +160,7 @@ list(
         time_on5 = "06:00",
         time_on6 = "06:00",
         time_on7 = "06:00",
+        # Set end wear times based on starting times and detected wear times
         time_off1 = substr(as.character(as_hms(6 * 3600 + wear_time1 * 60)), 1, 5),
         time_off2 = substr(as.character(as_hms(6 * 3600 + wear_time2 * 60)), 1, 5),
         time_off3 = substr(as.character(as_hms(6 * 3600 + wear_time3 * 60)), 1, 5),
@@ -170,15 +179,17 @@ list(
       reduce(full_join, by = c("identifiant"))
   ),
   
-  ## Recode data, rename, and select data ----
+  ## Recode, rename, and select data ----
   tar_target(
     name = df_cleaned,
     command = df_raw |>
       mutate(
         across(c(identifiant, ecole, genre), as.factor),
-        genre = fct_recode(genre,
-                           "girl" = "F",
-                           "boy" = "H"),
+        genre = fct_recode(
+          genre,
+          "girl" = "F",
+          "boy" = "H"
+          ),
         self_report_pa = ifelse(self_report_pa == 0, 1, self_report_pa),
         Q1_L1 = case_when(
           Q1_L1 == "Certains jeunes n aiment pas jouer a des jeux actifs TRES VRAI"   ~ 1,
@@ -371,32 +382,35 @@ list(
       arrange(id)
   ), 
   
-  ## Get CAPL results ----
+  ## Get CAPL-2 results ----
   tar_target(
     name = capl_res,
     command =
       { 
         
-        # Get initial CAPL results
+        ### Get initial CAPL-2 results
         capl_res <- get_capl(df_cleaned)
         
-        # Adjust Predilection score for ID 55
+        ### The capl() function failed to compute scores for ID 55, thus requiring
+        ### manual computations
+        
+        #### Adjust Predilection score for ID 55
         predilection_score_55 <-
           as.numeric(format(capl_res[capl_res$id == "55", "predilection_score"][[1]], digits = 3))
         
-        # Adjust Adequacy score for ID 55
+        #### Adjust Adequacy score for ID 55
         adequacy_score_55 <-
           as.numeric(format(capl_res[capl_res$id == "55", "adequacy_score"][[1]]), digits = 3)
         
-        # Adjust Intrinsic motivation score for ID 55
+        #### Adjust Intrinsic motivation score for ID 55
         intrinsic_motivation_score_55 <-
           as.numeric(format(capl_res[capl_res$id == "55", "intrinsic_motivation_score"][[1]]), digits = 3)
         
-        # Adjust PA competence score for ID 55
+        #### Adjust PA competence score for ID 55
         pa_competence_score_55 <-
           capl_res[capl_res$id == "55", "pa_competence_score"][[1]]
         
-        # Adjust MC score for ID 55
+        ### Adjust MC score for ID 55
         capl_res[capl_res$id == "55", "mc_score"] <-
           get_mc_score(
             predilection_score_55,
@@ -405,21 +419,22 @@ list(
             pa_competence_score_55
           )[[1]]
         
-        # Adjust MC score interpretation for ID 55
+        #### Adjust MC score interpretation for ID 55
         capl_res[capl_res$id == "55", "mc_interpretation"] <-
           get_capl_interpretation(capl_res[capl_res$id == "55", "age"][[1]],
                                   capl_res[capl_res$id == "55", "gender"][[1]],
                                   capl_res[capl_res$id == "55", "mc_score"][[1]],
                                   "mc")[[1]]
         
-        # Adjust CAPL status for ID 55
+        #### Adjust CAPL status for ID 55
         capl_res[capl_res$id == "55", "capl_status"] <- "complete"
        
-        # Adjust all CAPL status
+        ### Adjust all CAPL status
         capl_res <- 
           capl_res |> 
           mutate(
             capl_score = ifelse(capl_status != "complete", NA, capl_score),
+            capl_interpretation = ifelse(capl_status != "complete", NA, capl_interpretation),
             across(where(~is.character(.x)), as.factor)
             )
         }
@@ -428,6 +443,10 @@ list(
   ## Get the figure showing the CAPL-2 scores ----
   tar_target(
     name = p_capl_all_domains,
+    
+    ### This section heavily uses a personal plotting function (see
+    ### plot_score_distri.R file)
+    
     command = 
       {
         
@@ -435,14 +454,18 @@ list(
         #### Select PC scores
         pc_scores <-
           capl_res |>
-          select(id,
-                 pacer_score,
-                 camsa_score,
-                 plank_score,
-                 pc_score) |>
-          pivot_longer(cols = pacer_score:pc_score,
-                       names_to = "Item",
-                       values_to = "Score") |>
+          select(
+            id,
+            pacer_score,
+            camsa_score,
+            plank_score,
+            pc_score
+            ) |>
+          pivot_longer(
+            cols = pacer_score:pc_score,
+            names_to = "Item",
+            values_to = "Score"
+            ) |>
           mutate(
             Item = fct_relevel(Item, "pacer_score", "camsa_score", "plank_score", "pc_score"),
             Item = fct_recode(
@@ -513,13 +536,17 @@ list(
         #### Select DB scores
         db_scores <-
           capl_res |>
-          select(id,
-                 step_score,
-                 self_report_pa_score,
-                 db_score) |>
-          pivot_longer(cols = step_score:db_score,
-                       names_to = "Item",
-                       values_to = "Score") |>
+          select(
+            id,
+            step_score,
+            self_report_pa_score,
+            db_score
+            ) |>
+          pivot_longer(
+            cols = step_score:db_score,
+            names_to = "Item",
+            values_to = "Score"
+            ) |>
           mutate(
             Item = fct_relevel(Item, "step_score", "self_report_pa_score", "db_score"),
             Item = fct_recode(
@@ -794,14 +821,12 @@ list(
         #### Select data
         capl_score <-
           capl_res |>
-          select(
-            id,
-            capl_score
-            
-          ) |>
-          pivot_longer(cols = capl_score,
-                       names_to = "Item",
-                       values_to = "Score") |>
+          select(id, capl_score) |>
+          pivot_longer(
+            cols = capl_score,
+            names_to = "Item",
+            values_to = "Score"
+            ) |>
           mutate(Item = fct_recode(Item, "Physical Literacy (/100)" = "capl_score"))
         
         #### Get the numbers of students with valid data
@@ -869,30 +894,32 @@ list(
       }
   ),
   
-  ## Get descriptive statistics ----
+  ## Get CAPL-2 descriptive statistics ----
   tar_target(
     name = desc_stats_capl_all,
     command = capl_res |> 
       tbl_summary(
-        include = c(pc_score, 
-                    pacer_score,
-                    camsa_score,
-                    plank_score,
-                    db_score, 
-                    step_score,
-                    self_report_pa_score,
-                    mc_score, 
-                    intrinsic_motivation_score,
-                    pa_competence_score,
-                    predilection_score,
-                    adequacy_score,
-                    ku_score, 
-                    fill_in_the_blanks_score,
-                    pa_guideline_score,
-                    crf_means_score,
-                    ms_means_score,
-                    sports_skill_score,
-                    capl_score),
+        include = c(
+          pc_score, 
+          pacer_score,
+          camsa_score,
+          plank_score,
+          db_score, 
+          step_score,
+          self_report_pa_score,
+          mc_score, 
+          intrinsic_motivation_score,
+          pa_competence_score,
+          predilection_score,
+          adequacy_score,
+          ku_score, 
+          fill_in_the_blanks_score,
+          pa_guideline_score,
+          crf_means_score,
+          ms_means_score,
+          sports_skill_score,
+          capl_score
+          ),
         label = list(
           pc_score = "Physical competence (/30)",
           pacer_score = "PACER shuttle run (/10)",
@@ -936,7 +963,7 @@ list(
       as_flex_table()
   ),
   
-  ## Get interpretation stats ----
+  ## Get CAPL-2 interpretation statistics ----
   tar_target(
     name = p_interpretation, 
     command = capl_res |>
@@ -991,10 +1018,10 @@ list(
       ) |>
       count(score, interpretation, .drop = FALSE) |>
       group_by(score) |>
-      mutate(prop = janitor::round_half_up(n / sum(n) * 100, 1)) |>
+      mutate(prop = janitor::round_half_up(n / sum(n) * 100)) |>
       ggplot(aes(x = interpretation, y = prop)) +
       geom_bar(stat = "identity", aes(fill = interpretation)) +
-      geom_text(aes(label = paste0(prop, "%")), size = 3, vjust = -0.3) +
+      geom_text(aes(label = paste0(format(prop, nsmall = 1), "%")), size = 3, vjust = -0.3) +
       scale_y_continuous(labels = scales::percent_format(scale = 1)) +
       coord_cartesian(ylim = c(0, 100)) +
       labs(x = "", y = "%", fill = "Interpretation") +
@@ -1014,21 +1041,29 @@ list(
   ## Get the figure showing the CAPL-2 scores by sex ----
   tar_target(
     name = p_capl_all_domains_by_sex,
+    
+    ### This section heavily uses a personal plotting function (see
+    ### plot_score_distri.R file)
+    
     command = {
       
       ### Get figures for PC scores ----
       #### Select PC scores
       pc_scores_by_sex <-
         capl_res |>
-        select(id,
-               gender,
-               pacer_score,
-               camsa_score,
-               plank_score,
-               pc_score) |>
-        pivot_longer(cols = pacer_score:pc_score,
-                     names_to = "Item",
-                     values_to = "Score") |>
+        select(
+          id,
+          gender,
+          pacer_score,
+          camsa_score,
+          plank_score,
+          pc_score
+          ) |>
+        pivot_longer(
+          cols = pacer_score:pc_score,
+          names_to = "Item",
+          values_to = "Score"
+          ) |>
         mutate(
           Item = fct_relevel(Item, "pacer_score", "camsa_score", "plank_score", "pc_score"),
           Item = fct_recode(
@@ -1103,14 +1138,18 @@ list(
       #### Select DB scores
       db_scores_by_sex <-
         capl_res |>
-        select(id,
-               gender,
-               step_score,
-               self_report_pa_score,
-               db_score) |>
-        pivot_longer(cols = step_score:db_score,
-                     names_to = "Item",
-                     values_to = "Score") |>
+        select(
+          id,
+          gender,
+          step_score,
+          self_report_pa_score,
+          db_score
+          ) |>
+        pivot_longer(
+          cols = step_score:db_score,
+          names_to = "Item",
+          values_to = "Score"
+          ) |>
         mutate(
           Item = fct_relevel(Item, "step_score", "self_report_pa_score", "db_score"),
           Item = fct_recode(
@@ -1401,15 +1440,12 @@ list(
       #### Select data
       capl_score_by_sex <-
         capl_res |>
-        select(
-          id,
-          gender,
-          capl_score
-          
-        ) |>
-        pivot_longer(cols = capl_score,
-                     names_to = "Item",
-                     values_to = "Score") |>
+        select( id, gender, capl_score) |>
+        pivot_longer(
+          cols = capl_score,
+          names_to = "Item",
+          values_to = "Score"
+          ) |>
         mutate(Item = fct_recode(Item, "Physical Literacy (/100)" = "capl_score"))
       
       #### Get the numbers of students with valid data
@@ -1474,7 +1510,7 @@ list(
     }
   ),
   
-  # Get descriptive statistics by sex ----
+  ## Get CPAL-2 descriptive statistics by sex ----
   tar_target(
     name = n_girls,
     command = nrow(filter(capl_res, gender == "girl"))
@@ -1551,7 +1587,7 @@ list(
       as_flex_table() 
   ), 
   
-  ## Get interpretation stats by sex ----
+  ## Get interpretation statistics by sex ----
   tar_target(
     name = p_interpretation_by_sex, 
     command = capl_res |>
@@ -1637,7 +1673,7 @@ list(
       )
   ), 
   
-  ## Multivariate comparions of CAPL-2 score between girls and boys ----
+  ## Multivariate comparions of CAPL-2 scorse between girls and boys ----
   
     ### Build a spaghetti plot showing the profiles of girls and boys ----
     tar_target(
@@ -1714,7 +1750,7 @@ list(
       command = nonpartest(
         pc_score | db_score | mc_score | ku_score ~ gender,
         data = capl_res,
-          permreps = 1000,
+        permreps = 1000,
         plots = FALSE
       )
     ), 
@@ -1731,35 +1767,218 @@ list(
       )
     ),
   
-  ### Test global between-sex difference for physical literacy item scores ----
-  tar_target(
-    name = item_global_multicomp_sex,
-    command = nonpartest(
-      pacer_score | plank_score | camsa_score | 
+    ### Test global between-sex difference for physical literacy item scores ----
+    tar_target(
+      name = item_global_multicomp_sex,
+      command = nonpartest(
+        pacer_score | plank_score | camsa_score | 
+          step_score	| self_report_pa_score |
+          predilection_score | adequacy_score | intrinsic_motivation_score |
+          pa_competence_score | pa_guideline_score | crf_means_score |
+          ms_means_score | sports_skill_score | fill_in_the_blanks_score ~ gender,
+        data = capl_res,
+        permreps = 1000,
+        plots = FALSE
+      )
+    ), 
+    
+    ### Test local between-sex difference for physical literacy item scores ----
+    tar_target(
+      name = item_local_multicomp_sex,
+      command = ssnonpartest(
         step_score	| self_report_pa_score |
-        predilection_score | adequacy_score | intrinsic_motivation_score |
-        pa_competence_score | pa_guideline_score | crf_means_score |
-        ms_means_score | sports_skill_score | fill_in_the_blanks_score ~ gender,
-      data = capl_res,
-      permreps = 1000,
-      plots = FALSE
-    )
-  ), 
+          predilection_score | adequacy_score | intrinsic_motivation_score |
+          pa_competence_score | pa_guideline_score | crf_means_score |
+          ms_means_score | sports_skill_score | fill_in_the_blanks_score ~ gender,
+        data = capl_res,
+        test = c(1, 0, 0, 0),
+        alpha = 0.05,
+        factors.and.variables = TRUE
+      )
+    ), 
   
-  ### Test local between-sex difference for physical literacy item scores ----
+  ## Analyse MVPA trajectories across the week ----
+  
+  ### Get a table with the percentages of participants per number of valid days
   tar_target(
-    name = item_local_multicomp_sex,
-    command = ssnonpartest(
-      step_score	| self_report_pa_score |
-        predilection_score | adequacy_score | intrinsic_motivation_score |
-        pa_competence_score | pa_guideline_score | crf_means_score |
-        ms_means_score | sports_skill_score | fill_in_the_blanks_score ~ gender,
-      data = capl_res,
-      test = c(1, 0, 0, 0),
-      alpha = 0.05,
-      factors.and.variables = TRUE
+    name = tab_percents_num_valid_days,
+    command = pa_data$all_metrics |>
+      count(valid_days) |>
+      mutate(
+        prop = format(janitor::round_half_up(n / sum(n) * 100, digits = 1), nsmall = 2),
+        n = as.character(n)
+      ) |>
+      rename(
+        "N" = n,
+        "%" = prop
+      ) |> 
+      pivot_longer(cols = c("N", "%"), names_to = " ", values_to = "stat") |> 
+      pivot_wider(names_from = valid_days, values_from = stat) |> 
+      flextable() |>
+      bold(part = "header") |>
+      add_header_row(
+        values = c("Number of valid days of accelerometer wear"),
+        colwidths = 8,
+        top = TRUE
+      ) |> 
+      align(i = 1, align = "left", part = "header") |> 
+      align(i = 2, align = "right", part = "header") |> 
+      align(i = 1:2, align = "right", part = "body") |> 
+      italic(i = 1, j = 1)
+    
+  ),
+  
+  ### Get IDs from participants with >= 3 valid days ----
+  tar_target(
+    name = ids_with_3_valid_days,
+    command = pa_data$all_metrics |> 
+      filter(valid_days >= 3) |> 
+      pull(id)
+  ),
+  
+  ### Get a data frame with PA metrics by day for participants having 3 valid days ---
+  ### or more joined to CAPL-2 interpretations ----
+  tar_target(
+    name = df_3_valid_days,
+    command = pa_data$results_by_day |>
+      filter(id %in% ids_with_3_valid_days) |>
+      mutate(
+        day = weekdays(date),
+        day = factor(
+          day,
+          levels = c(
+            "lundi",
+            "mardi",
+            "mercredi",
+            "jeudi",
+            "vendredi",
+            "samedi",
+            "dimanche"
+          ),
+          labels = c(
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          )
+        ),
+        validity = ifelse(wear_time >= 600, "valid", "non_valid")
+      )  |> 
+      select(id, date, day, validity, everything()) |> 
+      left_join(
+        capl_res |>
+          select(
+            id, 
+            school, 
+            gender, 
+            capl_interpretation
+            ) |> 
+          mutate(id = as.numeric(as.character(id)))
+        ) |> 
+      mutate(
+        capl_interpretation = fct_na_value_to_level(capl_interpretation, "Non available"),
+        capl_interpretation = fct_relevel(
+          capl_interpretation,
+          "Non available",
+          "beginning",
+          "progressing",
+          "achieving",
+          "excelling"
+        ),
+        capl_interpretation = fct_recode(
+          capl_interpretation,
+          "Beginning" = "beginning",
+          "Progressing" = "progressing",
+          "Achieving" = "achieving",
+          "Excelling" = "excelling"
+        ),
+      )
+  ),
+  
+  ### Get plot with counts of participants having valid data by weekday ----
+  tar_target(
+    name = p_counts_valid_ids_by_day,
+    command = df_3_valid_days |>
+      mutate(
+        Freq = 1,
+        validity = factor(validity, labels = c("Non valid", "Valid"))
+        ) |> 
+      select(id, day, validity , Freq, date, capl_interpretation) |> 
+      arrange(id, day, date)  |> 
+      group_by(id, day) |> 
+      slice(1) |> 
+      ggplot(
+        aes(
+          x = day,
+          stratum = validity,
+          alluvium = id,
+          y = Freq
+        )
+      ) +
+      geom_flow(aes(fill = capl_interpretation)) +
+      geom_stratum(
+        aes(color = validity),
+        alpha = .5,
+        linewidth = 0.6,
+        fill = "white"
+        ) +
+      geom_text(
+        aes(label = after_stat(count)),
+        stat = "stratum",
+        size = 4
+        ) +
+      theme_bw() +
+      labs(
+        x = "", 
+        y = "Number of participants", 
+        fill = "CAPL-2 profile",
+        color = "Wear validity"
+        )
+  ),
+  
+  ### Plot activity across the week
+  #### MVPA minutes
+  tar_target(
+    name = p_minutes_mvpa_by_day,
+    command = plot_metric_by_day(
+      data = df_3_valid_days |> 
+        filter(capl_interpretation != "Non available") |> 
+        arrange(capl_interpretation, id, day),
+      y = "minutes_MVPA",
+      labs_x = "", 
+      labs_y = "MVPA (min)"
     )
-  ), 
+  ),
+  #### MVPA % of wear time
+  tar_target(
+    name = p_percent_mvpa_by_day,
+    command = plot_metric_by_day(
+      data = df_3_valid_days |> 
+        filter(capl_interpretation != "Non available") |> 
+        arrange(capl_interpretation, id, day),
+      y = "percent_MVPA",
+      labs_x = "", 
+      labs_y = "MVPA (% of wear time)"
+    )
+  ),
+  
+  
+  ### Latent class mixed modeling to analyse PA metrics trajectories ----
+  ### across the week
+  
+  #### This section heavily uses a personal modeling function (see
+  #### get_lcmms.R file)
+  
+  tar_target(
+    name = lcmms,
+    command = get_lcmms(
+      data = df_3_valid_days |> filter(validity == "valid"), # use only the valid day|IDs
+      vars = c("minutes_MVPA", "percent_MVPA")
+        )
+  ),
   
   ## Render report ----
   tar_quarto(report, "report.qmd")

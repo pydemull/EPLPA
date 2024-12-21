@@ -30,6 +30,7 @@ date: today
 date-format: "long"
 format:
   html:
+    embed-resources: true
     code-fold: true
     theme: cosmo
     toc: true
@@ -66,6 +67,10 @@ tar_load(pa_data)
 tar_load(tab_pa_metrics_config)
 tar_load(p_multiv_comp_sex)
 tar_load(capl_comp_sex)
+tar_load(tab_percents_num_valid_days)
+tar_load(p_counts_valid_ids_by_day)
+tar_load(p_minutes_mvpa_by_day)
+tar_load(p_percent_mvpa_by_day)
 ```
 
 ## Accelerometer data analysis settings
@@ -76,7 +81,7 @@ The settings that have been used to process the accelerometer data files are sho
 rmarkdown::paged_table(tab_pa_metrics_config, options = list(rows.print = 11))
 ```
 
-## CAPL-2
+## CAPL-2 score analysis
 
 ### Data skimming
 
@@ -208,13 +213,13 @@ npmv::ssnonpartest(
     )
 ```
 
-## Physical behaviour
+## Trajectories of MVPA across the week
 
 ### Data skimming
 
 #### Raw data
 
-Navigation in the raw data is possible through the interactive table shown below. 
+Navigation in the raw data (metric daily summaries) is possible through the interactive table shown below. 
 
 ```{r show_pa_database}
 pa_data$all_metrics$id <- as.factor(pa_data$all_metrics$id)
@@ -227,19 +232,33 @@ rmarkdown::paged_table(pa_data$all_metrics)
 skimr::skim(pa_data$all_metrics)
 ```
 
-### Total step by sew
+### Wear time analysis
 
-```{r}
-pa_data$all_metrics |> 
-  dplyr::mutate(id = as.factor(id)) |> 
-  dplyr::left_join(capl_res |>  dplyr::select(-valid_days), by = "id") |> 
-  dplyr::filter(valid_days >= 3) |> 
-  dplyr::group_by(gender) |> 
-  dplyr::summarise(median = median(total_steps, na.rm = TRUE),
-                   q1 = quantile(total_steps, na.rm = TRUE, probs = 0.25),
-                   q3 = quantile(total_steps, na.rm = TRUE, probs = 0.75))
+#### Rates of participants per number of valid days
+
+```{r tab_percents_num_valid_days}
+tab_percents_num_valid_days
 ```
 
+#### Counts of students with valid data across the week among those having 3 valid days or more
+
+```{r p_counts_valid_ids_by_day}
+p_counts_valid_ids_by_day
+```
+
+### Physical activity profile
+
+#### MVPA minutes
+
+```{r p_minutes_mvpa_by_day}
+p_minutes_mvpa_by_day
+```
+
+#### MVPA % of wear time
+
+```{r p_percent_mvpa_by_day}
+p_percent_mvpa_by_day
+```
 
 ## Export datasets
 
