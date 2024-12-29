@@ -1,20 +1,3 @@
-#' Plot CAPL-2 data
-#'
-#' @param data1 
-#' @param data2 
-#' @param item 
-#' @param by_sex 
-#' @param type 
-#' @param color 
-#' @param text_x 
-#' @param text_y 
-#' @param breaks_x 
-#' @param limits_x 
-#'
-#' @return
-#' @export
-#'
-
 plot_score_distri <-
   function(data1,
            data2,
@@ -151,11 +134,11 @@ plot_score_distri <-
           geom_text(stat='count', aes(y = after_stat(count / 2), label = after_stat(count),
                                       group = gender), 
                     color = "white", position = position_dodge(width = .9)) +
-          scale_fill_manual(values = c("hotpink", "royalblue2"), labels = c("Girl", "Boy")) +
+          scale_fill_manual(values = c("hotpink", "royalblue2"), labels = c("Girls", "Boys")) +
           coord_cartesian(ylim = c(0, length(unique(data1$id)) /2)) +
           theme_bw() +
           facet_wrap( ~ Item, scales = "free")  +
-          labs(y = NULL, fill = "") +
+          labs(y = NULL, fill = "Sex") +
           theme(
             axis.text = element_text(color = color),
             axis.ticks = element_blank(),
@@ -228,17 +211,18 @@ plot_score_distri <-
                     ), color = "royalblue2", fontface = "bold") +
           facet_wrap( ~ Item, scales = "free")  +
           scale_y_continuous(breaks = breaks_x) +
-          scale_fill_manual(values = c("hotpink", "royalblue2"), labels = c("Girl", "Boy")) +
-          scale_color_manual(values = c("hotpink", "royalblue2"), labels = c("Girl", "Boy")) +
+          scale_fill_manual(values = c("hotpink", "royalblue2"), labels = c("Girls", "Boys")) +
+          scale_color_manual(values = c("hotpink", "royalblue2"), labels = c("Girls", "Boys")) +
           theme_bw() +
           coord_flip(xlim = c(0.9, 1.6), ylim = limits_x) +
-          labs(x = NULL, fill = "", color = "") +
+          labs(x = NULL, fill = "Sex", color = "Sex") +
           theme(
             legend.position = "none",
             axis.text.x = element_text(color = color),
             axis.ticks.x = element_line(color = color),
             axis.ticks.y = element_blank(),
             axis.text.y = element_blank(),
+            legend.title = element_text(face = "bold"),
             strip.background = element_rect(fill = color, color = color),
             strip.text = element_text(color = "white", face = "bold"),
             panel.border = element_rect(

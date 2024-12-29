@@ -1,15 +1,3 @@
-#' Plot a latent-class mixed model to study the effect of the day of the week on behaviour
-#'
-#' @param data 
-#' @param model 
-#' @param y 
-#' @param labs_x 
-#' @param labs_y 
-#'
-#' @return
-#' @export
-#'
-#' @examples
 plot_lcmm <- function(data, model, y, labs_x, labs_y) {
   
   if (model$ng == 1) labels <- "Class 1"

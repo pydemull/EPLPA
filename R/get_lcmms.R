@@ -1,12 +1,3 @@
-#' Compute and compare latent-class mixed models for a given parameter
-#'
-#' @param data 
-#' @param vars 
-#'
-#' @return
-#' @export
-#'
-#' @examples
 get_lcmms <- function(data, vars) {
   
   # Initialize list
