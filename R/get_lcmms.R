@@ -13,7 +13,7 @@ get_lcmms <- function(data, vars) {
     model_class_n1 <-
       hlme(
         fixed = {{formula}},
-        random = ~ 1,
+        random = ~ day,
         subject = "id",
         data = data,
         ng = 1
@@ -25,7 +25,7 @@ get_lcmms <- function(data, vars) {
       gridsearch(
         hlme(
           fixed = {{formula}},
-          random = ~ 1,
+          random = ~ day,
           subject = "id",
           data = data,
           ng = 2,
@@ -43,46 +43,10 @@ get_lcmms <- function(data, vars) {
       gridsearch(
         hlme(
           fixed = {{formula}},
-          random = ~ 1,
+          random = ~ day,
           subject = "id",
           data = data,
           ng = 3,
-          mixture = ~ day
-        ),
-        rep = 100,
-        maxiter = 30,
-        minit = model_class_n1
-      )
-    }
-    
-    ### Estimate the model with 4 classes ----
-    model_class_n4 <- {
-      set.seed(123)
-      gridsearch(
-        hlme(
-          fixed = {{formula}},
-          random = ~ 1,
-          subject = "id",
-          data = data,
-          ng = 4,
-          mixture = ~ day
-        ),
-        rep = 100,
-        maxiter = 30,
-        minit = model_class_n1
-      )
-    }
-    
-    ### Estimate the model with 5 classes ----
-    model_class_n5 <- {
-      set.seed(123)
-      gridsearch(
-        hlme(
-          fixed = {{formula}},
-          random = ~ 1,
-          subject = "id",
-          data = data,
-          ng = 5,
           mixture = ~ day
         ),
         rep = 100,
@@ -97,8 +61,6 @@ get_lcmms <- function(data, vars) {
         model_class_n1,
         model_class_n2,
         model_class_n3,
-        model_class_n4,
-        model_class_n5,
         which = c("AIC", "BIC", "entropy", "%class")
       )
     
@@ -107,8 +69,6 @@ get_lcmms <- function(data, vars) {
     list_models[[param]]$model_class_n1 <- model_class_n1
     list_models[[param]]$model_class_n2 <- model_class_n2
     list_models[[param]]$model_class_n3 <- model_class_n3
-    list_models[[param]]$model_class_n4 <- model_class_n4
-    list_models[[param]]$model_class_n5 <- model_class_n5
     list_models[[param]]$compa_models <- compa_models
   }
   

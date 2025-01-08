@@ -8,6 +8,7 @@ tar_option_set(
   packages = c(
     "activAnalyzer.batch",
     "capl",
+    "correlation",
     "dplyr",
     "factoextra",
     "flextable",
@@ -35,6 +36,7 @@ tar_source()
 # Define pipeline ----
 list(
   
+# IMPORT & CLEAN DATA ----
   ## Set config file path (for accelerometer data analysis) ----
   tar_target(
     name = config_file,
@@ -389,14 +391,14 @@ list(
   
 # GLOBAL DESCRIPTIVE ANALYSIS ----
 
-  ## Get a table with the percentages of participants per number of valid days for
-  ## the accelerometer-based measurement of movement behaviours
+  ## Get a table with the percentages of participants per number of valid days for ----
+  ## the accelerometer-based measurement of movement behaviours ----
   tar_target(
     name = tab_percents_num_valid_days,
     command = pa_data$all_metrics |>
       count(valid_days) |>
       mutate(
-        prop = format(janitor::round_half_up(n / sum(n) * 100, digits = 1), nsmall = 2),
+        prop = format(janitor::round_half_up(n / sum(n) * 100, digits = 1), nsmall = 1),
         n = as.character(n)
       ) |>
       rename(
@@ -417,6 +419,17 @@ list(
       align(i = 1:2, align = "right", part = "body") |> 
       italic(i = 1, j = 1)
     
+  ),
+
+  ## Get the proportion of participant with at least 4 valid days of measurement
+  ## of movement behaviours
+  tar_target(
+    name = prop_4_valid_days,
+    command = (
+      pa_data$all_metrics |> 
+        mutate(if_4_valid_days = ifelse(valid_days >= 4, "yes", "no")) |> 
+        count(if_4_valid_days) |> mutate(prop = format(janitor::round_half_up(n / sum(n) * 100, digits = 1), nsmall = 1))
+      )[2, 3]
   ),
 
   ## Get CAPL-2 results ----
@@ -1736,11 +1749,17 @@ list(
         ) |>
         # The function below is a personal function defined in the
         # plot_capl_profile_by_sex.R file
-        plot_capl_profile_by_sex(
+        plot_raincloud_by_fact(
+          id = "id",
+          x = "score", 
           y = "val", 
+          factor = "gender", 
           labs_x = "CAPL-2 scores", 
-          labs_y = "Score"
-          )
+          labs_y = "Score",
+          labs_fact = "Sex", 
+          col_vals = c("hotpink", "royalblue"), 
+          fill_vals = c("hotpink", "royalblue")
+        )
     ),
 
     ### Test global between-sex difference for physical literacy domain scores ----
@@ -1775,7 +1794,7 @@ list(
       name = p_multiv_comp_sex_item,
       command = capl_res |>
         select(id, gender, pacer_score, plank_score, camsa_score, 
-                 step_score	, self_report_pa_score,
+                 step_score, self_report_pa_score,
                  predilection_score, adequacy_score, intrinsic_motivation_score,
                  pa_competence_score, pa_guideline_score, crf_means_score,
                  ms_means_score, sports_skill_score, fill_in_the_blanks_score) |>
@@ -1829,10 +1848,16 @@ list(
         arrange(score) |> 
         # The function below is a personal function defined in the
         # plot_capl_profile_by_sex.R file
-        plot_capl_profile_by_sex(
+        plot_raincloud_by_fact(
+          id = "id",
+          x = "score", 
           y = "val", 
+          factor = "gender", 
           labs_x = "CAPL-2 scores", 
-          labs_y = "Score"
+          labs_y = "Score",
+          labs_fact = "Sex", 
+          col_vals = c("hotpink", "royalblue"), 
+          fill_vals = c("hotpink", "royalblue")
         ) +
         theme(
           axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
@@ -1871,24 +1896,23 @@ list(
       )
     ), 
   
-  ## COMPARISONS OF PHYSICAL LITERACY PROFILES REGARDING MOVEMENT BEHAVIOURS ----
+# BETWEEN-PHYSICAL LITERACY PROFILE COMPARISONS OF MOVEMENT BEHAVIOURS ----
   
-  ### Get IDs from participants with >= 3 valid days ----
+  ## Get IDs from participants with >= 4 valid days ----
   tar_target(
-    name = ids_with_3_valid_days,
+    name = ids_with_4_valid_days,
     command = pa_data$all_metrics |> 
-      filter(valid_days >= 3) |> 
+      filter(valid_days >= 4) |> 
       pull(id)
   ),
 
-  ### Comparisons of the daily means of movement behaviour metrics
+  ## Comparisons of the movement behaviour metrics ----
 
-  #### Get a data frame with both CAPL-2 data and daily means for the movement ----
-  #### behaviour metrics ----
+  ### Get a data frame with both CAPL-2 data and movement behaviour metrics ----
   tar_target(
-    name = capl_res_3_valid_days,
+    name = capl_res_4_valid_days,
     command = pa_data$all_metrics |>
-      filter(id %in% ids_with_3_valid_days) |> 
+      filter(id %in% ids_with_4_valid_days) |> 
       select(-minutes_MPA, -minutes_VPA, -percent_MPA, -percent_VPA, -total_kcal, -pal, -mets_hours_mvpa) |>  # remove irrelevant variables
       left_join(
         capl_res |>
@@ -1900,10 +1924,10 @@ list(
                                             c("Beginning", "Progressing", "Achieving", "Excelling")))
   ),
 
-  #### Pivot data
+  ### Pivot data
   tar_target(
-    name = capl_res_3_valid_days_piv,
-    command =  capl_res_3_valid_days |> 
+    name = capl_res_4_valid_days_piv,
+    command =  capl_res_4_valid_days |> 
       select(-c(school, gender, age:capl_score, capl_status)) |>
       rename(
         "Valid days" = "valid_days",
@@ -1919,17 +1943,17 @@ list(
         "% Wear time LPA" = "percent_LPA",
         "% Wear time MVPA" = "percent_MVPA",
         "Ratio MVPA / SED" = "ratio_mvpa_sed",
-        "Total steps" = "total_steps",
-        "60 min-Max step accum." = "max_steps_60min",
-        "30 min-Max step accum." = "max_steps_30min",
-        "20 min-Max step accum." = "max_steps_20min",
-        "5 min-Max step accum." = "max_steps_5min",
-        "1 min-Max step accum." = "max_steps_1min",
-        "60 min-Peak step accum." = "peak_steps_60min",
-        "30 min-Peak step accum." = "peak_steps_30min",
-        "20 min-Peak step accum." = "peak_steps_20min",
-        "5 min-Peak step accum." = "peak_steps_5min",
-        "1 min-Peak step accum." = "peak_steps_1min",
+        "Step count" = "total_steps",
+        "60-min max step accum." = "max_steps_60min",
+        "30-min max step accum." = "max_steps_30min",
+        "20-min max step accum." = "max_steps_20min",
+        "5-min max step accum." = "max_steps_5min",
+        "1-min max step accum." = "max_steps_1min",
+        "60-min peak step accum." = "peak_steps_60min",
+        "30-min peak step accum." = "peak_steps_30min",
+        "20-min peak step accum." = "peak_steps_20min",
+        "5-min peak step accum." = "peak_steps_5min",
+        "1-min peak step accum." = "peak_steps_1min",
         "Intensity gradient" = "ig",
         "MX 8 hrs" = "M1/3",
         "MX 120 min" = "M120",
@@ -1937,7 +1961,7 @@ list(
         "MX 30 min" = "M30",
         "MX 15 min" = "M15",
         "MX 5 min" = "M5",
-        "Number of breaks" = "mean_breaks",
+        "Number of SED breaks" = "mean_breaks",
         "Power low exponent alpha" = "alpha",
         "Median bout duration (min)" = "MBD",
         "Usual bout duration (min)" = "UBD",
@@ -1963,17 +1987,17 @@ list(
           "% Wear time LPA",
           "% Wear time MVPA",
           "Ratio MVPA / SED",
-          "Total steps",
-          "60 min-Max step accum.",
-          "30 min-Max step accum.",
-          "20 min-Max step accum.",
-          "5 min-Max step accum.",
-          "1 min-Max step accum.",
-          "60 min-Peak step accum.",
-          "30 min-Peak step accum.",
-          "20 min-Peak step accum.",
-          "5 min-Peak step accum.",
-          "1 min-Peak step accum.",
+          "Step count",
+          "60-min max step accum.",
+          "30-min max step accum.",
+          "20-min max step accum.",
+          "5-min max step accum.",
+          "1-min max step accum.",
+          "60-min peak step accum.",
+          "30-min peak step accum.",
+          "20-min peak step accum.",
+          "5-min peak step accum.",
+          "1-min peak step accum.",
           "Intensity gradient",
           "MX 8 hrs",
           "MX 120 min",
@@ -1981,7 +2005,7 @@ list(
           "MX 30 min",
           "MX 15 min",
           "MX 5 min",
-          "Number of breaks",
+          "Number of SED breaks",
           "Power low exponent alpha",
           "Median bout duration (min)",
           "Usual bout duration (min)",
@@ -1990,13 +2014,13 @@ list(
       ) 
   ),
 
-  #### Get a plot with the distributions of all the 
-  #### movement behaviour metrics
+  ### Get a plot with the distributions of all the movement behaviour metrics ----
   tar_target(
     name = p_distri_all_metrics,
-    command = capl_res_3_valid_days_piv |>  
-      ggplot(aes(x = 0, y = Value, fill = Metric)) +
+    command = capl_res_4_valid_days_piv |>  
+      ggplot(aes(x = 0, y = Value)) +
       geom_rain(
+        fill = "grey90",
         point.args = rlang::list2(
           alpha = 0.3,
           size = 2
@@ -2017,14 +2041,15 @@ list(
       )
   ),
 
-  #### Make a PCA biplot to identify correlated variables
+  ### Make a PCA biplot to identify (un)correlated variables ----
   tar_target(
-    name = biplot_metrics,
+    name = p_biplot_metrics,
     command = {
       
-      ##### Select and scale relevant variables
-      all_metrics_scaled <-
-        capl_res_3_valid_days |> 
+      #### Select relevant variables and get PCA results
+      res.pca <-
+        prcomp(
+          capl_res_4_valid_days |> 
         select(
           vm_per_min,
           percent_SED,
@@ -2032,15 +2057,15 @@ list(
           percent_MVPA,
           ratio_mvpa_sed,
           total_steps:gini
-        ) |> 
-        scale() |> 
-        as.data.frame()
+        ),
+        center = TRUE,
+        scale = TRUE
+        )
       
-      ##### Get PCA biplot
-      fviz_pca(
-        prcomp(all_metrics_scaled),
+      #### Get PCA biplot
+      fviz_pca_var(
+        res.pca,
         title = "PCA",
-        geom = "point",
         ggtheme = theme_classic(),
         legend = "bottom", 
         repel = TRUE
@@ -2048,17 +2073,159 @@ list(
     }
   ),
 
-  #### Get a plot showing the distributions of the metrics
-  #### selected from PCA
+  ### Set the metrics retained from PCA for further analysis ----
+  tar_target(
+    name = selected_metrics,
+    command = list(
+      raw_names = c(
+        "vm_per_min",
+        "percent_SED",
+        "percent_LPA",
+        "percent_MVPA",
+        "total_steps",
+        "max_steps_60min",
+        "peak_steps_60min",
+        "ig",
+        "mean_breaks",
+        "UBD",
+        "gini"
+        ),
+      new_names = c(
+        "VM counts/min",
+        "% Wear time SED",
+        "% Wear time LPA",
+        "% Wear time MVPA",
+        "Step count",
+        "60-min max step accum.",
+        "60-min peak step accum.",
+        "Intensity gradient",
+        "Number of SED breaks",
+        "Usual bout duration (min)",
+        "Gini index"
+      )
+    )
+  ),
 
+  ### Check correlations (Spearman) between the retained variables
+  tar_target(
+    name = check_cor_metrics,
+    command = capl_res_4_valid_days |> 
+      select(any_of(selected_metrics$raw_names)) |> 
+      correlation(method = "spearman") |> 
+      mutate(abs_rho = abs(rho)) |> 
+      arrange(-abs_rho)
+  ),
 
+  ### Get a plot showing the distributions of the metrics selected from PCA ----
+  tar_target(
+    name = p_distri_all_metrics_by_profile,
+    command = capl_res_4_valid_days_piv |>  
+      filter(Metric %in% selected_metrics$new_names) |> 
+      ggplot(aes(x = "", y = Value, fill = capl_interpretation, color = capl_interpretation)) +
+      geom_rain(
+        rain.side = "l",
+        boxplot.args = list(color = "black"),
+        boxplot.args.pos = list(
+          position = ggpp::position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
+        ),
+        point.args = list(alpha = 0.3),
+        point.args.pos = list(
+          position = ggpp::position_dodgenudge(x = 0.3, width = 0.2)),
+        violin.args = list(alpha = 0.3),
+      ) +
+      scale_color_manual(values = scales::hue_pal()(5)[2:5]) +
+      scale_fill_manual(values = scales::hue_pal()(5)[2:5]) +
+      labs(x = NULL, y = "Value", color = "CAPL-2 profile", fill = "CAPL-2 profile") +
+      facet_wrap(~ Metric, scales = "free", ncol = 3) +
+      theme_bw() +
+      theme(
+        legend.position = "right",
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_line(color = "grey40"),
+        strip.background = element_rect(fill = "grey40", color = "grey40"),
+        strip.text = element_text(color = "white", face = "bold", size = 10),
+        panel.border = element_rect(color = "grey40")
+      )
+  ),
 
-  ### Get a data frame with metrics by day for participants having 3 valid days ---
+  ### Build a table with summary statistics for the retained movement behaviour ----
+  ### metrics across the physical literacy profiles ----
+  tar_target(
+    name = tbl_retained_metrics,
+    command = capl_res_4_valid_days |> 
+      tbl_summary(
+        include = selected_metrics$raw_names,
+        by = capl_interpretation,
+        label = list(
+          vm_per_min = "VM counts/min",
+          percent_SED = "% Wear time SED",
+          percent_LPA = "% Wear time LPA",
+          percent_MVPA = "% Wear time MVPA",
+          total_steps = "Step count",
+          max_steps_60min = "60-min max step accum.",
+          peak_steps_60min = "60-min peak step accum.",
+          ig = "Intensity gradient",
+          mean_breaks = "Number of SED breaks",
+          UBD = "Usual bout duration (min)",
+          gini = "Gini index"
+        ),
+        missing = "no",
+        statistic = list(
+          all_continuous() ~ "{median} \n({p25} - {p75})"
+        ),
+        digits = list(all_continuous() ~ 1)
+      )  |> 
+      modify_header(label ~ "**Metric**") |> 
+      modify_footnote(c(stat_1, stat_2, stat_3, stat_4) ~ "Numbers are medians (Q1 - Q3).") |> 
+      as_flex_table()
+  ),
+
+  ### Multivariate comparisons for movement behaviour metrics ----
+  #### Set formula
+  tar_target(
+    name = testing_formula_metrics, 
+    command = {
+      vars_formula <- paste(selected_metrics$raw_names, collapse = " | ")
+      formula <- as.formula(paste0(vars_formula, "~ capl_interpretation"))
+      return(formula)
+    }
+  ),
+
+  #### Test for a global difference of movement behaviours between PL profiles ----
+  tar_target(
+    name = metrics_global_multicomp_profile,
+    command = nonpartest(
+      testing_formula_metrics,
+      data = capl_res_4_valid_days,
+      permreps = 1000,
+      plots = FALSE
+    )
+  ),
+
+  #### Test for local differences of movement behaviours between PL profiles ----
+  tar_target(
+    name = metrics_local_multicomp_profile,
+    command = capture.output(ssnonpartest(
+      testing_formula_metrics,
+      data = capl_res_4_valid_days,
+      test = c(1, 0, 0, 0),
+      alpha = 0.05,
+      factors.and.variables = TRUE
+    )
+    )
+  ),
+
+  ## Comparisons of the movement behaviour metrics across the week ----
+
+  ### Get a data frame with metrics by day for participants having 4 valid days ----
   ### or more joined to CAPL-2 interpretations ----
   tar_target(
-    name = df_3_valid_days,
-    command = pa_data$results_by_day |>
-      filter(id %in% ids_with_3_valid_days) |>
+    name = capl_res_4_valid_days_metrics_by_day,
+    command = pa_data$results_by_day |> 
+      filter(id %in% ids_with_4_valid_days) |>
+      group_by(id) |> 
+      mutate(day_num = seq_along(date)) |> 
+      ungroup() |> 
       mutate(
         day = weekdays(date),
         day = factor(
@@ -2084,7 +2251,8 @@ list(
         ),
         validity = ifelse(wear_time >= 600, "valid", "non_valid")
       )  |> 
-      select(id, date, day, validity, everything()) |> 
+      filter(day_num <= 7) |> 
+      select(id, date, day, day_num, validity, everything()) |> 
       left_join(
         capl_res |>
           select(
@@ -2092,93 +2260,99 @@ list(
             school, 
             gender, 
             capl_interpretation
-            ) |> 
+          ) |> 
           mutate(id = as.numeric(as.character(id)))
-        )
+      ) |> 
+      # Remove participants with no CAPL-2 global interpretation
+      filter(capl_interpretation != "Non available") |> 
+      mutate(capl_interpretation = factor(capl_interpretation, levels = 
+                                            c("Beginning", "Progressing", "Achieving", "Excelling"))
+      )
   ),
-  
-  ### Get plot with counts of participants having valid data by weekday ----
-  tar_target(
-    name = p_counts_valid_ids_by_day,
-    command = df_3_valid_days |>
-      mutate(
-        Freq = 1,
-        validity = factor(validity, labels = c("Non valid", "Valid"))
+
+    ### Get plot with counts of participants having valid data by weekday ----
+    tar_target(
+      name = p_counts_valid_ids_by_day,
+      command = capl_res_4_valid_days_metrics_by_day |>
+        mutate(
+          Freq = 1,
+          validity = factor(validity, labels = c("Non valid", "Valid"))
         ) |> 
-      select(id, day, validity , Freq, date, capl_interpretation) |> 
-      arrange(id, day, date)  |> 
-      group_by(id, day) |> 
-      slice(1) |> 
-      ggplot(
-        aes(
-          x = day,
-          stratum = validity,
-          alluvium = id,
-          y = Freq
-        )
-      ) +
-      geom_flow(aes(fill = capl_interpretation)) +
-      geom_stratum(
-        aes(color = validity),
-        alpha = .5,
-        linewidth = 0.6,
-        fill = "white"
+        select(id, day, validity, Freq, date, capl_interpretation) |> 
+        arrange(id, day, date)  |> 
+        group_by(id, day) |> 
+        slice(1) |> 
+        ggplot(
+          aes(
+            x = day,
+            stratum = validity,
+            alluvium = id,
+            y = Freq
+          )
         ) +
-      geom_text(
-        aes(label = after_stat(count)),
-        stat = "stratum",
-        size = 4
+        geom_flow(aes(fill = capl_interpretation)) +
+        geom_stratum(
+          aes(color = validity),
+          alpha = .5,
+          linewidth = 0.6,
+          fill = "white"
         ) +
-      theme_bw() +
-      labs(
-        x = "", 
-        y = "Number of participants", 
-        fill = "CAPL-2 profile",
-        color = "Wear validity"
-        )
-  ),
-  
-  ### Plot activity across the week
-  #### MVPA minutes
-  tar_target(
-    name = p_minutes_mvpa_by_day,
-    command = plot_metric_by_day(
-      data = df_3_valid_days |> 
-        filter(capl_interpretation != "Non available") |> 
-        arrange(capl_interpretation, id, day),
-      y = "minutes_MVPA",
-      labs_x = "", 
-      labs_y = "MVPA (min)"
-    )
-  ),
-  #### MVPA % of wear time
-  tar_target(
-    name = p_percent_mvpa_by_day,
-    command = plot_metric_by_day(
-      data = df_3_valid_days |> 
-        filter(capl_interpretation != "Non available") |> 
-        arrange(capl_interpretation, id, day),
-      y = "percent_MVPA",
-      labs_x = "", 
-      labs_y = "MVPA (% of wear time)"
-    )
-  ),
-  
-  
-  ### Latent class mixed modeling to analyse PA metrics trajectories ----
-  ### across the week
-  
-  #### This section heavily uses a personal modeling function (see
-  #### get_lcmms.R file)
-  
-  tar_target(
-    name = lcmms,
-    command = get_lcmms(
-      data = df_3_valid_days |> filter(validity == "valid"), # use only the valid day|IDs
-      vars = c("minutes_MVPA", "percent_MVPA")
-        )
-  ),
-  
+        geom_text(
+          aes(label = after_stat(count)),
+          stat = "stratum",
+          size = 4
+        ) +
+        theme_bw() +
+        labs(
+          x = "", 
+          y = "Number of participants", 
+          fill = "CAPL-2 profile",
+          color = "Wear validity"
+        ) +
+        scale_color_manual(values = c("brown2", "chartreuse3")) +
+        scale_fill_manual(values = scales::hue_pal()(5)[2:5])
+    ),
+    
+  ### Get plot for activity metric across the week
+   tar_target(
+     name = p_metric_by_day,
+     command = plot_list <- purrr::map2(
+       selected_metrics$raw_names[which(!(selected_metrics$raw_names %in% c("mean_breaks", "UBD", "gini")))], 
+       selected_metrics$new_names[which(!(selected_metrics$new_names %in% c("Number of SED breaks", "Usual bout duration (min)", "Gini index")))], 
+       \(x, y) {
+         p <-
+           plot_raincloud_by_fact(
+           data = capl_res_4_valid_days_metrics_by_day,
+           id = "id",
+           x = "day",
+           y = x,
+           factor = "capl_interpretation",
+           labs_x = "Day",
+           labs_y = y,
+           labs_fact = "CAPL-2 profile",
+           col_vals = scales::hue_pal()(5)[2:5],
+           fill_vals = scales::hue_pal()(5)[2:5],
+           add_means = TRUE
+         ) +
+           ggtitle(y) +
+           theme(plot.title = element_text(face = "bold"))
+       
+     plot_list = list(name = y, plot = p)
+     
+     return(plot_list)
+     
+       })
+     
+   ),
+    
+    #### Latent class mixed modeling to analyse PA metrics trajectories ----
+    #### across the week
+    
+    ##### This section heavily uses a personal modeling function (see
+    ##### get_lcmms.R file)
+
+
+
   ## Render report ----
   tar_quarto(report, "report.qmd")
   

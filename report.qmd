@@ -1,5 +1,5 @@
 ---
-title: "Physical Literacy Profiles and Movement Behaviours in children: an exploratory study from the 'EPLPA' Project"
+title: "Physical Literacy Profiles and Movement Behaviours in elementary school students (10-to-11 yr old): an exploratory study from the 'EPLPA' Project (France)"
 authors:
   - name: Henri Moncanis
     affiliation: 
@@ -56,7 +56,9 @@ library(ggplot2)
 library(targets)
 
 # Targets
+tar_load(tab_pa_metrics_config)
 tar_load(tab_percents_num_valid_days)
+tar_load(prop_4_valid_days)
 tar_load(capl_res)
 tar_load(p_capl_all_domains)
 tar_load(desc_stats_capl_all)
@@ -64,8 +66,6 @@ tar_load(p_interpretation)
 tar_load(p_capl_all_domains_by_sex)
 tar_load(desc_stats_capl_by_sex)
 tar_load(p_interpretation_by_sex)
-tar_load(pa_data)
-tar_load(tab_pa_metrics_config)
 tar_load(capl_comp_sex)
 tar_load(p_multiv_comp_sex_dom)
 tar_load(domain_global_multicomp_sex)
@@ -73,30 +73,35 @@ tar_load(domain_local_multicomp_sex)
 tar_load(p_multiv_comp_sex_item)
 tar_load(item_global_multicomp_sex)
 tar_load(item_local_multicomp_sex)
-tar_load(capl_res_3_valid_days)
-tar_load(p_counts_valid_ids_by_day)
-tar_load(p_minutes_mvpa_by_day)
-tar_load(p_percent_mvpa_by_day)
-tar_load(df_3_valid_days)
+tar_load(capl_res_4_valid_days)
 tar_load(p_distri_all_metrics)
-tar_load(biplot_metrics)
+tar_load(p_biplot_metrics)
+tar_load(check_cor_metrics)
+tar_load(p_distri_all_metrics_by_profile)
+tar_load(selected_metrics)
+tar_load(metrics_global_multicomp_profile)
+tar_load(metrics_local_multicomp_profile)
+tar_load(tbl_retained_metrics)
+tar_load(p_counts_valid_ids_by_day)
+tar_load(p_metric_by_day)
+tar_load(capl_res_4_valid_days_metrics_by_day)
 ```
 
 :::{.callout-note}
-This document includes the results of the analytical pipeline of the project. If you want to look at the code that has been implemented to get the results, please see the `target.R` file and the `R/` folder associated to the present work.
+This document presents the results of the analytical pipeline of the 'EPLPA' project. If you want to look at the code that has been implemented to get the results, please see the `target.R` file and the `R/` folder associated to the present work.
 :::
 
 ## Pre-analysis information
 
-The CAPL-2 scores are partly based on a measurement of weekly steps. In the present study, this measurement was performed using a wGT3X-BT accelerometer (ActiGraph). The settings that have been used to process the accelerometer data files are shown in the table below. The `EPOCH_TARGET_CHILD` setting (epoch duration with which counts have been accumulated) is in seconds. The cut-points settings (intensity thresholds to perform intensity classification) are in counts/min. The `FRAME` settings (to detect nonwear time) are in minutes. The `MINIMUM_WEAR_TIME` setting (to consider a day as valid for further analysis) is in hours.
+The document shows results related to CAPL-2 scores and movement behaviour metrics. CAPL-2 scores are partly based on scores related to mean daily step counts. All movement behaviour metrics (including mean daily step count) were obtained using a week measurement using a wGT3X-BT accelerometer (ActiGraph). The settings that have been used to process the accelerometer data files are shown in the table below. The `EPOCH_TARGET_CHILD` setting (epoch duration with which counts have been accumulated) is in seconds. The cut-points settings (intensity thresholds to perform intensity classification) are in counts/min. The `FRAME_CHILD`, `ALLOWANCE_FRAME_CHILD` and `STREAM_FRAME_CHILD` settings (to detect nonwear time) are in minutes. The `MINIMUM_WEAR_TIME` setting (to consider a day as valid for further analysis) is in hours.
 
 ```{r show_pa_metrics_config}
 rmarkdown::paged_table(tab_pa_metrics_config, options = list(rows.print = 11))
 ```
 
-Of note, the package used to compute CAPL-2 scores (i.e., `{capl}`) required at least 4 valid days to compute a daily mean step count used for further analysis. If only 3 valid days were available, a step count for a fourth valid day was obtained by randomly sampling a step count among the available valid daily step counts (action performed by the package `{capl}`). No computation was performed when less than 3 valid days were available.
+Of note, the package used to compute CAPL-2 scores (i.e., `{capl}`) required at least 4 valid days of movement behaviour measurement to compute a mean daily step count to be used for further analysis. If only 3 valid days were available, a step count for a fourth valid day was obtained by randomly sampling a step count among the available valid daily step counts (action performed by the package `{capl}`). No computations were performed when less than 3 valid days were available.
 
-For a better understanding of the results, the table below shows the percentages of participants by number of valid days for the measurement of usual movement behaviours.
+For a better understanding of the results, the table below shows the percentages of participants by number of valid days for the measurement of movement behaviours. The percentage of participants with at least 4 valid days was `r prop_4_valid_days`%.
 
 ```{r tab_percents_num_valid_days}
 #| ft.align: "center"
@@ -105,6 +110,8 @@ tab_percents_num_valid_days
 ```
 
 ## Global descriptive analysis of the CAPL-2 scores
+
+This part of the document proposes a detailed view of the CAPL-2 scores obtained as results from the tests and measurements implemented during the 'EPLPA' project. Its purpose is only descriptive.
 
 ### Data skimming
 
@@ -118,13 +125,15 @@ rmarkdown::paged_table(capl_res)
 
 #### Variable summaries
 
-This section proposes an overview of the final study dataset related to the CAPL-2 scores. Below the tables display information about the dataset structure as well as descriptive statistics for all the variables from the dataset.
+This section proposes an overview of the final study dataset related to the CAPL-2 scores. More precisely, the tables display information about the dataset structure as well as descriptive statistics for all the variables from the dataset. The interest of this section is mainly to verify that all the variables have been correctly formated and to have information about potential missing values.
 
 ```{r skim_capl_res}
 skimr::skim(capl_res)
 ```
 
 ### Score distributions
+
+This section proposes graphical and numeric summaries of the CAPL-2 scores.
 
 #### Graphical view
 
@@ -147,6 +156,8 @@ desc_stats_capl_all |>
 
 ### Interpretation category distributions
 
+This section focuses only on the counts and percentages of participants associated to the different levels of interpretation (profile) provided by the CAPL-2 tool.
+
 ```{r show_interpretations}
 #| fig.height: 7
 #| fig.width: 9
@@ -158,7 +169,11 @@ p_interpretation
 
 ## Between-sex comparisons of CAPL-2 scores
 
+This part of the document proposes a detailed view of the CAPL-2 scores by sex. It has both a descriptive and an inferential purpose. The inferential analyses are not the main analyses of the present work. They have been performed for exploratory purpose and have been kept in the document to be transparent about what has been done during the exploratory process.
+
 ### Score distributions
+
+This section proposes graphical and numeric summaries of the CAPL-2 scores by sex.
 
 #### Graphical view
 
@@ -182,6 +197,8 @@ desc_stats_capl_by_sex |>
 
 ### Interpretation category distributions
 
+This section focuses only on the counts and percentages of participants by sex associated to the different levels of interpretation (profile) provided by the CAPL-2 tool.
+
 ```{r show_interpretations_by_sex}
 #| fig.height: 7
 #| fig.width: 9
@@ -193,9 +210,15 @@ p_interpretation_by_sex
 
 ### Comparison of CAPL-2 global scores
 
+The global comparison has been performed using a Wilcoxon rank sum test.
+
 ```{r capl_comp_sex}
 capl_comp_sex
 ```
+
+:::{.callout-note}
+The test reveals a significant difference between girls and boys for the global CAPL-2 score.
+:::
 
 ### Comparison of CAPL-2 domain scores
 
@@ -210,13 +233,34 @@ capl_comp_sex
 p_multiv_comp_sex_dom
 ```
 
+#### Checking for multivariate outliers
+
+```{r check_outliers_domain_scores}
+performance::check_outliers(
+  capl_res |> 
+    dplyr::select(
+      pc_score, 
+      db_score, 
+      mc_score, 
+      ku_score
+      ) |> 
+    tidyr::drop_na(), 
+  method = "mcd") # recommended in DOI: 10.3758/s13428-024-02356-w
+```
+
 #### Non-parametric multivariate analysis
+
+The comparison of the multivariate distributions of domain scores between girls and boys has been performed using non-parametric analysis implemented in functions from the `{npmv}` package.
 
 ##### R output for global comparison
 
 ```{r domain_global_multicomp_sex}
 domain_global_multicomp_sex
 ```
+
+:::{.callout-note}
+The global analysis, based on the ANOVA type test p-value, suggests that girls and boys come from two different multivariate distributions related to the CAPL-2 domain scores. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a girl or a boy randomly sampled respectively from girls or boys has a higher value than the one associated to a participant randomly sampled from both the girls and boys.
+:::
 
 ##### R output for local comparisons
 
@@ -237,12 +281,41 @@ cat(domain_local_multicomp_sex, sep = "\n")
 p_multiv_comp_sex_item
 ```
 
+#### Checking for multivariate outliers
+
+```{r check_outliers_item_scores}
+performance::check_outliers(
+  capl_res |> dplyr::select(
+    pacer_score, 
+    plank_score, 
+    camsa_score,
+    step_score, 
+    self_report_pa_score,
+    predilection_score, 
+    adequacy_score,
+    intrinsic_motivation_score,
+    pa_competence_score, 
+    pa_guideline_score, 
+    crf_means_score,
+    ms_means_score, 
+    sports_skill_score,  
+    fill_in_the_blanks_score
+    ) |> 
+    tidyr::drop_na(), 
+  method = "mahalanobis_robust") # too many variables to use MCD method; alternative method chosen based on DOI: 10.3758/s13428-024-02356-w
+```
 
 #### R output for global comparison
+
+The comparison of the multivariate distributions of item scores between girls and boys has been performed using non-parametric analysis implemented in functions from the `{npmv}` package.
 
 ```{r item_global_multicomp_sex}
 item_global_multicomp_sex
 ```
+
+:::{.callout-note}
+The global analysis, based on the ANOVA type test p-value, suggests that girls and boys come from two different multivariate distributions related to the CAPL-2 item scores. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a girl or a boy randomly sampled respectively from girls or boys has a higher value than the one associated to a participant randomly sampled from both the girls and boys.
+:::
 
 #### R output for local comparisons
 
@@ -250,9 +323,9 @@ item_global_multicomp_sex
 cat(item_local_multicomp_sex, sep = "\n")
 ```
 
-## Comparisons of the physical literacy profiles regarding the movement behaviour metrics
+## Between-physical literacy profile comparisons of movement behaviours
 
-The following analyses are based on participants with at least 3 valid days for the accelerometer-based measurement of movement behaviours.
+This part of the document shows the results from the main analyses retained for the present exploratory study. It includes two subsections: a section showing the comparisons of the multivariate distributions of movement behaviour metrics between the physical literacy profiles; and a section showing the comparisons of the pattern of movement behaviours across the week between the physical literacy profiles. These analyses are based on data from participants having at least 4 valid days for the accelerometer-based measurement of movement behaviours and who had a valid CAPL-2 profile.
 
 ### Comparisons of the movement behaviour metrics
 
@@ -260,21 +333,23 @@ The following analyses are based on participants with at least 3 valid days for 
 
 ##### Raw data
 
-Navigation in the raw data (CAP-2 scores along with daily means of movement behaviour metrics) is possible through the interactive table shown below. 
+Navigation in the raw data (CAPL-2 scores along with movement behaviour metrics) is possible through the interactive table shown below. 
 
-```{r capl_res_3_valid_days}
-rmarkdown::paged_table(capl_res_3_valid_days)
+```{r capl_res_4_valid_days}
+rmarkdown::paged_table(capl_res_4_valid_days)
 ```
 
 ##### Variable summaries
 
-This section proposes an overview of the study dataset related to both the CAPL-2 profiles and the movement behaviour metrics in participants with at least 3 valid days for the accelerometer measurement. Below the tables display information about the dataset structure as well as descriptive statistics for all the variables from the dataset.
+This section proposes an overview of the study dataset related to both the valid CAPL-2 profiles and the movement behaviour metrics in the participants with at least 4 valid days for the accelerometer-based measurement of movement behaviours. More precisely, the tables display information about the dataset structure as well as descriptive statistics for all the variables from the dataset. The interest of this section is mainly to verify that all the variables have been correctly formated and to have information about potential missing values.
 
 ```{r skim_pa_data_all_metrics}
-skimr::skim(capl_res_3_valid_days)
+skimr::skim(capl_res_4_valid_days)
 ```
 
 #### Distributions of the movement behaviour metrics
+
+This section shows the distributions of the movement behaviour metrics that were deemed of potential interest for exploratory analysis. These metrics were directly available from the {activAnalyzer} package. Some metrics have been removed from the initial list of the available metrics. MPA and VPA minutes and related percentages of wear time have been removed because we had no tresholds to make a distinction between moderate and vigorous physical activity in children. Total kilocalories, physical activity level, and MVPA MET-hours have been removed because they were not based on children-specific equations (no appropriate equations were available in the {activAnalyzer} package) and there was also no consideration for these metrics that are usually poorly estimated. The retained metrics represent different movement behaviour concepts: activity volume, step accumulation, intensity distribution, and sedentary time accumulation pattern. Details about what the metrics mean are available in the manual of the {activAnalyzer} package. Of note, in the figure below, the list of the metrics that goes from `Wear time (min)` to `Number of breaks` represent daily means while the last metrics were computed considering the whole set of valid days of measurement.
 
 ```{r p_distri_all_metrics}
 #| out-width: '100%'
@@ -286,39 +361,102 @@ p_distri_all_metrics
 
 #### Vizualisation of the (un)correlated movement behaviour variables based on Principal Component Analysis
 
-```{r biplot_metrics}
-biplot_metrics
+As there were a lot of variables available to characterize movement behaviours, we conducted a principal component analysis (PCA) to evaluate to what extent the initial set of variables could be reduced. The rationale for variable selection was to have at least one variable for each of the movement behaviour concepts presented above while keeping the variables that were not perfectly or not too strongly correlated (strongly correlated variables could be observed on a PCA biplot with arrows that would point to the same direction or to opposite directions). For the variables related to activity volume, only the vector magnitude counts/min, the percentages of wear time spent sedentary or in light/moderate-to-vigorous physical activity, the step count and the MVPA / SED ratio were considered during PCA.
+
+```{r p_biplot_metrics}
+p_biplot_metrics
 ```
 
 :::{.callout-note}
-Based on the PCA biplot, we keep for further analysis: 
+Based on the PCA biplot, we kept for further analysis: 
 
 * For activity volume metrics: 
+  + `vm_perm_min`
+  + `percent_SED`
+  + `percent_LPA`
+  + `percent_MVPA`
+  + `total_steps`
 
-**`vm_per_min`
-**`percent_SED`
-**`percent_LPA`
-**`percent_MVPA`
-**`ratio_mvpa_sed`
-**`total_steps`
-
-* For step-based metrics:
-
-**`max_steps_60min`
-**`peak_steps_60min`
+* For step accumulation metrics:
+    + `max_steps_60min`
+    + `peak_steps_60min`
 
 * For intensity distribution metrics:
-
-**`ig`
+  + `ig`
 
 * For sedentary behaviour accumulation metrics:
-
-**`mean_breaks`
-**`MBD`
-**`gini`
+  + `mean_breaks`
+  + `UBD`
+  + `gini`
 :::
 
-### Comparisons of week trajectories of movement behaviour metrics across the physical literacy profiles
+#### Checking of the correlations between the retained variables
+
+```{r check_cor_metrics}
+check_cor_metrics
+```
+
+#### Checking for multivariate outliers
+
+```{r check_outliers_pa_metrics}
+performance::check_outliers(
+  capl_res_4_valid_days |>
+    dplyr::select(tidyselect::any_of(selected_metrics$raw_names)),
+  method = "mahalanobis_robust") # too many variables to use MCD method; alternative method chosen based on DOI: 10.3758/s13428-024-02356-w
+```
+
+#### Non-parametric multivariate analysis
+
+##### Graphical analysis
+
+```{r p_distri_all_metrics_by_profile}
+#| out-width: '100%'
+#| fig-width: 10
+#| fig-height: 10
+
+p_distri_all_metrics_by_profile
+```
+
+##### Tabular view
+
+```{r tbl_retained_metrics}
+tbl_retained_metrics
+```
+
+
+##### Checking sex distribution across physical literacy profiles
+
+We check that girls and boys were approximately equally distributed across the physical literacy profiles so that potential differences bewteen the profiles are not confounded by sex differences.
+
+```{r counts_sex_by_capl_profile}
+tar_read(capl_res_4_valid_days) |> dplyr::count(capl_interpretation, gender)
+```
+
+:::{.callout-note}
+The distribution of girls and boys was quite balanced across the physical literacy profiles.
+:::
+
+##### R output for global comparison
+
+The comparisons of the multivariate distributions of movement behaviour metrics between physical literacy profiles have been performed using non-parametric analysis implemented in functions from the `{npmv}` package.
+
+```{r metrics_global_multicomp_profile}
+metrics_global_multicomp_profile
+```
+
+:::{.callout-note}
+The global analysis, based on the ANOVA type test p-value, suggests that the physical literacy profiles come from different multivariate distributions related to movement behaviour metrics. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a participant randomly sampled from a given physical literacy profile has a higher value than the one associated to a participant randomly sampled from all physical literacy profiles together.
+:::
+
+##### R output for local comparisons
+
+```{r metrics_local_multicomp_profile}
+cat(metrics_local_multicomp_profile, sep = "\n")
+```
+
+### Comparisons of the metrics on a daily basis
+
+In this section, sedentary time accumulation metrics were not considered since they were computed by considering the whole week of measurement (not by day) during data processing.
 
 #### Wear time analysis
 
@@ -327,45 +465,124 @@ p_counts_valid_ids_by_day
 ```
 
 :::{.callout-note}
-The total number of students is not the same for all the days of the week since the students actually did not complete 7 full days of measurement but 6 (for practical reasons).
+The total number of students is not the same for all the days of the week since all students actually did not complete 7 full days of measurement for practical reasons.
 :::
 
-#### Visualize MVPA minutes by day
+#### Visualizations of the metric distributions
 
-```{r p_minutes_mvpa_by_day}
-p_minutes_mvpa_by_day
+::: {.panel-tabset}
+
+```{r p_metric_by_day}
+#| results: asis
+
+res <-
+  purrr::map(p_metric_by_day, function(x) {
+  
+  knitr::knit_child(text = c(
+                    
+                    "\n",
+                    "## `r x$name`",
+                    "\n",
+                    "```{r}",
+                    "#| fig-align: 'center'",
+                    "#| fig-width: 10",
+                    "#| fig-height: 5",
+                    "#| out-width: '100%'",
+                    "print(x$plot)",
+                    "```"
+  ),
+  envir = environment(),
+  quiet  = TRUE
+  )
+})
+
+cat(unlist(res), sep = "\n")
 ```
 
-#### Visualize MVPA % of wear time
+:::
 
-```{r p_percent_mvpa_by_day}
-p_percent_mvpa_by_day
-```
+#### Models
 
-### Model based on MVPA % of wear time
-```{r}
+::: {.panel-tabset}
+
+```{r models}
+#| results: asis
 #| fig-width: 12
 #| fig-height: 12
 
-# Build model
-mod <- lmerTest::lmer(
-  percent_MVPA ~ day * capl_interpretation + (1 | id), 
-  data = df_3_valid_days |> 
-    dplyr::filter(validity == "valid" & capl_interpretation != "Non available") |> 
-    dplyr::mutate(capl_interpretation = factor(capl_interpretation, levels = c("Beginning", "Progressing", "Achieving", "Excelling"))))
+res <-
+  purrr::map2(
+    selected_metrics$raw_names[which(!(selected_metrics$raw_names %in% c("mean_breaks", "UBD", "gini")))],
+    selected_metrics$new_names[which(!(selected_metrics$new_names %in% c("Number of SED breaks", "Usual bout duration (min)", "Gini index")))],
+    \(x, y) {
+  
+  knitr::knit_child(text = c(
+                    
+                    "\n",
+                    "## `r y`",
+                    "\n",
+                    "##### Build and check model",
+                    "```{r}",
+                    "#| fig-align: 'center'",
+                    "#| fig-width: 12",
+                    "#| fig-height: 12",
+                    "# Set formula",
+                    "formula <- as.formula(paste0(x, '~ gender + day * capl_interpretation + (1 | id) + (1 | school)'))",
+                    "\n",
+                    "# Build model",
+                    "mod <- lmerTest::lmer( formula, data = capl_res_4_valid_days_metrics_by_day)",
+                    "\n",
+                    "# Check model quality",
+                    "performance::check_model(mod)",
+                    "```",
+                    "\n",
+                    "##### Get estimated marginal means",
+                    "```{r}",
+                    "EMM <- emmeans::emmeans(mod, ~ capl_interpretation | day)",
+                    "```",
+                    "##### Vizualize estimated marginal means over the week",
+                    "```{r}",
+                     "EMM |> ",
+                        "as.data.frame() |> ",
+                        "ggplot(aes(x = day, y = emmean, color = capl_interpretation)) + ",
+                        "geom_point() + ",
+                        "geom_line(aes(group = capl_interpretation)) + ",
+                        "labs(x = 'Day', y = 'Estimated marginal mean', color = 'CAPL-2 profile') + ",
+                        "scale_color_manual(values = scales::hue_pal()(5)[2:5]) +",
+                        "theme_bw() + ",
+                        "theme(legend.title = element_text(face = 'bold'))",
+                    "```",
+                    "\n",
+                    "##### Vizualize estimated marginal means along with unadjusted CIs",
+                    "```{r}",
+                    "#| fig-align: 'center'",
+                    "#| fig-height: 9",
+                    "plot(EMM)",
+                    "```",
+                    "\n",
+                    "##### Get mean differences along with unadjusted p-values",
+                    "```{r}", 
+                    "emmeans::test(pairs(EMM), by = NULL, adjust = 'none')",           
+                    "```",
+                     "\n",
+                    "##### Get mean differences along with adjusted p-values (Benjamin-Hochberg method)",
+                     "```{r}",
+                    "emmeans::test(pairs(EMM, by = 'day'), by = NULL, adjust = 'BH')",
+                    "```"
+  ),
+  envir = environment(),
+  quiet  = TRUE
+  )
+})
 
-# Check model summary
-summary(mod)
-
-# Check model quality
-performance::check_model(mod)
+cat(unlist(res), sep = "\n")
 ```
 
+```{r export_datasets}
+#| echo: false
 
-## Export datasets
-
-```{r}
-# Export CAPL results
 readr::write_csv2(capl_res, "out/capl_res.csv")
+readr::write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days.csv")
+readr::write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days_metrics_by_day.csv")
 ```
 
