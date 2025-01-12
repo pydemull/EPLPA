@@ -1,13 +1,13 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|45b08b9643f06cc2|||||||||||||||
+.Random.seed|object|8688efe63f1019ed|||||||||||||||
 agd_dir|stem|e2479c2b3fe9e2c3|bc10a632207bcb93|2c530c1562a7fbd1|-205611500|./data/agd/|t19920.99369242s|d3256ba881f5d4b7|65536|file|local|vector|||0||
 base_file|stem|fb8971e17f8df4e7|73a0d5dcd141950f|2c530c1562a7fbd1|515637225|./data/BASE.xlsx|t19887.3686720251s|59a2d0883e281a39|31145|file|local|vector|||0||
-capl_comp_sex|stem|e1a5ab4aec3bcc1e|073cb15e803f8999|a5d55da649d56ccd|1727083662||t20094.9758107218s|0c8b2aa18f55762a|303|rds|local|vector|||0.03|impossible de calculer la pvalue exacte avec des exaequos|
-capl_res|stem|75c22accbfb4c17b|8e86b47d7e375dd4|1e459dd37cecc1d2|1220896122||t20094.9757983014s|b31172e51f7c8d34|14460|rds|local|vector|||3.6||
-capl_res_4_valid_days|stem|c84e050c6fe128da|f373b9266fe1bfb0|8f383a9b9f3419a4|-1045516099||t20094.9758011474s|4e411428c7ec3f66|15064|rds|local|vector|||0.05||
-capl_res_4_valid_days_metrics_by_day|stem|7b743290a94c47db|f5c3866db11208da|8f383a9b9f3419a4|432050756||t20094.9758003841s|41f2cfa65d3299b0|30894|rds|local|vector|||0.04||
+capl_comp_sex|stem|e1a5ab4aec3bcc1e|073cb15e803f8999|182bb21eca7cf6c8|1727083662||t20100.8889712766s|0c8b2aa18f55762a|303|rds|local|vector|||0.81|impossible de calculer la pvalue exacte avec des exaequos|
+capl_res|stem|9c4dac438bbb9809|2cef8fcd7c276df4|1e459dd37cecc1d2|1220896122||t20100.8888432828s|9f69328163bbbef5|14452|rds|local|vector|||5.11||
+capl_res_4_valid_days|stem|c84e050c6fe128da|f373b9266fe1bfb0|20da9aaab43d82f4|-1045516099||t20100.8889372959s|4e411428c7ec3f66|15064|rds|local|vector|||0.06||
+capl_res_4_valid_days_metrics_by_day|stem|7b743290a94c47db|f5c3866db11208da|20da9aaab43d82f4|432050756||t20100.8889335918s|41f2cfa65d3299b0|30894|rds|local|vector|||0.28||
 capl_res_4_valid_days_piv|stem|ff52271aac7c3077|ddf7ed47c40899fe|7fb286ee093dd81b|-938074407||t20095.6447097375s|880eaeee2af1671e|7338|rds|local|vector|||0.01||
-check_cor_metrics|stem|f39dcbfe137acda6|b1388fba2ff846f2|b37d33dce52648fe|1149685104||t20095.6402944573s|a7d7a18f97721b6c|2664|rds|local|vector|||0.08||
+check_cor_metrics|stem|142ee4bb61acef1f|b1388fba2ff846f2|295eceec4750797d|1149685104||t20100.6152012579s|9a7ebdeab3925cc2|1286|rds|local|vector|||0.03||
 COMP_PHY|stem|04fc8a580e03b33c|c51ed14a596adde7|0753d36f9ae42bb9|582130122||t20094.9596101405s|217acb30fc8580a5|509|rds|local|vector|||0.17||
 COMPT_PHY|stem|beafb28a11ec8481|4a0b060e903a8a66|0753d36f9ae42bb9|-24628419||t20094.9596130165s|19a229a1bd3fe534|1317|rds|local|vector|||0.06||
 config_file|stem|a61a1b9fec824994|ea35d26add459a59|2c530c1562a7fbd1|-615108176|config.csv|t19842.8161745207s|5562c863032fa468|4885|file|local|vector|||0.02||
@@ -15,32 +15,32 @@ CONN_COMPR|stem|992f5d766ba5cfca|99594d3ccd8bc804|0753d36f9ae42bb9|55203614||t20
 dates_file|stem|1eb59b8ea1a38adc|68fc4e010143295d|2c530c1562a7fbd1|-200338467|./data/DATES.csv|t20094.9587955895s|daab79578ab85206|2676|file|local|vector|||0||
 DEMO|stem|aff6a75c9c910155|b13056191534be9b|d5810bd9bd0461f9|900896527||t20094.9596206077s|fcc047ad9204673a|792|rds|local|vector|||0.63||
 demo_file|stem|9f6d249466bdfdce|e0bb25c9946507ca|2c530c1562a7fbd1|1907734460|./data/DEMO.csv|t19886.2315277513s|0dbb4a462d554e7b|2640|file|local|vector|||0||
-desc_stats_capl_all|stem|056180801bc3d6e1|27cc3e0db3cfd4e6|a5d55da649d56ccd|1302310336||t20094.9758448349s|c0c71d0eaaf30910|5100|rds|local|vector|||2.91|The update argument of modify_header is deprecated as of gtsummary 2.0.0.ℹ Use modify_header... input instead. Dynamic dots allow for syntax like  modify_headerlist....ℹ The deprecated feature was likely used in the gtsummary package.  Please report the issue at httpsgithub.comddsjoberggtsummaryissues.|
-desc_stats_capl_by_sex|stem|2a56d458117b54f8|ebc190d9d6945449|a5d55da649d56ccd|-604049058||t20094.9758706623s|16f25faf45d85584|5756|rds|local|vector|||2.15||
+desc_stats_capl_all|stem|07796a4a05c2958f|27cc3e0db3cfd4e6|182bb21eca7cf6c8|1302310336||t20100.8890302797s|c0c71d0eaaf30910|5100|rds|local|vector|||5|The update argument of modify_header is deprecated as of gtsummary 2.0.0.ℹ Use modify_header... input instead. Dynamic dots allow for syntax like  modify_headerlist....ℹ The deprecated feature was likely used in the gtsummary package.  Please report the issue at httpsgithub.comddsjoberggtsummaryissues.|
+desc_stats_capl_by_sex|stem|3eeccb26900e3693|ebc190d9d6945449|182bb21eca7cf6c8|-604049058||t20100.8890713808s|9187f6132ca1df42|5751|rds|local|vector|||3.48||
 df_cleaned|stem|59ad4fca19df65c2|c450ed712d85532b|392ea3ae501daf95|-2036021726||t20094.9757552973s|4d0c83b2cfacfe0d|9078|rds|local|vector|||0.34|There was 1 warning in mutate.ℹ In argument acrossccamsa_skill_score1self_report_pa, as.integer.Caused by warning NAs introduits lors de la conversion automatique|
 df_raw|stem|8410af1759f3f52c|d5f26e865d1f3711|7f47c572cc66d1bc|-796806726||t20094.975750668s|c0188f7bd0b30679|10897|rds|local|vector|||0.03||
-domain_global_multicomp_sex|stem|63cb97f4a19c9317|fece7e08f3b1adf1|a5d55da649d56ccd|69707313||t20094.9759024684s|ac2caa06e2ef613d|542|rds|local|vector|||2.7||
-domain_local_multicomp_sex|stem|75458a3f3231e7f1|ab1cdfc005c4afc7|a5d55da649d56ccd|1790769197||t20094.9759041523s|9a7509e05e75fe3d|465|rds|local|vector|||0.03||
+domain_global_multicomp_sex|stem|94c6f372234952e7|fece7e08f3b1adf1|182bb21eca7cf6c8|69707313||t20100.8891187823s|22b9072548525589|488|rds|local|vector|||4.03|Rank covariance matrix is singular, only ANOVA test returned|
+domain_local_multicomp_sex|stem|142f0ac7a3455a8f|ab1cdfc005c4afc7|182bb21eca7cf6c8|1790769197||t20100.8891199456s|1ae71eaef8b82f2b|456|rds|local|vector|||0.03||
 get_lcmms|function|8b0d1880549cbd78|||||||||||||||
 ids_with_4_valid_days|stem|6f864d784946c8aa|f15c440b483a8716|8170f5137c3f0b70|-1808431841||t20094.9757408476s|e435a6b9e7e6ea9f|179|rds|local|vector|||0||
-item_global_multicomp_sex|stem|e770d9d648030e82|e260c3e896fe3e23|a5d55da649d56ccd|-2042516848||t20094.9759470138s|2e113267a0140a4c|839|rds|local|vector|||3.64||
-item_local_multicomp_sex|stem|2fffe3c21a2694fa|98168433d266d37e|a5d55da649d56ccd|-748609189||t20094.9759732904s|cbeee874f8059bd2|4101|rds|local|vector|||2.22||
-metrics_global_multicomp_profile|stem|ada080785dcb6762|ee8d8f520d41c94c|18ba6e0c75eaaf65|-1987674547||t20095.6403268218s|3d028c19cbfaff4b|927|rds|local|vector|||2.73||
-metrics_local_multicomp_profile|stem|ab3f83e41152bf01|d9c4154608d55f0c|18ba6e0c75eaaf65|-194513882||t20095.640293441s|6132978aa5edf177|2324|rds|local|vector|||0.81||
+item_global_multicomp_sex|stem|5ea1831d4572d916|e260c3e896fe3e23|182bb21eca7cf6c8|-2042516848||t20100.8891933106s|be1804c604c1ee1a|837|rds|local|vector|||6.25||
+item_local_multicomp_sex|stem|87629d3bddb111a1|98168433d266d37e|182bb21eca7cf6c8|-748609189||t20100.8892561743s|ddaf338f030f622e|4096|rds|local|vector|||5.18||
+metrics_global_multicomp_profile|stem|0b838fa55db42be5|ee8d8f520d41c94c|2c4a88d4fc0d03f9|-1987674547||t20100.6152334039s|b7aa146e424cb77e|759|rds|local|vector|||2.69||
+metrics_local_multicomp_profile|stem|d82601d34459f9eb|d9c4154608d55f0c|2c4a88d4fc0d03f9|-194513882||t20100.61519974s|340fcdd08c153d07|793|rds|local|vector|||0.16||
 MOTIV_CONF|stem|82743e7bb6af84d9|e82aa91c9db5fdb9|0753d36f9ae42bb9|-818849535||t20094.9596111502s|f4babbe5a883258e|1970|rds|local|vector|||0.08||
-n_boys|stem|a015c2aedbfeb514|5b0e932ef03faf88|a5d55da649d56ccd|-2062011951||t20094.9760106386s|3afeaaa6061de512|49|rds|local|vector|||0||
-n_girls|stem|52ff55a1673175e9|ac771f65693a5f69|a5d55da649d56ccd|-1510713464||t20094.9758048718s|3afeaaa6061de512|49|rds|local|vector|||0||
+n_boys|stem|a015c2aedbfeb514|5b0e932ef03faf88|182bb21eca7cf6c8|-2062011951||t20100.8893438392s|3afeaaa6061de512|49|rds|local|vector|||0||
+n_girls|stem|52ff55a1673175e9|ac771f65693a5f69|182bb21eca7cf6c8|-1510713464||t20100.8889451024s|3afeaaa6061de512|49|rds|local|vector|||0.02||
 p_biplot_metrics|stem|dbf5b8d861ecb647|6f4d1a2f9badbe43|7fb286ee093dd81b|371072347||t20095.5957404291s|26ee2fcf77a721ba|242366|rds|local|vector|||0.47||
-p_capl_all_domains|stem|71c6962c029bbfad|b8f405ad0d2386eb|f456e51d5f80948f|-1880886451||t20094.9759865618s|15924981b479320f|998301|rds|local|vector|||0.59||
-p_capl_all_domains_by_sex|stem|32aadf71656de826|c68fb1d439ee63cd|f456e51d5f80948f|-1251687582||t20094.9760076074s|f621139bcd29a710|1355289|rds|local|vector|||0.98||
+p_capl_all_domains|stem|946a7ca332d23947|b8f405ad0d2386eb|6f50c905ae9e0887|-1880886451||t20100.8892919854s|e3d90ac10bc0cf60|998426|rds|local|vector|||1.69||
+p_capl_all_domains_by_sex|stem|2c938fba9dfbfd22|c68fb1d439ee63cd|6f50c905ae9e0887|-1251687582||t20100.8893380469s|1756e8e952953f74|1355451|rds|local|vector|||2.32||
 p_counts_valid_ids_by_day|stem|97c7964c99877e34|fcc5d72ea84fc653|9b0e4036937e73d8|1267143158||t20094.9760241808s|c4f606127ab28689|215014|rds|local|vector|||0.09||
 p_distri_all_metrics|stem|86a8bbc939f9afca|af7485ac9d7b7584|8b7179d6800aa4f0|1978163643||t20095.644716076s|4a7b0136cc6bc915|208896|rds|local|vector|||0.01||
-p_distri_all_metrics_by_profile|stem|c57f929ca8d8ebcf|de71b8faae0a53e0|673dd39b85c32dfe|-1171138238||t20095.6447133357s|7b4f97a3975d7d86|236267|rds|local|vector|||0.09||
-p_interpretation|stem|9c4207035f1dd43a|215792601e393c11|a5d55da649d56ccd|1248640847||t20094.9758097042s|a1a3ad8a43f81db8|195515|rds|local|vector|||0.04||
-p_interpretation_by_sex|stem|817e34b1fc47229c|3d66ab1fb07f4be2|a5d55da649d56ccd|-1355073409||t20094.9758074514s|bb08841887338a6b|211742|rds|local|vector|||0.05||
-p_metric_by_day|stem|6d7aa4c96a916479|76319d4cc6a20355|4b2ed2243badb393|1990651190||t20095.6402526676s|39e15b3e1a34863a|1752400|rds|local|vector|||0.28||
-p_multiv_comp_sex_dom|stem|a762ce62eabe16a0|ef98d3c157d56cf2|7ddb7b4fd98af236|-100731958||t20095.5517878464s|6d8ca04a21ea6c2a|217733|rds|local|vector|||0.13||
-p_multiv_comp_sex_item|stem|79bc04be607ff14c|2756bc692fe8ce5d|7ddb7b4fd98af236|-484466356||t20095.5517914588s|eea9d74000bfe116|226714|rds|local|vector|||0.02||
+p_distri_all_metrics_by_profile|stem|5d41e4d32353b501|8928054ac22a50ca|a1cf217c6784bc84|-1171138238||t20100.8567857062s|2ff4f8f7f41ec651|233766|rds|local|vector|||0.14||
+p_interpretation|stem|c8430ceaba256b6a|215792601e393c11|182bb21eca7cf6c8|1248640847||t20100.8889571247s|6566e09215510317|195517|rds|local|vector|||0.3||
+p_interpretation_by_sex|stem|6364c95fd1706b4b|3d66ab1fb07f4be2|182bb21eca7cf6c8|-1355073409||t20100.8889507833s|d50b70321f15e9c5|211737|rds|local|vector|||0.19||
+p_metric_by_day|stem|d6a4cd6ab4f9a178|76319d4cc6a20355|a3578c051289a9ef|1990651190||t20100.615166946s|948111581d4d3ead|1168274|rds|local|vector|||0.23||
+p_multiv_comp_sex_dom|stem|f6a9bdfe505c5461|ef98d3c157d56cf2|edc4aa00d666272b|-100731958||t20100.8889442639s|3aa34f5da06da411|217714|rds|local|vector|||0.36||
+p_multiv_comp_sex_item|stem|989297c596d77c52|2756bc692fe8ce5d|edc4aa00d666272b|-484466356||t20100.8893429153s|696c0314ee56ba2a|226738|rds|local|vector|||0.06||
 pa_data|stem|ea8d61ac77e9c4ba|7c1f7445df9fed3c|90715e92e6bd42aa|-1817921912||t20094.9757323735s|75ba9b68a2837fb1|37060015|rds|local|vector|||1378.37||
 PA_METRICS|stem|268e9f4fdbdfa1f8|229e3e421f2811a6|8170f5137c3f0b70|2034792696||t20094.9757491384s|d8d7aefd72e29237|6262|rds|local|vector|||0.04||
 pa_metrics_config|stem|3a13bc337d6cece6|57aeb28b4e0a11a4|e4ec6efb9f32486f|908103177||t20094.9596223167s|0c4eed8eddbc9945|1262|rds|local|vector|||0.11||
@@ -50,9 +50,9 @@ plot_raincloud_by_fact|function|f02e7aa8dc8fd704|||||||||||||||
 plot_score_distri|function|71e127859f70ef99|||||||||||||||
 prop_4_valid_days|stem|c1ba7297169c517c|c754cd19bd1fab46|8170f5137c3f0b70|-1017554206||t20094.9757479598s|02266e49b6c0390d|57|rds|local|vector|||0.01||
 recode_capl_interpretation_vars|function|67d00244c004d725|||||||||||||||
-report|stem|972d57e06cf5ac9d|9ce9fe31e098bb69|98032d0b0e1d5c80|787668912|report.html*report.qmd|t20095.6465738408s|a3fb5fb6a34ef164|9315348|file|local|vector|||163.75||
-selected_metrics|stem|8fc6619cdff823fd|1ff14d1578effdfd|2c530c1562a7fbd1|-1696209964||t20095.6398270293s|e0807c4fc5685dfa|318|rds|local|vector|||3.47|le package factoextra a été compilé avec la version R 4.4.2. le package ggalluvial a été compilé avec la version R 4.4.2. le package lcmm a été compilé avec la version R 4.4.2. le package patchwork a été compilé avec la version R 4.4.2|
+report|stem|a0cee85ab63853a3|9ce9fe31e098bb69|0073ea897d285491|787668912|report.html*report.qmd|t20100.8915712414s|340bc753af0abf0d|8067272|file|local|vector|||193.8||
+selected_metrics|stem|866ad294b5e7a709|88f0414a8b6aad72|2c530c1562a7fbd1|-1696209964||t20100.6147342419s|6ce28c86f98a8d6a|265|rds|local|vector|||4.49|le package factoextra a été compilé avec la version R 4.4.2. le package ggalluvial a été compilé avec la version R 4.4.2. le package lcmm a été compilé avec la version R 4.4.2. le package patchwork a été compilé avec la version R 4.4.2|
 tab_pa_metrics_config|stem|23f8d6e7a204f2cd|3d366075122a1cfe|c98116b21245b52e|633582058||t20094.9757394771s|eb0bdafacbaf0878|309|rds|local|vector|||0.05||
 tab_percents_num_valid_days|stem|943086478b7328ff|ea9952bd463953a0|8170f5137c3f0b70|-901944326||t20094.9757464964s|8353dc065b08fa31|3635|rds|local|vector|||0.38||
-tbl_retained_metrics|stem|3aff0b7cd62e1671|1c6414f88af8a41b|b37d33dce52648fe|-425998273||t20095.6447072371s|6c85f7ea2822d195|5559|rds|local|vector|||3.65||
-testing_formula_metrics|stem|2506b5c6d29ebf7f|b4c3baed6ceb67c3|1d5f0a8772290d87|2110342465||t20095.6402392664s|80a0bc6f923cef0a|583|rds|local|vector|||0.01||
+tbl_retained_metrics|stem|707aeb3a6735da81|1c6414f88af8a41b|295eceec4750797d|-425998273||t20100.6151961695s|a821a2373f5b8de8|4907|rds|local|vector|||2.4||
+testing_formula_metrics|stem|3de5907d3ffbb11c|b4c3baed6ceb67c3|3e4ed03c6f4b4f27|2110342465||t20100.6151527743s|8286a8ca1d8d4c53|487|rds|local|vector|||0||

@@ -438,6 +438,9 @@ list(
     command =
       { 
         
+        ### Set seed
+        set.seed(123)
+        
         ### Get initial CAPL-2 results
         capl_res <- get_capl(df_cleaned)
         
@@ -2078,30 +2081,22 @@ list(
     name = selected_metrics,
     command = list(
       raw_names = c(
-        "vm_per_min",
         "percent_SED",
-        "percent_LPA",
         "percent_MVPA",
         "total_steps",
         "max_steps_60min",
-        "peak_steps_60min",
         "ig",
         "mean_breaks",
-        "UBD",
-        "gini"
+        "UBD"
         ),
       new_names = c(
-        "VM counts/min",
         "% Wear time SED",
-        "% Wear time LPA",
         "% Wear time MVPA",
         "Step count",
         "60-min max step accum.",
-        "60-min peak step accum.",
         "Intensity gradient",
         "Number of SED breaks",
-        "Usual bout duration (min)",
-        "Gini index"
+        "Usual bout duration (min)"
       )
     )
   ),
@@ -2139,6 +2134,7 @@ list(
       facet_wrap(~ Metric, scales = "free", ncol = 3) +
       theme_bw() +
       theme(
+        legend.title = element_text(face = "bold"),
         legend.position = "right",
         axis.ticks.x = element_blank(),
         axis.ticks.y = element_line(color = "grey40"),

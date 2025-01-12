@@ -396,6 +396,25 @@ Based on the PCA biplot, we kept for further analysis:
 check_cor_metrics
 ```
 
+:::{.callout-note}
+Based on the correlation results, we finally removed `vm_perm_min`, `percent_LPA`, `peak_steps_60min` and `gini` to keep variables with lower correlations. The final list of the retained metrics is the following: 
+
+* For activity volume metrics: 
+  + `percent_SED`
+  + `percent_MVPA`
+  + `total_steps`
+
+* For step accumulation metrics:
+    + `max_steps_60min`
+
+* For intensity distribution metrics:
+  + `ig`
+
+* For sedentary behaviour accumulation metrics:
+  + `mean_breaks`
+  + `UBD`
+:::
+
 #### Checking for multivariate outliers
 
 ```{r check_outliers_pa_metrics}
@@ -530,10 +549,15 @@ res <-
                     "formula <- as.formula(paste0(x, '~ gender + day * capl_interpretation + (1 | id) + (1 | school)'))",
                     "\n",
                     "# Build model",
-                    "mod <- lmerTest::lmer( formula, data = capl_res_4_valid_days_metrics_by_day)",
+                    "mod <- lmerTest::lmer(formula, data = capl_res_4_valid_days_metrics_by_day)",
                     "\n",
                     "# Check model quality",
                     "performance::check_model(mod)",
+                    "```",
+                    "\n",
+                    "##### Check outliers",
+                    "```{r}",
+                    "performance::check_outliers(mod)",
                     "```",
                     "\n",
                     "##### Get estimated marginal means",
