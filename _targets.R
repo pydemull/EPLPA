@@ -14,16 +14,14 @@ tar_option_set(
     "flextable",
     "forcats",
     "ggalluvial",
-    "ggdist",
-    "ggh4x",
-    "ggrain",
     "ggplot2",
+    "ggrain",
     "gtsummary",
     "hms",
-    "lcmm",
     "npmv",
     "patchwork",
     "purrr",
+    "rankFD",
     "readr",
     "scales",
     "skimr",
@@ -78,21 +76,26 @@ list(
     command = read_csv2(config_file)
   ),
   
-  ## Make a table for accelerometer analysis settings ----
+  ## Make a table for accelerometer data analysis settings ----
   tar_target(
     name = tab_pa_metrics_config,
-    command = pa_metrics_config[grep("CHILD", pa_metrics_config$CODE_NAME), ] |>
-      filter(CODE_NAME != "EQUATION_EE_CHILD") |>
+    command = pa_metrics_config |>
       select(-COMMENTS) |>
-      bind_rows(
-        pa_metrics_config |>
-          filter(
-            CODE_NAME %in% c(
-              "VALID_WEAR_TIME_START",
-              "VALID_WEAR_TIME_END",
-              "MINIMUM_WEAR_TIME"
-            )
-      ) |> select(-COMMENTS))
+      filter(
+        CODE_NAME %in% c(
+          "AXIS_CHILD",
+          "SED_CUTPOINT_CHILD", 
+          "MPA_CUTPOINT_CHILD",     
+          "VPA_CUTPOINT_CHILD",      
+          "EPOCH_TARGET_CHILD",       
+          "FRAME_CHILD",
+          "ALLOWANCE_FRAME_CHILD",       
+          "STREAM_FRAME_CHILD",     
+          "VALID_WEAR_TIME_START",
+          "VALID_WEAR_TIME_END",
+          "MINIMUM_WEAR_TIME"
+        )
+      )
   ),
   
   ## Get movement behaviour metrics ----
@@ -411,24 +414,25 @@ list(
       bold(part = "header") |>
       add_header_row(
         values = c("", "Number of valid days of accelerometer wear"),
-        colwidths = c(2, 6),
+        colwidths = c(1, 7),
         top = TRUE
       ) |> 
       align(i = 1, align = "left", part = "header") |> 
-      align(i = 2, align = "right", part = "header") |> 
-      align(i = 1:2, align = "right", part = "body") |> 
+      align(i = 2, align = "left", part = "header") |> 
+      align(i = 1:2, align = "left", part = "body") |> 
       italic(i = 1, j = 1)
     
   ),
 
-  ## Get the proportion of participant with at least 4 valid days of measurement
+  ## Get the proportion of participants with at least 4 valid days of measurement
   ## of movement behaviours
   tar_target(
     name = prop_4_valid_days,
     command = (
       pa_data$all_metrics |> 
         mutate(if_4_valid_days = ifelse(valid_days >= 4, "yes", "no")) |> 
-        count(if_4_valid_days) |> mutate(prop = format(janitor::round_half_up(n / sum(n) * 100, digits = 1), nsmall = 1))
+        count(if_4_valid_days) |> 
+        mutate(prop = format(janitor::round_half_up(n / sum(n) * 100, digits = 1), nsmall = 1))
       )[2, 3]
   ),
 
@@ -447,23 +451,23 @@ list(
         ### The capl() function failed to compute scores for ID 55, thus requiring
         ### manual computations
         
-        #### Adjust Predilection score for ID 55
+        #### Update Predilection score for ID 55
         predilection_score_55 <-
           as.numeric(format(capl_res[capl_res$id == "55", "predilection_score"][[1]], digits = 3))
         
-        #### Adjust Adequacy score for ID 55
+        #### Update Adequacy score for ID 55
         adequacy_score_55 <-
           as.numeric(format(capl_res[capl_res$id == "55", "adequacy_score"][[1]]), digits = 3)
         
-        #### Adjust Intrinsic motivation score for ID 55
+        #### Update Intrinsic motivation score for ID 55
         intrinsic_motivation_score_55 <-
           as.numeric(format(capl_res[capl_res$id == "55", "intrinsic_motivation_score"][[1]]), digits = 3)
         
-        #### Adjust PA competence score for ID 55
+        #### Update PA competence score for ID 55
         pa_competence_score_55 <-
           capl_res[capl_res$id == "55", "pa_competence_score"][[1]]
         
-        ### Adjust MC score for ID 55
+        ### Update MC score for ID 55
         capl_res[capl_res$id == "55", "mc_score"] <-
           get_mc_score(
             predilection_score_55,
@@ -472,17 +476,17 @@ list(
             pa_competence_score_55
           )[[1]]
         
-        #### Adjust MC score interpretation for ID 55
+        #### Update MC score interpretation for ID 55
         capl_res[capl_res$id == "55", "mc_interpretation"] <-
           get_capl_interpretation(capl_res[capl_res$id == "55", "age"][[1]],
                                   capl_res[capl_res$id == "55", "gender"][[1]],
                                   capl_res[capl_res$id == "55", "mc_score"][[1]],
                                   "mc")[[1]]
         
-        #### Adjust CAPL-2 status for ID 55
+        #### Update CAPL-2 status for ID 55
         capl_res[capl_res$id == "55", "capl_status"] <- "complete"
        
-        ### Adjust all CAPL-2 status and interpretation variables
+        ### Update all CAPL-2 status and interpretation variables
         capl_res <- 
           capl_res |> 
           mutate(
@@ -1030,7 +1034,9 @@ list(
       modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3) or n (%) of participants who obtained a score of 1/1. 
                       The total number of participants was {n}.") |> 
       add_n() |> 
-      as_flex_table()
+      as_flex_table() |>
+      italic(i = 1, j = 2, part = "header") |>
+      bold(i = c(1, 5, 8, 13, 19), j = 1:3)
   ),
   
   ## Get CAPL-2 interpretation statistics ----
@@ -1577,70 +1583,80 @@ list(
   ),
   tar_target(
     name = desc_stats_capl_by_sex,
-    command = capl_res |> 
-      tbl_summary(
-        include = c(pc_score, 
-                    pacer_score,
-                    camsa_score,
-                    plank_score,
-                    db_score, 
-                    step_score,
-                    self_report_pa_score,
-                    mc_score, 
-                    intrinsic_motivation_score,
-                    pa_competence_score,
-                    predilection_score,
-                    adequacy_score,
-                    ku_score, 
-                    fill_in_the_blanks_score,
-                    pa_guideline_score,
-                    crf_means_score,
-                    ms_means_score,
-                    sports_skill_score,
-                    capl_score),
-        by = gender,
-        label = list(
-          pc_score = "Physical competence (/30)",
-          pacer_score = "PACER shuttle run (/10)",
-          camsa_score = "CAMSA (/10)",
-          plank_score = "Plank (/10)",
-          db_score = "Daily behaviour (/30)",
-          step_score = "Average daily step count (/25)",
-          self_report_pa_score = "Self-reported number of days with MVPA (/5)",
-          mc_score = "Motivation and confidence (/30)",
-          intrinsic_motivation_score = "Intrinsic motivation (/7.5)",
-          pa_competence_score = "Competence (/7.5)",
-          predilection_score = "Predilection (/7.5)",
-          adequacy_score = "Adequacy (/7.5)",
-          ku_score = "Knowledge and Understanding (/10)",
-          fill_in_the_blanks_score = "PA comprehension and understanding (/6)",
-          pa_guideline_score = "Daily PA guidelines (/1)",
-          crf_means_score = "Cardiorespiratory fitness definition (/1)",
-          ms_means_score = "Muscular strength and endurance definition (/1)",
-          sports_skill_score = "Improve sport skill (/1)",
-          capl_score = "Physical Literacy (/100)"
-        ),
-        missing = "no",
-        statistic = list(
-          all_continuous() ~ "{median} ({p25} - {p75})"
-        ),
-        type = list(
-          self_report_pa_score = "continuous",
-          ku_score = "continuous",
-          fill_in_the_blanks_score = "continuous"
-        ),
-        digits = list(all_continuous() ~ 1)
-      ) |> 
+    command = capl_res |>  tbl_strata(
+      strata = c(gender), 
+      .tbl_fun =
+        ~ .x %>%
+        tbl_summary(
+          include = c(pc_score, 
+                      pacer_score,
+                      camsa_score,
+                      plank_score,
+                      db_score, 
+                      step_score,
+                      self_report_pa_score,
+                      mc_score, 
+                      intrinsic_motivation_score,
+                      pa_competence_score,
+                      predilection_score,
+                      adequacy_score,
+                      ku_score, 
+                      fill_in_the_blanks_score,
+                      pa_guideline_score,
+                      crf_means_score,
+                      ms_means_score,
+                      sports_skill_score,
+                      capl_score),
+          
+          label = list(
+            pc_score = "Physical competence (/30)",
+            pacer_score = "PACER shuttle run (/10)",
+            camsa_score = "CAMSA (/10)",
+            plank_score = "Plank (/10)",
+            db_score = "Daily behaviour (/30)",
+            step_score = "Average daily step count (/25)",
+            self_report_pa_score = "Self-reported number of days with MVPA (/5)",
+            mc_score = "Motivation and confidence (/30)",
+            intrinsic_motivation_score = "Intrinsic motivation (/7.5)",
+            pa_competence_score = "Competence (/7.5)",
+            predilection_score = "Predilection (/7.5)",
+            adequacy_score = "Adequacy (/7.5)",
+            ku_score = "Knowledge and Understanding (/10)",
+            fill_in_the_blanks_score = "PA comprehension and understanding (/6)",
+            pa_guideline_score = "Daily PA guidelines (/1)",
+            crf_means_score = "Cardiorespiratory fitness definition (/1)",
+            ms_means_score = "Muscular strength and endurance definition (/1)",
+            sports_skill_score = "Improve sport skill (/1)",
+            capl_score = "Physical Literacy (/100)"
+          ),
+          missing = "no",
+          statistic = list(
+            all_continuous() ~ "{median} ({p25} - {p75})"
+          ),
+          type = list(
+            pacer_score = "continuous", 
+            self_report_pa_score = "continuous",
+            intrinsic_motivation_score = "continuous", 
+            predilection_score = "continuous", ku_score = "continuous",
+            fill_in_the_blanks_score = "continuous"
+          ),
+          digits = list(all_continuous() ~ 1)
+        ) |> 
+        
+        modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3) or n (%) of participants who obtained a score of 1/1.") |> 
+        add_n(),
+      .header = "**{Hmisc::capitalize(strata)}s**, N = {n}"
+    ) |> 
       modify_header(
         list(
-          label = c("**Score**"),
-          stat_1 = "**Girls**",
-          stat_2 = "**Boys**"
+          label = "**Score**",
+          stat_0_1 = "**Statistics**",
+          stat_0_2 = "**Statistics**"
         )
       ) |> 
-      modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3) or n (%) of participants who obtained a score of 1/1.") |> 
-      add_n() |> 
-      as_flex_table() 
+      as_flex_table() |>
+      bold(i = c(1, 5, 8, 13, 19), j = 1:5)
+    
   ), 
   
   ## Get interpretation statistics by sex ----
@@ -1714,16 +1730,20 @@ list(
 
 
   ## Comparison of CAPL-2 scores between girls and boys
+
+  ### Test
   tar_target(
       name = capl_comp_sex,
-      command = wilcox.test(
-        capl_res[capl_res$gender == "girl", ]$capl_score,
-        capl_res[capl_res$gender == "boy", ]$capl_score,
-        alternative = "two.sided", 
-        paired = FALSE
+      command = rank.two.samples(
+        capl_score ~ gender,
+        data = capl_res,
+        conf.level = 0.95,
+        alternative = "two.sided",
+        rounds = 4,
+        permu = TRUE,
+        nperm = 10000
       )
     ),
-
   
   ## Multivariate comparisons of CAPL-2 domain scores between girls and boys ----
   
@@ -1750,22 +1770,36 @@ list(
             )
           )
         ) |>
-        # The function below is a personal function defined in the
-        # plot_capl_profile_by_sex.R file
-        plot_raincloud_by_fact(
-          id = "id",
-          x = "score", 
-          y = "val", 
-          factor = "gender", 
-          labs_x = "CAPL-2 scores", 
-          labs_y = "Score",
-          labs_fact = "Sex", 
-          col_vals = c("hotpink", "royalblue"), 
-          fill_vals = c("hotpink", "royalblue")
+        ggplot(aes(x = "", y = val, fill = gender, color = gender)) +
+        geom_rain(
+          rain.side = "l",
+          boxplot.args = list(color = "black"),
+          boxplot.args.pos = list(
+            position = ggpp::position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
+          ),
+          point.args = list(alpha = 0.3),
+          point.args.pos = list(
+            position = ggpp::position_dodgenudge(x = 0.3, width = 0.2)),
+          violin.args = list(alpha = 0.3),
+        ) +
+        scale_color_manual(values = c("hotpink", "royalblue")) +
+        scale_fill_manual(values = c("hotpink", "royalblue")) +
+        labs(x = NULL, y = "Score", color = "Sex", fill = "Sex") +
+        facet_wrap(~ score, scales = "free", nrow = 1) +
+        theme_bw() +
+        theme(
+          legend.title = element_text(face = "bold"),
+          legend.position = "bottom",
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_line(color = "grey40"),
+          strip.background = element_rect(fill = "grey40", color = "grey40"),
+          strip.text = element_text(color = "white", face = "bold", size = 10),
+          panel.border = element_rect(color = "grey40")
         )
     ),
 
-    ### Test global between-sex difference for physical literacy domain scores ----
+    ### Test global between-sex differences for physical literacy domain scores ----
+    #### Raw output
     tar_target(
       name = domain_global_multicomp_sex,
       command = nonpartest(
@@ -1775,6 +1809,60 @@ list(
         plots = FALSE
       )
     ), 
+
+    #### Formated output
+    tar_target(
+      name = domain_global_multicomp_sex_rel_eff,
+      command = capl_res |> 
+        dplyr::select(gender, pc_score, db_score, mc_score, ku_score) |> 
+        tidyr::pivot_longer(
+          cols = c(pc_score, db_score, mc_score, ku_score), 
+          names_to = "Score",
+          values_to = "val"
+        ) |> 
+        dplyr::mutate(Score = factor(
+          Score, 
+          levels = c("pc_score", "db_score", "mc_score", "ku_score"),
+          labels = c("Physical competence", "Daily behaviour", "Motivation and confidence", "Knowledge and understanding")
+        )) |> 
+        tidyr::drop_na() |> 
+        dplyr::group_by(gender, Score) |>
+        dplyr::summarise(n = dplyr::n()) |> 
+        tidyr::pivot_wider(id_cols = "Score", names_from = gender, values_from = n) |> 
+        dplyr::mutate("N Girls (Min. / Max. Theo. Rel. Eff.)" = paste0(girl, " (", janitor::round_half_up(girl/(2*(girl + boy)), 2), "/", janitor::round_half_up(1 - girl/(2*(girl + boy)), 2), ")")) |> 
+        dplyr::mutate("N Boys (Min. / Max. Theo. Rel. Eff.)" = paste0(boy, " (", janitor::round_half_up(boy/(2*(girl + boy)), 2), "/", janitor::round_half_up(1 - boy/(2*(girl + boy)), 2), ")")) |> 
+        dplyr::left_join(
+          domain_global_multicomp_sex$twogroupreleffects |> 
+            t() |> 
+            as.data.frame() |> 
+            tibble::rownames_to_column(var = "Score") |> 
+            dplyr::mutate(
+              Score = as.factor(Score),
+              Score = forcats::fct_recode(Score,
+                                          "Physical competence" = "pc_score",
+                                          "Daily behaviour" = "db_score",
+                                          "Motivation and confidence" = "mc_score",
+                                          "Knowledge and understanding" = "ku_score"
+              ),
+              dplyr::across(c(girl, boy), ~janitor::round_half_up(.x, digits = 2))
+            ) |>  
+            dplyr::rename("Rel. Eff. Girls" = girl, "Rel. Eff. Boys" = boy)
+        ) |> 
+        dplyr::select(-c(girl, boy)) |> 
+        flextable() |> 
+        bold(i = 1, part = "header") |> 
+        bold(~ `Rel. Eff. Girls` > 0.5, 4) |> 
+        bold(~ `Rel. Eff. Boys` > 0.5, 5) |> 
+        bg(~ `Rel. Eff. Girls` > 0.5, 4, bg = "grey90") |> 
+        bg(~ `Rel. Eff. Boys` > 0.5, 5, bg = "grey90") |> 
+        width(j = 1, width = 2.5) |> 
+        width(j = 2, width = 1.5) |> 
+        width(j = 3, width = 1.5) |> 
+        valign(i = 1, j = 1:5, valign = "top", part = "header") |> 
+        align(j = 4:5, part = "header", align = "center") |> 
+        align(j = 4:5, part = "body", align = "center") |> 
+        add_footer_lines("Min. = minimum; Max. = maximum; Theo. = Theoretical; Rel. Eff. = relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from both groups (girls and boys). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and score based on the number of girls and boys available for the considered score. Grey cells with bold values highlight the highest relative effects among girls and boys.")
+    ),
   
     ### Test local between-sex differences for physical literacy domain scores  ----
     tar_target(
@@ -1849,25 +1937,36 @@ list(
           )
         ) |>
         arrange(score) |> 
-        # The function below is a personal function defined in the
-        # plot_capl_profile_by_sex.R file
-        plot_raincloud_by_fact(
-          id = "id",
-          x = "score", 
-          y = "val", 
-          factor = "gender", 
-          labs_x = "CAPL-2 scores", 
-          labs_y = "Score",
-          labs_fact = "Sex", 
-          col_vals = c("hotpink", "royalblue"), 
-          fill_vals = c("hotpink", "royalblue")
+        ggplot(aes(x = "", y = val, fill = gender, color = gender)) +
+        geom_rain(
+          rain.side = "l",
+          boxplot.args = list(color = "black"),
+          boxplot.args.pos = list(
+            position = ggpp::position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
+          ),
+          point.args = list(alpha = 0.3),
+          point.args.pos = list(
+            position = ggpp::position_dodgenudge(x = 0.3, width = 0.2)),
+          violin.args = list(alpha = 0.3),
         ) +
+        scale_color_manual(values = c("hotpink", "royalblue")) +
+        scale_fill_manual(values = c("hotpink", "royalblue")) +
+        labs(x = NULL, y = "Score", color = "Sex", fill = "Sex") +
+        facet_wrap(~ score, scales = "free") +
+        theme_bw() +
         theme(
-          axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+          legend.title = element_text(face = "bold"),
+          legend.position = "bottom",
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_line(color = "grey40"),
+          strip.background = element_rect(fill = "grey40", color = "grey40"),
+          strip.text = element_text(color = "white", face = "bold", size = 10),
+          panel.border = element_rect(color = "grey40")
         )
     ),
 
-    ### Test global between-sex difference for physical literacy item scores ----
+    ### Test global between-sex differences for physical literacy item scores ----
+    #### Raw output
     tar_target(
       name = item_global_multicomp_sex,
       command = nonpartest(
@@ -1881,6 +1980,147 @@ list(
         plots = FALSE
       )
     ), 
+
+    #### Formated output
+    tar_target(
+      name = item_global_multicomp_sex_rel_eff,
+      command =  capl_res |> 
+        dplyr::select(gender, 
+                      pacer_score, 
+                      camsa_score, 
+                      plank_score,
+                      step_score, 
+                      self_report_pa_score,
+                      intrinsic_motivation_score,
+                      pa_competence_score, 
+                      predilection_score, 
+                      adequacy_score, 
+                      fill_in_the_blanks_score,
+                      pa_guideline_score, 
+                      crf_means_score,
+                      ms_means_score, 
+                      sports_skill_score
+        ) |> 
+        tidyr::pivot_longer(
+          cols = c(pacer_score, 
+                   camsa_score, 
+                   plank_score,
+                   step_score, 
+                   self_report_pa_score,
+                   intrinsic_motivation_score,
+                   pa_competence_score, 
+                   predilection_score, 
+                   adequacy_score, 
+                   fill_in_the_blanks_score,
+                   pa_guideline_score, 
+                   crf_means_score,
+                   ms_means_score, 
+                   sports_skill_score), 
+          names_to = "Score",
+          values_to = "val"
+        ) |> 
+        dplyr::mutate(Score = factor(
+          Score, 
+          levels = c(
+            "pacer_score", 
+            "camsa_score", 
+            "plank_score",
+            "step_score", 
+            "self_report_pa_score",
+            "intrinsic_motivation_score",
+            "pa_competence_score", 
+            "predilection_score", 
+            "adequacy_score", 
+            "fill_in_the_blanks_score",
+            "pa_guideline_score", 
+            "crf_means_score",
+            "ms_means_score", 
+            "sports_skill_score"
+          ),
+          labels = c(
+            "PACER shuttle run", 
+            "CAMSA", 
+            "Plank",
+            "Average daily step count", 
+            "Self-reported number of days with MVPA",
+            "Intrinsic motivation",
+            "Competence", 
+            "Predilection", 
+            "Adequacy", 
+            "PA comprehension and understanding",
+            "Daily PA guidelines",
+            "Cardiorespiratory fitness definition",
+            "Muscular strength and endurance definition",
+            "Improve sport skill"
+          )
+        )) |> 
+        tidyr::drop_na() |> 
+        dplyr::group_by(gender, Score) |>
+        dplyr::summarise(n = dplyr::n()) |> 
+        tidyr::pivot_wider(id_cols = "Score", names_from = gender, values_from = n) |> 
+        dplyr::mutate("N Girls (Min. / Max. Theo. Rel. Eff.)" = paste0(girl, " (", janitor::round_half_up(girl/(2*(girl + boy)), 2), "/", janitor::round_half_up(1 - girl/(2*(girl + boy)), 2), ")")) |> 
+        dplyr::mutate("N Boys (Min. / Max. Theo. Rel. Eff.)" = paste0(boy, " (", janitor::round_half_up(boy/(2*(girl + boy)), 2), "/", janitor::round_half_up(1 - boy/(2*(girl + boy)), 2), ")")) |> 
+        dplyr::left_join(
+          item_global_multicomp_sex$twogroupreleffects |> 
+            t() |> 
+            as.data.frame() |> 
+            tibble::rownames_to_column(var = "Score") |> 
+            dplyr::mutate(
+              Score = factor(
+                Score,
+                levels = c(
+                  "pacer_score", 
+                  "camsa_score", 
+                  "plank_score",
+                  "step_score", 
+                  "self_report_pa_score",
+                  "intrinsic_motivation_score",
+                  "pa_competence_score", 
+                  "predilection_score", 
+                  "adequacy_score", 
+                  "fill_in_the_blanks_score",
+                  "pa_guideline_score", 
+                  "crf_means_score",
+                  "ms_means_score", 
+                  "sports_skill_score"
+                ),
+                labels = c(
+                  "PACER shuttle run", 
+                  "CAMSA", 
+                  "Plank",
+                  "Average daily step count", 
+                  "Self-reported number of days with MVPA",
+                  "Intrinsic motivation",
+                  "Competence", 
+                  "Predilection", 
+                  "Adequacy", 
+                  "PA comprehension and understanding",
+                  "Daily PA guidelines",
+                  "Cardiorespiratory fitness definition",
+                  "Muscular strength and endurance definition",
+                  "Improve sport skill"
+                )
+              ),
+              dplyr::across(c(girl, boy), ~janitor::round_half_up(.x, digits = 2))
+            ) |> 
+            dplyr::arrange(Score) |>  
+            dplyr::rename("Rel. Eff. Girls" = girl, "Rel. Eff. Boys" = boy)
+        ) |> 
+        dplyr::select(-c(girl, boy)) |> 
+        flextable() |> 
+        bold(i = 1, part = "header") |> 
+        bold(~ `Rel. Eff. Girls` > 0.5, 4) |> 
+        bold(~ `Rel. Eff. Boys` > 0.5, 5) |> 
+        bg(~ `Rel. Eff. Girls` > 0.5, 4, bg = "grey90") |> 
+        bg(~ `Rel. Eff. Boys` > 0.5, 5, bg = "grey90") |> 
+        width(j = 1, width = 2.5) |> 
+        width(j = 2, width = 1.5) |> 
+        width(j = 3, width = 1.5) |> 
+        valign(i = 1, j = 1:5, valign = "top", part = "header") |> 
+        align(j = 4:5, part = "header", align = "center") |> 
+        align(j = 4:5, part = "body", align = "center") |> 
+        add_footer_lines("Min. = minimum; Max. = maximum; Theo. = Theoretical; Rel. Eff. = relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from both groups (girls and boys). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and score based on the number of girls and boys available for the considered score. Grey cells with bold values highlight the highest relative effects among girls and boys.")
+    ),
     
     ### Test local between-sex differences for physical literacy item scores ----
     tar_target(
@@ -2078,6 +2318,35 @@ list(
 
   ### Set the metrics retained from PCA for further analysis ----
   tar_target(
+    name = pca_selection,
+    command = c(
+        "vm_per_min",
+        "percent_SED",
+        "percent_LPA",
+        "percent_MVPA",
+        "total_steps",
+        "max_steps_60min",
+        "peak_steps_60min",
+        "ig",
+        "mean_breaks",
+        "UBD",
+        "gini"
+        )
+  ),
+
+  ### Check correlations (Spearman) between the retained variables
+  tar_target(
+    name = check_cor_metrics,
+    command = capl_res_4_valid_days |> 
+      select(any_of(pca_selection)) |> 
+      correlation(method = "spearman") |> 
+      mutate(abs_rho = abs(rho)) |> 
+      arrange(-abs_rho)
+  ),
+
+  ### Set the metrics retained from both PCA and correlation results for ----
+  ### further analysis ----
+  tar_target(
     name = selected_metrics,
     command = list(
       raw_names = c(
@@ -2088,7 +2357,7 @@ list(
         "ig",
         "mean_breaks",
         "UBD"
-        ),
+      ),
       new_names = c(
         "% Wear time SED",
         "% Wear time MVPA",
@@ -2101,17 +2370,7 @@ list(
     )
   ),
 
-  ### Check correlations (Spearman) between the retained variables
-  tar_target(
-    name = check_cor_metrics,
-    command = capl_res_4_valid_days |> 
-      select(any_of(selected_metrics$raw_names)) |> 
-      correlation(method = "spearman") |> 
-      mutate(abs_rho = abs(rho)) |> 
-      arrange(-abs_rho)
-  ),
-
-  ### Get a plot showing the distributions of the metrics selected from PCA ----
+  ### Get a plot showing the distributions of the metrics selected ----
   tar_target(
     name = p_distri_all_metrics_by_profile,
     command = capl_res_4_valid_days_piv |>  
@@ -2172,7 +2431,9 @@ list(
         digits = list(all_continuous() ~ 1)
       )  |> 
       modify_header(label ~ "**Metric**") |> 
-      modify_footnote(c(stat_1, stat_2, stat_3, stat_4) ~ "Numbers are medians (Q1 - Q3).") |> 
+      modify_footnote(c(stat_1, stat_2, stat_3, stat_4) ~ "Numbers are medians (Q1 - Q3).
+      SED = sedentary, MVPA = moderate-to-vigorous physical activity.
+      All metrics are daily averages except usual bout duration that was based on the entire week of measurement.") |> 
       as_flex_table()
   ),
 
@@ -2188,7 +2449,8 @@ list(
   ),
 
   #### Test for a global difference of movement behaviours between PL profiles ----
-  tar_target(
+  ##### Raw output 
+ tar_target(
     name = metrics_global_multicomp_profile,
     command = nonpartest(
       testing_formula_metrics,
@@ -2196,6 +2458,103 @@ list(
       permreps = 1000,
       plots = FALSE
     )
+  ),
+
+  ##### Formated output
+  tar_target(
+    name = metrics_global_multicomp_profile_rel_eff,
+    command = capl_res_4_valid_days |>
+      dplyr::select(capl_interpretation,
+                    percent_SED,
+                    percent_MVPA,
+                    total_steps,
+                    max_steps_60min,
+                    ig,
+                    mean_breaks,
+                    UBD) |> 
+      tidyr::pivot_longer(
+        cols = c(percent_SED,
+                 percent_MVPA,
+                 total_steps,
+                 max_steps_60min,
+                 ig,
+                 mean_breaks,
+                 UBD), 
+        names_to = "Metric",
+        values_to = "val"
+      ) |> 
+      dplyr::mutate(Metric = factor(
+        Metric, 
+        levels = c(
+          "percent_SED",
+          "percent_MVPA",
+          "total_steps",
+          "max_steps_60min",
+          "ig",
+          "mean_breaks",
+          "UBD"
+        ),
+        labels = c(
+          "% Wear time SED",
+          "% Wear time MVPA",
+          "Step count",
+          "60-min max step accum.",
+          "Intensity gradient",
+          "Number of SED breaks",
+          "Usual bout duration (min)"
+        )
+      )) |> 
+      tidyr::drop_na() |> 
+      dplyr::group_by(capl_interpretation, Metric) |>
+      dplyr::summarise(n = dplyr::n()) |> 
+      tidyr::pivot_wider(id_cols = "Metric", names_from = capl_interpretation, values_from = n) |> 
+      dplyr::mutate("N Beginning (Min. / Max. Theo. Rel. Eff.)" = paste0(Beginning , " (", janitor::round_half_up(Beginning /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", janitor::round_half_up(1 - Beginning/(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
+      dplyr::mutate("N Progressing  (Min. / Max. Theo. Rel. Eff.)" = paste0(Progressing  , " (", janitor::round_half_up(Progressing  /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", janitor::round_half_up(1 - Progressing /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
+      dplyr::mutate("N Achieving   (Min. / Max. Theo. Rel. Eff.)" = paste0(Achieving   , " (", janitor::round_half_up(Achieving   /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", janitor::round_half_up(1 - Achieving  /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
+      dplyr::mutate("N Excelling  (Min. / Max. Theo. Rel. Eff.)" = paste0(Excelling  , " (", janitor::round_half_up(Excelling  /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", janitor::round_half_up(1 - Excelling /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
+      dplyr::left_join(
+        metrics_global_multicomp_profile$releffects |> 
+          t() |> 
+          as.data.frame() |> 
+          tibble::rownames_to_column(var = "Metric") |> 
+          dplyr::mutate(
+            Metric = as.factor(Metric),
+            Metric = forcats::fct_recode(Metric,
+                                         "% Wear time SED" = "percent_SED",
+                                         "% Wear time MVPA" = "percent_MVPA",
+                                         "Step count" = "total_steps",
+                                         "60-min max step accum." = "max_steps_60min",
+                                         "Intensity gradient" = "ig",
+                                         "Number of SED breaks" = "mean_breaks",
+                                         "Usual bout duration (min)" = "UBD"
+            ),
+            dplyr::across(c(Beginning:Excelling), ~janitor::round_half_up(.x, digits = 2))
+          ) |> 
+          dplyr::arrange(Metric) |>  
+          dplyr::rename(
+            "Rel. Eff. Beginning" = Beginning, 
+            "Rel. Eff. Progressing" = Progressing,
+            "Rel. Eff. Achieving" = Achieving,
+            "Rel. Eff. Excelling" = Excelling
+          ) 
+      ) |> 
+      dplyr::select(-c(Beginning, Progressing, Achieving, Excelling)) |> 
+      flextable() |> 
+      bold(i = 1, part = "header") |> 
+      bold(~ `Rel. Eff. Beginning` > 0.5, 6) |> 
+      bold(~ `Rel. Eff. Progressing` > 0.5, 7) |> 
+      bold(~ `Rel. Eff. Achieving` > 0.5, 8) |> 
+      bold(~ `Rel. Eff. Excelling` > 0.5, 9) |> 
+      bg(~ `Rel. Eff. Beginning` > 0.5, 6, bg = "grey90") |> 
+      bg(~ `Rel. Eff. Progressing` > 0.5, 7, bg = "grey90") |> 
+      bg(~ `Rel. Eff. Achieving` > 0.5, 8, bg = "grey90") |> 
+      bg(~ `Rel. Eff. Excelling` > 0.5, 9, bg = "grey90") |> 
+      width(j = 1, width = 2.5) |> 
+      width(j = 2:9, width = 1.3) |> 
+      valign(i = 1, j = 1:9, valign = "top", part = "header") |> 
+      align(j = 6:9, part = "header", align = "center") |> 
+      align(j = 6:9, part = "body", align = "center") |> 
+      add_footer_lines("Min. = minimum; Max. = maximum; Theo. = Theoretical; Rel. Eff. = relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells with bold values highlight the highest relative effects among the physical literacy profiles.")
   ),
 
   #### Test for local differences of movement behaviours between PL profiles ----
@@ -2340,14 +2699,6 @@ list(
        })
      
    ),
-    
-    #### Latent class mixed modeling to analyse PA metrics trajectories ----
-    #### across the week
-    
-    ##### This section heavily uses a personal modeling function (see
-    ##### get_lcmms.R file)
-
-
 
   ## Render report ----
   tar_quarto(report, "report.qmd")

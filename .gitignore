@@ -6,6 +6,8 @@ data/
 .DS_Store
 .quarto
 article/
+figure/
 litt/
 out/
+report.html
 temp/

@@ -1,5 +1,5 @@
 ---
-title: "Physical Literacy Profiles and Movement Behaviours in elementary school students (10-to-11 yr old): an exploratory study from the 'EPLPA' Project (France)"
+title: "Comparing physical literacy scores between sexes and movement behaviours between physical literacy profiles in French elementary school students (10- to 11-years old): an exploratory study from the ‘EPLPA’ project"
 authors:
   - name: Henri Moncanis
     affiliation: 
@@ -69,9 +69,11 @@ tar_load(p_interpretation_by_sex)
 tar_load(capl_comp_sex)
 tar_load(p_multiv_comp_sex_dom)
 tar_load(domain_global_multicomp_sex)
+tar_load(domain_global_multicomp_sex_rel_eff)
 tar_load(domain_local_multicomp_sex)
 tar_load(p_multiv_comp_sex_item)
 tar_load(item_global_multicomp_sex)
+tar_load(item_global_multicomp_sex_rel_eff)
 tar_load(item_local_multicomp_sex)
 tar_load(capl_res_4_valid_days)
 tar_load(p_distri_all_metrics)
@@ -80,6 +82,7 @@ tar_load(check_cor_metrics)
 tar_load(p_distri_all_metrics_by_profile)
 tar_load(selected_metrics)
 tar_load(metrics_global_multicomp_profile)
+tar_load(metrics_global_multicomp_profile_rel_eff)
 tar_load(metrics_local_multicomp_profile)
 tar_load(tbl_retained_metrics)
 tar_load(p_counts_valid_ids_by_day)
@@ -93,13 +96,13 @@ This document presents the results of the analytical pipeline of the 'EPLPA' pro
 
 ## Pre-analysis information
 
-The document shows results related to CAPL-2 scores and movement behaviour metrics. CAPL-2 scores are partly based on scores related to mean daily step counts. All movement behaviour metrics (including mean daily step count) were obtained using a week measurement using a wGT3X-BT accelerometer (ActiGraph). The settings that have been used to process the accelerometer data files are shown in the table below. The `EPOCH_TARGET_CHILD` setting (epoch duration with which counts have been accumulated) is in seconds. The cut-points settings (intensity thresholds to perform intensity classification) are in counts/min. The `FRAME_CHILD`, `ALLOWANCE_FRAME_CHILD` and `STREAM_FRAME_CHILD` settings (to detect nonwear time) are in minutes. The `MINIMUM_WEAR_TIME` setting (to consider a day as valid for further analysis) is in hours.
+The document shows results related to CAPL-2 scores and movement behaviour metrics. CAPL-2 scores are partly based on scores related to mean daily step counts. All movement behaviour metrics (including mean daily step count) were obtained using a week-based measurement with a wGT3X-BT accelerometer (ActiGraph). The settings that have been used to process the accelerometer data files are shown in the table below. The `EPOCH_TARGET_CHILD` setting (epoch duration with which counts have been accumulated) is in seconds. The cut-points settings (intensity thresholds to perform intensity classification) are in counts/min. The `FRAME_CHILD`, `ALLOWANCE_FRAME_CHILD` and `STREAM_FRAME_CHILD` settings (to detect nonwear time) are in minutes. The `MINIMUM_WEAR_TIME` setting (to consider a day as valid for further analysis) is in hours.
 
 ```{r show_pa_metrics_config}
 rmarkdown::paged_table(tab_pa_metrics_config, options = list(rows.print = 11))
 ```
 
-Of note, the package used to compute CAPL-2 scores (i.e., `{capl}`) required at least 4 valid days of movement behaviour measurement to compute a mean daily step count to be used for further analysis. If only 3 valid days were available, a step count for a fourth valid day was obtained by randomly sampling a step count among the available valid daily step counts (action performed by the package `{capl}`). No computations were performed when less than 3 valid days were available.
+The package used to compute CAPL-2 scores (i.e., `{capl}`) required at least 4 valid days of movement behaviour measurement to compute a mean daily step count to be used for further analysis. If only 3 valid days were available, a step count for a fourth valid day was obtained by randomly sampling a step count among the available valid daily step counts (action performed by the package `{capl}`). No computations were performed when less than 3 valid days were available.
 
 For a better understanding of the results, the table below shows the percentages of participants by number of valid days for the measurement of movement behaviours. The percentage of participants with at least 4 valid days was `r prop_4_valid_days`%.
 
@@ -149,9 +152,7 @@ p_capl_all_domains
 #### Tabular view
 
 ```{r desc_stats_capl_all}
-desc_stats_capl_all |>
-  italic(i = 1, j = 2, part = "header") |>
-  bold(i = c(1, 5, 8, 13, 19), j = 1:3)
+desc_stats_capl_all
 ```
 
 ### Interpretation category distributions
@@ -189,10 +190,7 @@ p_capl_all_domains_by_sex
 #### Tabular view
 
 ```{r desc_stats_capl_by_sex}
-desc_stats_capl_by_sex |>
-  italic(i = 1, j = 2, part = "header") |> 
-  bold(i = c(1, 5, 8, 13, 19), j = 1:4)
-  
+desc_stats_capl_by_sex
 ```
 
 ### Interpretation category distributions
@@ -210,15 +208,11 @@ p_interpretation_by_sex
 
 ### Comparison of CAPL-2 global scores
 
-The global comparison has been performed using a Wilcoxon rank sum test.
+The global comparison has been performed using a Brunner-Munzel test, that is a procedure testing the stochastic equality of the compared groups.
 
 ```{r capl_comp_sex}
 capl_comp_sex
 ```
-
-:::{.callout-note}
-The test reveals a significant difference between girls and boys for the global CAPL-2 score.
-:::
 
 ### Comparison of CAPL-2 domain scores
 
@@ -253,9 +247,16 @@ performance::check_outliers(
 The comparison of the multivariate distributions of domain scores between girls and boys has been performed using non-parametric analysis implemented in functions from the `{npmv}` package.
 
 ##### R output for global comparison
+###### Raw output
 
 ```{r domain_global_multicomp_sex}
 domain_global_multicomp_sex
+```
+
+###### Formated output
+
+```{r domain_global_multicomp_sex_rel_eff}
+domain_global_multicomp_sex_rel_eff
 ```
 
 :::{.callout-note}
@@ -273,8 +274,8 @@ cat(domain_local_multicomp_sex, sep = "\n")
 #### Graphical analysis
 
 ```{r p_multiv_comp_sex_item}
-#| fig.height: 7
-#| fig.width: 12
+#| fig.height: 12
+#| fig.width: 9
 #| out.width: '100%'
 #| fig.align: "center"
 
@@ -309,8 +310,16 @@ performance::check_outliers(
 
 The comparison of the multivariate distributions of item scores between girls and boys has been performed using non-parametric analysis implemented in functions from the `{npmv}` package.
 
+##### Raw output
+
 ```{r item_global_multicomp_sex}
 item_global_multicomp_sex
+```
+
+##### Formated output
+
+```{r item_global_multicomp_sex_rel_eff}
+item_global_multicomp_sex_rel_eff
 ```
 
 :::{.callout-note}
@@ -349,7 +358,7 @@ skimr::skim(capl_res_4_valid_days)
 
 #### Distributions of the movement behaviour metrics
 
-This section shows the distributions of the movement behaviour metrics that were deemed of potential interest for exploratory analysis. These metrics were directly available from the {activAnalyzer} package. Some metrics have been removed from the initial list of the available metrics. MPA and VPA minutes and related percentages of wear time have been removed because we had no tresholds to make a distinction between moderate and vigorous physical activity in children. Total kilocalories, physical activity level, and MVPA MET-hours have been removed because they were not based on children-specific equations (no appropriate equations were available in the {activAnalyzer} package) and there was also no consideration for these metrics that are usually poorly estimated. The retained metrics represent different movement behaviour concepts: activity volume, step accumulation, intensity distribution, and sedentary time accumulation pattern. Details about what the metrics mean are available in the manual of the {activAnalyzer} package. Of note, in the figure below, the list of the metrics that goes from `Wear time (min)` to `Number of breaks` represent daily means while the last metrics were computed considering the whole set of valid days of measurement.
+This section shows the distributions of the movement behaviour metrics that were deemed of potential interest for exploratory analysis. These metrics were directly available from the {activAnalyzer} package. Some metrics have been removed from the initial list of the available metrics. MPA and VPA minutes and related percentages of wear time have been removed because we had no tresholds to make a distinction between moderate and vigorous physical activity in children. Total kilocalories, physical activity level, and MVPA MET-hours have been removed because they were not based on children-specific equations (no appropriate equations were available in the {activAnalyzer} package) and there was also no consideration for these metrics that are usually poorly estimated. The retained metrics represent different movement behaviour concepts: activity volume, step accumulation, intensity distribution, and sedentary time accumulation pattern. Details about what the metrics mean are available in the manual of the {activAnalyzer} package. Of note, in the figure below, the list of the metrics that goes from `Wear time (min)` to `Number of breaks` represent daily means while the remaining metrics were computed considering the whole set of valid days of measurement.
 
 ```{r p_distri_all_metrics}
 #| out-width: '100%'
@@ -448,7 +457,9 @@ tbl_retained_metrics
 We check that girls and boys were approximately equally distributed across the physical literacy profiles so that potential differences bewteen the profiles are not confounded by sex differences.
 
 ```{r counts_sex_by_capl_profile}
-tar_read(capl_res_4_valid_days) |> dplyr::count(capl_interpretation, gender)
+tar_read(capl_res_4_valid_days) |> 
+  dplyr::count(capl_interpretation, gender) |>
+  tidyr::pivot_wider(names_from = gender, values_from = n)
 ```
 
 :::{.callout-note}
@@ -459,8 +470,16 @@ The distribution of girls and boys was quite balanced across the physical litera
 
 The comparisons of the multivariate distributions of movement behaviour metrics between physical literacy profiles have been performed using non-parametric analysis implemented in functions from the `{npmv}` package.
 
+###### Raw output
+
 ```{r metrics_global_multicomp_profile}
 metrics_global_multicomp_profile
+```
+
+###### Formated output
+
+```{r metrics_global_multicomp_profile_rel_eff}
+metrics_global_multicomp_profile_rel_eff
 ```
 
 :::{.callout-note}
@@ -488,6 +507,8 @@ The total number of students is not the same for all the days of the week since 
 :::
 
 #### Visualizations of the metric distributions
+
+All the results shown below have been obtained by implementing a for loop that automatically generated the code chuncks inside the report. If you want to see the code, please look at the `report.qmd` file.
 
 ::: {.panel-tabset}
 
@@ -529,29 +550,66 @@ cat(unlist(res), sep = "\n")
 #| fig-width: 12
 #| fig-height: 12
 
-res <-
+# Initialize lists
+knit_list <- list()
+tab_mod_list <- list()
+
+# Get results
   purrr::map2(
     selected_metrics$raw_names[which(!(selected_metrics$raw_names %in% c("mean_breaks", "UBD", "gini")))],
     selected_metrics$new_names[which(!(selected_metrics$new_names %in% c("Number of SED breaks", "Usual bout duration (min)", "Gini index")))],
     \(x, y) {
+      
+      # Set formula
+      formula <- as.formula(paste0(x, '~ gender + day * capl_interpretation + (1 | id) + (1 | school)'))
+      
+      # Build model
+      mod <- lmerTest::lmer(formula, data = capl_res_4_valid_days_metrics_by_day)
+      
+      # Get estimated marginal means
+      EMM <- emmeans::emmeans(mod, ~ capl_interpretation | day)
+      
+      # Get mean differences along with unadjusted p-values
+      upv <- emmeans::test(pairs(EMM), by = NULL, adjust = 'none')
+      
+      # Get mean differences along with adjusted p-values (Benjamini-Hochberg method)
+      apv <- emmeans::test(pairs(EMM, by = 'day'), by = NULL, adjust = 'BH') |> dplyr::rename(bh.p.value = p.value)
+      
+      # Make a table combining all p-values
+      tab <- upv |> 
+        dplyr::left_join(apv) |> 
+        dplyr::mutate(dplyr::across(estimate:bh.p.value, ~ janitor::round_half_up(.x, 3))) |> 
+        dplyr::rename(
+          Contrast = contrast,
+          Day = day,
+          Estimate = estimate,
+          'P value' = p.value,
+          'BH P value' = bh.p.value
+        ) |> 
+        dplyr::select(Day, dplyr::everything(), -SE) |>
+        flextable() |> 
+        bold(i = 1, part = 'header') |>   
+        bold(~ `P value` <= 0.05, 6) |> 
+        bold(~ `BH P value` <= 0.05, 7) |>  
+        bg(~ `P value` <= 0.05, 6, bg = 'grey90') |> 
+        bg(~ `BH P value` <= 0.05, 7, bg = 'grey90') |> 
+        merge_v(j = 1) |> valign(j = 1:7, valign = 'top', part = 'all') |> 
+        autofit() |> 
+        add_footer_lines(
+          'P value = unadjusted P values; BH P values = P values adjusted for multiple comparisons using the Benjamini-Hochberg False Discovery Rate method.'
+        )
   
-  knitr::knit_child(text = c(
+  knit_res <- knitr::knit_child(text = c(
                     
                     "\n",
                     "## `r y`",
                     "\n",
-                    "##### Build and check model",
+                    "##### Check model",
                     "```{r}",
                     "#| fig-align: 'center'",
                     "#| fig-width: 12",
                     "#| fig-height: 12",
-                    "# Set formula",
-                    "formula <- as.formula(paste0(x, '~ gender + day * capl_interpretation + (1 | id) + (1 | school)'))",
                     "\n",
-                    "# Build model",
-                    "mod <- lmerTest::lmer(formula, data = capl_res_4_valid_days_metrics_by_day)",
-                    "\n",
-                    "# Check model quality",
                     "performance::check_model(mod)",
                     "```",
                     "##### Summarise model",
@@ -564,10 +622,6 @@ res <-
                     "performance::check_outliers(mod)",
                     "```",
                     "\n",
-                    "##### Get estimated marginal means",
-                    "```{r}",
-                    "EMM <- emmeans::emmeans(mod, ~ capl_interpretation | day)",
-                    "```",
                     "##### Vizualize estimated marginal means over the week",
                     "```{r}",
                      "EMM |> ",
@@ -588,29 +642,45 @@ res <-
                     "plot(EMM)",
                     "```",
                     "\n",
-                    "##### Get mean differences along with unadjusted p-values",
+                    "##### Get mean differences along with unadjusted and  adjusted p-values (Benjamini-Hochberg method)",
                     "```{r}", 
-                    "emmeans::test(pairs(EMM), by = NULL, adjust = 'none')",           
-                    "```",
-                     "\n",
-                    "##### Get mean differences along with adjusted p-values (Benjamin-Hochberg method)",
-                     "```{r}",
-                    "emmeans::test(pairs(EMM, by = 'day'), by = NULL, adjust = 'BH')",
+                    "tab",
                     "```"
   ),
   envir = environment(),
   quiet  = TRUE
   )
+  
+  # Assign results to lists
+  knit_list[[x]] <<- knit_res
+  tab_mod_list[[x]] <<- tab
+  
 })
 
-cat(unlist(res), sep = "\n")
+cat(unlist(knit_list), sep = "\n")
 ```
 
 ```{r export_datasets}
 #| echo: false
 
+# Export databases
 readr::write_csv2(capl_res, "out/capl_res.csv")
 readr::write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days.csv")
 readr::write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days_metrics_by_day.csv")
+
+# Export tables
+save_as_docx(desc_stats_capl_by_sex, path = "out/Table1.docx")
+save_as_docx(domain_global_multicomp_sex_rel_eff, path = "out/Table2.docx")
+save_as_docx(item_global_multicomp_sex_rel_eff, path = "out/Table3.docx")
+save_as_docx(tbl_retained_metrics, path = "out/Table4.docx")
+save_as_docx(metrics_global_multicomp_profile_rel_eff, path = "out/Table5.docx")
+
+# Export Supplementary materials
+ggsave("out/SM1.png", p_capl_all_domains_by_sex, scale = 1.5, height = 10, width = 10, dpi = 300)
+save_as_docx(tab_mod_list$percent_SED, path = "out/SM2_percent_SED.docx")
+save_as_docx(tab_mod_list$percent_MVPA, path = "out/SM3_percent_MVPA.docx")
+save_as_docx(tab_mod_list$total_steps, path = "out/SM4_percent_total_steps.docx")
+save_as_docx(tab_mod_list$max_steps_60min, path = "out/SM5_max_steps_60min.docx")
+save_as_docx(tab_mod_list$ig, path = "out/SM6_ig.docx")
 ```
 
