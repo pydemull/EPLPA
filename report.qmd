@@ -150,7 +150,10 @@ p_capl_all_domains
 #### Tabular view
 
 ```{r desc_stats_capl_all}
-desc_stats_capl_all
+desc_stats_capl_all |>
+  gtsummary::as_flex_table() |>
+  italic(i = 1, j = 2, part = "header") |>
+  bold(i = c(1, 5, 8, 13, 19), j = 1:3)
 ```
 
 ### Interpretation category distributions
@@ -188,7 +191,9 @@ p_capl_all_domains_by_sex
 #### Tabular view
 
 ```{r desc_stats_capl_by_sex}
-desc_stats_capl_by_sex
+desc_stats_capl_by_sex |>
+  gtsummary::as_flex_table() |>
+  bold(i = c(1, 5, 8, 13, 19), j = 1:5)
 ```
 
 ### Interpretation category distributions
@@ -521,10 +526,5 @@ save_as_docx(metrics_global_multicomp_profile_rel_eff, path = "out/Table5.docx")
 
 # Export Supplementary materials
 ggsave("out/SM1.png", p_capl_all_domains_by_sex, scale = 1.5, height = 10, width = 10, dpi = 300)
-save_as_docx(tab_mod_list$percent_SED, path = "out/SM2_percent_SED.docx")
-save_as_docx(tab_mod_list$percent_MVPA, path = "out/SM3_percent_MVPA.docx")
-save_as_docx(tab_mod_list$total_steps, path = "out/SM4_percent_total_steps.docx")
-save_as_docx(tab_mod_list$max_steps_60min, path = "out/SM5_max_steps_60min.docx")
-save_as_docx(tab_mod_list$ig, path = "out/SM6_ig.docx")
 ```
 
