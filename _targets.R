@@ -1012,7 +1012,7 @@ list(
           crf_means_score = "Cardiorespiratory fitness definition (/1)",
           ms_means_score = "Muscular strength and endurance definition (/1)",
           sports_skill_score = "Improve sport skill (/1)",
-          capl_score = "Physical Literacy (/100)"
+          capl_score = "Physical literacy (/100)"
         ),
         missing = "no",
         statistic = list(
@@ -1627,7 +1627,7 @@ list(
             crf_means_score = "Cardiorespiratory fitness definition (/1)",
             ms_means_score = "Muscular strength and endurance definition (/1)",
             sports_skill_score = "Improve sport skill (/1)",
-            capl_score = "Physical Literacy (/100)"
+            capl_score = "Physical literacy (/100)"
           ),
           missing = "no",
           statistic = list(
@@ -1876,6 +1876,21 @@ list(
         factors.and.variables = TRUE
       )
       )
+    ),
+
+    ### Get a graphic with all significant sets of domain scores for 
+    ### between-sex differences ----
+    tar_target(
+      name = domain_local_multicomp_sex_graph,
+      command = get_multicomp_graph(
+        scores = c("pc_score", "db_score", "mc_score", "ku_score"),
+        ssnonpartest_out = domain_local_multicomp_sex,
+        use_color = FALSE
+      ) + 
+        scale_y_discrete(
+          limits = c("pc_score", "db_score", "mc_score", "ku_score"),
+          labels = c("Phyiscal \ncompetence", "Daiy \nbehaviour", "Motivation and \nconfidence", "Knowledge and \nunderstanding")
+        )
     ),
   
   ## Multivariate comparisons of CAPL-2 item scores between girls and boys ----
@@ -2569,136 +2584,6 @@ list(
     )
     )
   ),
-
-  ## Comparisons of the movement behaviour metrics across the week ----
-
-  ### Get a data frame with metrics by day for participants having 4 valid days ----
-  ### or more joined to CAPL-2 interpretations ----
-  tar_target(
-    name = capl_res_4_valid_days_metrics_by_day,
-    command = pa_data$results_by_day |> 
-      filter(id %in% ids_with_4_valid_days) |>
-      group_by(id) |> 
-      mutate(day_num = seq_along(date)) |> 
-      ungroup() |> 
-      mutate(
-        day = weekdays(date),
-        day = factor(
-          day,
-          levels = c(
-            "lundi",
-            "mardi",
-            "mercredi",
-            "jeudi",
-            "vendredi",
-            "samedi",
-            "dimanche"
-          ),
-          labels = c(
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday"
-          )
-        ),
-        validity = ifelse(wear_time >= 600, "valid", "non_valid")
-      )  |> 
-      filter(day_num <= 7) |> 
-      select(id, date, day, day_num, validity, everything()) |> 
-      left_join(
-        capl_res |>
-          select(
-            id, 
-            school, 
-            gender, 
-            capl_interpretation
-          ) |> 
-          mutate(id = as.numeric(as.character(id)))
-      ) |> 
-      # Remove participants with no CAPL-2 global interpretation
-      filter(capl_interpretation != "Non available") |> 
-      mutate(capl_interpretation = factor(capl_interpretation, levels = 
-                                            c("Beginning", "Progressing", "Achieving", "Excelling"))
-      )
-  ),
-
-    ### Get plot with counts of participants having valid data by weekday ----
-    tar_target(
-      name = p_counts_valid_ids_by_day,
-      command = capl_res_4_valid_days_metrics_by_day |>
-        mutate(
-          Freq = 1,
-          validity = factor(validity, labels = c("Non valid", "Valid"))
-        ) |> 
-        select(id, day, validity, Freq, date, capl_interpretation) |> 
-        arrange(id, day, date)  |> 
-        group_by(id, day) |> 
-        slice(1) |> 
-        ggplot(
-          aes(
-            x = day,
-            stratum = validity,
-            alluvium = id,
-            y = Freq
-          )
-        ) +
-        geom_flow(aes(fill = capl_interpretation)) +
-        geom_stratum(
-          aes(color = validity),
-          alpha = .5,
-          linewidth = 0.6,
-          fill = "white"
-        ) +
-        geom_text(
-          aes(label = after_stat(count)),
-          stat = "stratum",
-          size = 4
-        ) +
-        theme_bw() +
-        labs(
-          x = "", 
-          y = "Number of participants", 
-          fill = "CAPL-2 profile",
-          color = "Wear validity"
-        ) +
-        scale_color_manual(values = c("brown2", "chartreuse3")) +
-        scale_fill_manual(values = scales::hue_pal()(5)[2:5])
-    ),
-    
-  ### Get plot for activity metric across the week
-   tar_target(
-     name = p_metric_by_day,
-     command = plot_list <- purrr::map2(
-       selected_metrics$raw_names[which(!(selected_metrics$raw_names %in% c("mean_breaks", "UBD", "gini")))], 
-       selected_metrics$new_names[which(!(selected_metrics$new_names %in% c("Number of SED breaks", "Usual bout duration (min)", "Gini index")))], 
-       \(x, y) {
-         p <-
-           plot_raincloud_by_fact(
-           data = capl_res_4_valid_days_metrics_by_day,
-           id = "id",
-           x = "day",
-           y = x,
-           factor = "capl_interpretation",
-           labs_x = "Day",
-           labs_y = y,
-           labs_fact = "CAPL-2 profile",
-           col_vals = scales::hue_pal()(5)[2:5],
-           fill_vals = scales::hue_pal()(5)[2:5],
-           add_means = TRUE
-         ) +
-           ggtitle(y) +
-           theme(plot.title = element_text(face = "bold"))
-       
-     plot_list = list(name = y, plot = p)
-     
-     return(plot_list)
-     
-       })
-     
-   ),
 
   ## Render report ----
   tar_quarto(report, "report.qmd")
