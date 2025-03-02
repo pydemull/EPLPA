@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|c16ac5a6879b9dbd|||||||||||||||
+.Random.seed|object|43caa0aacfe87965|||||||||||||||
 agd_dir|stem|e2479c2b3fe9e2c3|bc10a632207bcb93|2c530c1562a7fbd1|-205611500|./data/agd/|t19920.99369242s|d3256ba881f5d4b7|65536|file|local|vector|||0||
 base_file|stem|fb8971e17f8df4e7|73a0d5dcd141950f|2c530c1562a7fbd1|515637225|./data/BASE.xlsx|t19887.3686720251s|59a2d0883e281a39|31145|file|local|vector|||0||
 capl_comp_sex|stem|a17322be2838341a|90ff841b7964c10b|182bb21eca7cf6c8|1727083662||t20142.0273841827s|211816cf209973a0|15247|rds|local|vector|||11||
@@ -16,20 +16,22 @@ CONN_COMPR|stem|992f5d766ba5cfca|99594d3ccd8bc804|0753d36f9ae42bb9|55203614||t20
 dates_file|stem|1eb59b8ea1a38adc|68fc4e010143295d|2c530c1562a7fbd1|-200338467|./data/DATES.csv|t20094.9587955895s|daab79578ab85206|2676|file|local|vector|||0||
 DEMO|stem|aff6a75c9c910155|b13056191534be9b|d5810bd9bd0461f9|900896527||t20094.9596206077s|fcc047ad9204673a|792|rds|local|vector|||0.63||
 demo_file|stem|9f6d249466bdfdce|e0bb25c9946507ca|2c530c1562a7fbd1|1907734460|./data/DEMO.csv|t19886.2315277513s|0dbb4a462d554e7b|2640|file|local|vector|||0||
-desc_stats_capl_all|stem|00eb4c983cc52658|0165ce0a7c3fd305|182bb21eca7cf6c8|1302310336||t20136.4337219345s|bf5f7c4c50d51248|5116|rds|local|vector|||2.44|The update argument of modify_header is deprecated as of gtsummary 2.0.0.ℹ Use modify_header... input instead. Dynamic dots allow for syntax like  modify_headerlist....ℹ The deprecated feature was likely used in the gtsummary package.  Please report the issue at httpsgithub.comddsjoberggtsummaryissues.|
-desc_stats_capl_by_sex|stem|cc240f907b80ef29|8f302130bd8fe19c|182bb21eca7cf6c8|-604049058||t20136.4376602837s|2bab1caf14a46b79|6273|rds|local|vector|||5.85|The update argument of modify_header is deprecated as of gtsummary 2.0.0.ℹ Use modify_header... input instead. Dynamic dots allow for syntax like  modify_headerlist....ℹ The deprecated feature was likely used in the gtsummary package.  Please report the issue at httpsgithub.comddsjoberggtsummaryissues.|
+desc_stats_capl_all|stem|630c8dcd4a0c80fc|56d1abf105380232|182bb21eca7cf6c8|1302310336||t20148.0101673272s|8290d9e5dce45c06|115492|rds|local|vector|||2.08|The update argument of modify_header is deprecated as of gtsummary 2.0.0.ℹ Use modify_header... input instead. Dynamic dots allow for syntax like  modify_headerlist....ℹ The deprecated feature was likely used in the gtsummary package.  Please report the issue at httpsgithub.comddsjoberggtsummaryissues.|
+desc_stats_capl_by_sex|stem|053529bb88814db1|d7e0a2bf7d8b2457|182bb21eca7cf6c8|-604049058||t20148.6907745425s|9a4f810a92fc4c2f|144355|rds|local|vector|||4.64|The update argument of modify_header is deprecated as of gtsummary 2.0.0.ℹ Use modify_header... input instead. Dynamic dots allow for syntax like  modify_headerlist....ℹ The deprecated feature was likely used in the gtsummary package.  Please report the issue at httpsgithub.comddsjoberggtsummaryissues.|
 df_cleaned|stem|59ad4fca19df65c2|c450ed712d85532b|392ea3ae501daf95|-2036021726||t20094.9757552973s|4d0c83b2cfacfe0d|9078|rds|local|vector|||0.34|There was 1 warning in mutate.ℹ In argument acrossccamsa_skill_score1self_report_pa, as.integer.Caused by warning NAs introduits lors de la conversion automatique|
 df_raw|stem|8410af1759f3f52c|d5f26e865d1f3711|7f47c572cc66d1bc|-796806726||t20094.975750668s|c0188f7bd0b30679|10897|rds|local|vector|||0.03||
 domain_global_multicomp_sex|stem|94c6f372234952e7|fece7e08f3b1adf1|182bb21eca7cf6c8|69707313||t20100.8891187823s|22b9072548525589|488|rds|local|vector|||4.03|Rank covariance matrix is singular, only ANOVA test returned|
-domain_global_multicomp_sex_rel_eff|stem|bc7ddd40653df691|960b7a72f5f5ab8b|7581a54c897eeaf3|-1964927823||t20141.9428471144s|e76b5455344c0b2e|5180|rds|local|vector|||0.39||
+domain_global_multicomp_sex_rel_eff|stem|1d6651e1d87a38be|db59fcee9b554678|7581a54c897eeaf3|-1964927823||t20148.5328446724s|9b52574c68e170c1|460|rds|local|vector|||0.26||
 domain_local_multicomp_sex|stem|142f0ac7a3455a8f|ab1cdfc005c4afc7|182bb21eca7cf6c8|1790769197||t20100.8891199456s|1ae71eaef8b82f2b|456|rds|local|vector|||0.03||
+domain_local_multicomp_sex_graph|stem|f6cf4713e8929171|338149caeb18596f|0b305af1406cb198|-1186242534||t20149.8494478395s|948f47ba7279ba87|150119|rds|local|vector|||0.28||
 get_lcmms|function|8b0d1880549cbd78|||||||||||||||
+get_multicomp_graph|function|453459d4114b1d36|||||||||||||||
 ids_with_4_valid_days|stem|6f864d784946c8aa|f15c440b483a8716|8170f5137c3f0b70|-1808431841||t20094.9757408476s|e435a6b9e7e6ea9f|179|rds|local|vector|||0||
 item_global_multicomp_sex|stem|5ea1831d4572d916|e260c3e896fe3e23|182bb21eca7cf6c8|-2042516848||t20100.8891933106s|be1804c604c1ee1a|837|rds|local|vector|||6.25||
-item_global_multicomp_sex_rel_eff|stem|3c08095a257e7eda|d17cb1042b5ec02b|6622939c4a02961c|-1973655710||t20141.9428525145s|4ed4231c88114da0|6276|rds|local|vector|||0.25||
-item_local_multicomp_sex|stem|87629d3bddb111a1|98168433d266d37e|182bb21eca7cf6c8|-748609189||t20100.8892561743s|ddaf338f030f622e|4096|rds|local|vector|||5.18||
+item_global_multicomp_sex_rel_eff|stem|a411c3242e780ce1|77bc4169b9c3aaab|6622939c4a02961c|-1973655710||t20148.532847876s|82cad4e3f465fcdc|756|rds|local|vector|||0.11||
+item_local_multicomp_sex|stem|fd037072fbbca0de|536e43a341e534de|182bb21eca7cf6c8|-748609189||t20149.8494388941s|302f7000b1608f67|14228|rds|local|vector|||12.73||
 metrics_global_multicomp_profile|stem|0b838fa55db42be5|ee8d8f520d41c94c|2c4a88d4fc0d03f9|-1987674547||t20100.6152334039s|b7aa146e424cb77e|759|rds|local|vector|||2.69||
-metrics_global_multicomp_profile_rel_eff|stem|9ba6dbe22775fe67|3f6cc8bb150b8d63|d9f84d6963f34f60|85700599||t20142.970554004s|5bda8ebab2b2cfdb|6983|rds|local|vector|||0.25||
+metrics_global_multicomp_profile_rel_eff|stem|663ed74ef99d8a68|af8962a97ba50f6f|d9f84d6963f34f60|85700599||t20148.6596177259s|22e1c2bd6edb2e06|613|rds|local|vector|||0.22||
 metrics_local_multicomp_profile|stem|d82601d34459f9eb|d9c4154608d55f0c|2c4a88d4fc0d03f9|-194513882||t20100.61519974s|340fcdd08c153d07|793|rds|local|vector|||0.16||
 MOTIV_CONF|stem|82743e7bb6af84d9|e82aa91c9db5fdb9|0753d36f9ae42bb9|-818849535||t20094.9596111502s|f4babbe5a883258e|1970|rds|local|vector|||0.08||
 n_boys|stem|a015c2aedbfeb514|5b0e932ef03faf88|182bb21eca7cf6c8|-2062011951||t20100.8893438392s|3afeaaa6061de512|49|rds|local|vector|||0||
@@ -43,8 +45,8 @@ p_distri_all_metrics_by_profile|stem|5d41e4d32353b501|8928054ac22a50ca|a1cf217c6
 p_interpretation|stem|c8430ceaba256b6a|215792601e393c11|182bb21eca7cf6c8|1248640847||t20100.8889571247s|6566e09215510317|195517|rds|local|vector|||0.3||
 p_interpretation_by_sex|stem|6364c95fd1706b4b|3d66ab1fb07f4be2|182bb21eca7cf6c8|-1355073409||t20100.8889507833s|d50b70321f15e9c5|211737|rds|local|vector|||0.19||
 p_metric_by_day|stem|d6a4cd6ab4f9a178|76319d4cc6a20355|a3578c051289a9ef|1990651190||t20100.615166946s|948111581d4d3ead|1168274|rds|local|vector|||0.23||
-p_multiv_comp_sex_dom|stem|1000a79c81f5a052|8e35c4eefafc35a2|182bb21eca7cf6c8|-100731958||t20137.5472759079s|ba1495f1d983c9cb|238367|rds|local|vector|||0.11||
-p_multiv_comp_sex_item|stem|44d51064fe3d8d1d|77ce5164518d0b56|182bb21eca7cf6c8|-484466356||t20137.5472830256s|d0898c6c30e45904|241301|rds|local|vector|||0.08||
+p_multiv_comp_sex_dom|stem|61e171304cee3efe|5af5a9e9510e0084|182bb21eca7cf6c8|-100731958||t20148.0152894414s|f577ac836a420fec|238431|rds|local|vector|||0.08||
+p_multiv_comp_sex_item|stem|97170cf66fdb124d|67359b676b949639|182bb21eca7cf6c8|-484466356||t20148.0042515387s|7eb7a797a6dd1b19|241388|rds|local|vector|||0.13||
 pa_data|stem|ea8d61ac77e9c4ba|7c1f7445df9fed3c|90715e92e6bd42aa|-1817921912||t20094.9757323735s|75ba9b68a2837fb1|37060015|rds|local|vector|||1378.37||
 PA_METRICS|stem|268e9f4fdbdfa1f8|229e3e421f2811a6|8170f5137c3f0b70|2034792696||t20094.9757491384s|d8d7aefd72e29237|6262|rds|local|vector|||0.04||
 pa_metrics_config|stem|3a13bc337d6cece6|57aeb28b4e0a11a4|e4ec6efb9f32486f|908103177||t20094.9596223167s|0c4eed8eddbc9945|1262|rds|local|vector|||0.11||
@@ -55,9 +57,9 @@ plot_raincloud_by_fact|function|f02e7aa8dc8fd704|||||||||||||||
 plot_score_distri|function|71e127859f70ef99|||||||||||||||
 prop_4_valid_days|stem|c1ba7297169c517c|c754cd19bd1fab46|8170f5137c3f0b70|-1017554206||t20094.9757479598s|02266e49b6c0390d|57|rds|local|vector|||0.01||
 recode_capl_interpretation_vars|function|67d00244c004d725|||||||||||||||
-report|stem|6893d553710802a0|4eb056f3e4790498|c228dfd8f7bd7306|787668912|report.html*report.qmd|t20142.9720243757s|d2a346e85743d858|7809731|file|local|vector|||130.31||
+report|stem|47dc5b699095d98f|4c94177791be64f0|b464f0631222441b|787668912|report.html*report.qmd|t20149.8505629434s|545768387dd65c52|4443159|file|local|vector|||94.53||
 selected_metrics|stem|866ad294b5e7a709|88f0414a8b6aad72|2c530c1562a7fbd1|-1696209964||t20100.6147342419s|6ce28c86f98a8d6a|265|rds|local|vector|||4.49|le package factoextra a été compilé avec la version R 4.4.2. le package ggalluvial a été compilé avec la version R 4.4.2. le package lcmm a été compilé avec la version R 4.4.2. le package patchwork a été compilé avec la version R 4.4.2|
 tab_pa_metrics_config|stem|23f8d6e7a204f2cd|152449588341cd10|c98116b21245b52e|633582058||t20135.8896805436s|eb0bdafacbaf0878|309|rds|local|vector|||0.01||
 tab_percents_num_valid_days|stem|b4832487417a3660|fb6385af3d248e5c|8170f5137c3f0b70|-901944326||t20135.924165741s|4246e20210f9464d|3629|rds|local|vector|||0.69||
-tbl_retained_metrics|stem|3b0269eacff9f7c2|787edf9917bb431b|295eceec4750797d|-425998273||t20141.8989999356s|a5140d7a6e01b2aa|5036|rds|local|vector|||2.72||
+tbl_retained_metrics|stem|4a20ae31e365ff3c|5f97f005b169cc9a|295eceec4750797d|-425998273||t20148.9007133472s|8a7b78c2ce7a3e3b|130719|rds|local|vector|||5.53|The update argument of modify_header is deprecated as of gtsummary 2.0.0.ℹ Use modify_header... input instead. Dynamic dots allow for syntax like  modify_headerlist....ℹ The deprecated feature was likely used in the gtsummary package.  Please report the issue at httpsgithub.comddsjoberggtsummaryissues.|
 testing_formula_metrics|stem|3de5907d3ffbb11c|b4c3baed6ceb67c3|3e4ed03c6f4b4f27|2110342465||t20100.6151527743s|8286a8ca1d8d4c53|487|rds|local|vector|||0||
