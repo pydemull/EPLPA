@@ -53,7 +53,6 @@ editor: source
 # Packages
 library(flextable)
 library(ggplot2)
-library(officer)
 library(targets)
 
 # Targets
@@ -77,6 +76,7 @@ tar_load(p_multiv_comp_sex_item)
 tar_load(item_global_multicomp_sex)
 tar_load(item_global_multicomp_sex_rel_eff)
 tar_load(item_local_multicomp_sex)
+tar_load(item_local_multicomp_sex_graph)
 tar_load(capl_res_4_valid_days)
 tar_load(p_distri_all_metrics)
 tar_load(p_biplot_metrics)
@@ -87,6 +87,7 @@ tar_load(tbl_retained_metrics)
 tar_load(metrics_global_multicomp_profile)
 tar_load(metrics_global_multicomp_profile_rel_eff)
 tar_load(metrics_local_multicomp_profile)
+tar_load(metrics_local_multicomp_profile_graph)
 ```
 
 :::{.callout-note}
@@ -381,8 +382,22 @@ The global analysis, based on the ANOVA type test p-value, suggests that girls a
 
 #### R output for local comparisons
 
+##### Raw output
+
 ```{r item_local_multicomp_sex}
 cat(item_local_multicomp_sex, sep = "\n")
+```
+
+##### Graphical output
+
+```{r item_local_multicomp_sex_graph}
+#| column: screen
+#| out-width: '100%'
+#| out-height: '100%'
+#| fig-height: 50
+#| fig-width : 60
+
+item_local_multicomp_sex_graph
 ```
 
 ## Between-physical literacy profile comparisons of movement behaviours
@@ -563,152 +578,19 @@ The global analysis, based on the ANOVA type test p-value, suggests that the phy
 
 #### R output for local comparisons
 
+##### Raw output
+
 ```{r metrics_local_multicomp_profile}
 cat(metrics_local_multicomp_profile, sep = "\n")
 ```
 
-```{r build_general_table_for_capl2_results}
-#| echo: false
+##### Graphical output
 
-# Get n infos
-output <- capture.output(desc_stats_capl_by_sex |> gtsummary::show_header_names())
-n_girls <- substr(output[4], 73, 74)
-n_boys <- substr(output[5], 73, 74)
-
-# Build table
-general_table_for_capl2_results <-
-  desc_stats_capl_by_sex |>
-  gtsummary::modify_header(
-    list(
-      label = "Score",
-      stat_0 = "All participants  \nN = {N}",
-      stat_1 = "Girls  \nN = {n}",
-      stat_2 = "Boys  \nN = {n}"
-    )
-  ) |>
-  tibble::as_tibble() |>
-  dplyr::left_join(
-    domain_global_multicomp_sex_rel_eff |>
-      dplyr::bind_rows(item_global_multicomp_sex_rel_eff) |>
-      dplyr::bind_rows(
-        tibble::tibble(
-          Score = as.factor("Physical literacy (/100)"),
-          `N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_girls, "  \n(0.00/1.00)"),
-          `N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_boys, "  \n(0.00/1.00)"),
-          `Rel. Eff. Girls` = 1 - janitor::round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2),
-          `Rel. Eff. Boys` = janitor::round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2)
-        )
-      ) |>
-      dplyr::mutate(Score = factor(
-        Score,
-        levels = c(
-          "Physical competence (/30)",
-          "PACER shuttle run (/10)",
-          "CAMSA (/10)",
-          "Plank (/10)",
-          "Daily behaviour (/30)",
-          "Average daily step count (/25)",
-          "Self-reported number of days with MVPA (/5)",
-          "Motivation and confidence (/30)",
-          "Intrinsic motivation (/7.5)",
-          "Competence (/7.5)",
-          "Predilection (/7.5)",
-          "Adequacy (/7.5)",
-          "Knowledge and understanding (/10)",
-          "PA comprehension and understanding (/6)",
-          "Daily PA guidelines (/1)",
-          "Cardiorespiratory fitness definition (/1)",
-          "Muscular strength and endurance definition (/1)",
-          "Improve sport skill (/1)",
-          "Physical literacy (/100)"
-        )
-      ))
-  ) |>
-  flextable() |>
-  bold(i = 1, part = "header") |>
-  bold(i = c(1, 5, 8, 13, 19), j = 1:8) |>
-  valign(valign = "top", part = "all") |>
-  align(j = 2:8, align = "center", part = "all") |>
-  width(j = 1:6, width = c(2, 2, 2, 3, 2.5, 2.5)) |> 
-  bg( ~ `Rel. Eff. Girls` > 0.5, 7, bg = "grey90") |>
-  bg( ~ `Rel. Eff. Boys` > 0.5, 8, bg = "grey90")|>
-  add_footer_lines(
-    "Descriptive statistics are medians (Q1 - Q3), means ± SD or counts (%). Min./ Max. Theo. Rel. Eff. = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from both groups (girls and boys). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and score based on the number of girls and boys available for the considered score. Grey cells highlight the highest relative effects among girls and boys."
-  )
+```{r metrics_local_multicomp_profile_graph}
+#| out-width: '100%'
+#| fig-width: 15
+#| fig-height: 15
+metrics_local_multicomp_profile_graph
 ```
 
-```{r build_general_table_for_pa_metrics}
-#| echo: false
-
-general_table_for_pa_metrics <-
-  tbl_retained_metrics |>
-  gtsummary::modify_header(
-    list(
-      label = "Metric",
-      stat_0 = "All participants  \nN = {N}",
-      stat_1 = "Beginning  \nN = {n}",
-      stat_2 = "Progressing  \nN = {n}" ,
-      stat_3 = "Achieving  \nN = {n}",
-      stat_4 =  "Excelling  \nN = {n}"
-    )
-  ) |>
-  tibble::as_tibble() |>
-  dplyr::left_join(metrics_global_multicomp_profile_rel_eff) |>
-  flextable() |>
-  bold(i = 1, part = "header") |>
-  bg( ~ `Rel. Eff. Beginning` > 0.5, 11, bg = "grey90") |>
-  bg( ~ `Rel. Eff. Progressing` > 0.5, 12, bg = "grey90") |>
-  bg( ~ `Rel. Eff. Achieving` > 0.5, 13, bg = "grey90") |>
-  bg( ~ `Rel. Eff. Excelling` > 0.5, 14, bg = "grey90") |>
-  width(j = 1, width = 2.5) |>
-  width(j = 1:14, width = c(2, 2, 2, 2, 2, 2, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5, 1.5, 1.5)) |> 
-  valign(
-    i = 1,
-    j = 1:9,
-    valign = "top",
-    part = "header"
-  ) |>
-  align(j = 2:14, part = "all", align = "center") |>
-  add_footer_lines(
-    "Numbers are medians (Q1 - Q3) and means ± SD. SED = sedentary, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except usual bout duration that was based on the entire week of measurement. Min./ Max. Theo. Rel. Eff. = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells highlight the highest relative effects among the physical literacy profiles."
-  )
-```
-
-```{r export_materials}
-#| echo: false
-
-# Export databases
-readr::write_csv2(capl_res, "out/capl_res.csv")
-readr::write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days.csv")
-readr::write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days_metrics_by_day.csv")
-
-# Set table export properties
-sect_properties <- prop_section(
-  page_size = page_size(
-    orient = "landscape",
-    width = 17,
-    height = 10
-  ),
-  type = "continuous",
-  page_margins = page_mar()
-)
-
-# Set table export properties
-sect_properties2 <- prop_section(
-  page_size = page_size(
-    orient = "landscape",
-    width = 24,
-    height = 10
-  ),
-  type = "continuous",
-  page_margins = page_mar()
-)
-
-# Export tables
-save_as_docx(general_table_for_capl2_results, path = "out/Table1.docx", pr_section = sect_properties)
-save_as_docx(general_table_for_pa_metrics, path = "out/Table2.docx",  pr_section = sect_properties2)
-
-# Export Supplementary materials
-ggsave("out/SM1.png", p_capl_all_domains_by_sex, scale = 1.5, height = 10, width = 10, dpi = 300)
-```
 

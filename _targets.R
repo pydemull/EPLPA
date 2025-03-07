@@ -19,6 +19,7 @@ tar_option_set(
     "gtsummary",
     "hms",
     "npmv",
+    "officer",
     "patchwork",
     "purrr",
     "rankFD",
@@ -1031,7 +1032,7 @@ list(
           stat_0 = "**Statistics**"
         )
       ) |> 
-      modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3), mean ± SD, or n (%) of participants who obtained a score of 1/1.") |> 
+      modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3), mean ± SD, or count (%) of participants who obtained a score of 1/1.") |> 
       add_n()
   ),
   
@@ -1637,7 +1638,7 @@ list(
         digits = list(all_continuous() ~ 1)
       ) |> 
       add_overall()  |>
-      modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3), mean ± SD, or n (%) of participants who obtained a score of 1/1.") |> 
+      modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3), mean ± SD, or count (%) of participants who obtained a score of 1/1.") |> 
       gtsummary::modify_header(list(
         label = c("**Score**"), 
         stat_0 = "**All participants**  \nN = {N}",
@@ -1869,15 +1870,18 @@ list(
       command = get_multicomp_graph(
         scores = c("pc_score", "db_score", "mc_score", "ku_score"),
         ssnonpartest_out = domain_local_multicomp_sex,
-        x_label = "CAPL-2 domain scores"
+        x_label = "CAPL-2 domain scores",
+        show_all_possible_combination = FALSE
       ) +
         scale_x_discrete(
+          limits = rev,
           labels = c(
-            "Physical \ncompetence",
-            "Daily \nbehaviour",
+            "Knowledge \nand understanding",
             "Motivation \nand confidence",
-            "Knowledge \nand understanding"
+            "Daily \nbehaviour",
+            "Physical \ncompetence"
           )
+          
         ) +
         scale_fill_manual(values = c("grey95", "white", "grey95", "white")) +
         theme(
@@ -1981,11 +1985,10 @@ list(
     tar_target(
       name = item_global_multicomp_sex,
       command = nonpartest(
-          pacer_score | plank_score | camsa_score | 
+          pacer_score | camsa_score | plank_score | 
           step_score	| self_report_pa_score |
-          predilection_score | adequacy_score | intrinsic_motivation_score |
-          pa_competence_score | pa_guideline_score | crf_means_score |
-          ms_means_score | sports_skill_score | fill_in_the_blanks_score ~ gender,
+          intrinsic_motivation_score | pa_competence_score | predilection_score | adequacy_score | 
+          fill_in_the_blanks_score | pa_guideline_score | crf_means_score | ms_means_score | sports_skill_score ~ gender,
         data = capl_res,
         permreps = 1000,
         plots = FALSE
@@ -2125,11 +2128,10 @@ list(
       name = item_local_multicomp_sex,
       command = capture.output(
         ssnonpartest(
-            pacer_score | plank_score | camsa_score | 
-            step_score	| self_report_pa_score |
-            predilection_score | adequacy_score | intrinsic_motivation_score |
-            pa_competence_score | pa_guideline_score | crf_means_score |
-            ms_means_score | sports_skill_score | fill_in_the_blanks_score ~ gender,
+          pacer_score | camsa_score | plank_score | 
+          step_score	| self_report_pa_score |
+          intrinsic_motivation_score | pa_competence_score | predilection_score | adequacy_score | 
+          fill_in_the_blanks_score | pa_guideline_score | crf_means_score | ms_means_score | sports_skill_score ~ gender,
         data = capl_res,
         test = c(1, 0, 0, 0),
         alpha = 0.05,
@@ -2137,6 +2139,63 @@ list(
       )
       )
     ), 
+
+### Get a graphic with all significant sets of item scores for 
+### between-sex differences ----
+tar_target(
+  name = item_local_multicomp_sex_graph,
+  command = get_multicomp_graph(
+    scores = c("pacer_score", 
+               "camsa_score", 
+               "plank_score",
+               "step_score", 
+               "self_report_pa_score",
+               "intrinsic_motivation_score",
+               "pa_competence_score", 
+               "predilection_score", 
+               "adequacy_score", 
+               "fill_in_the_blanks_score",
+               "pa_guideline_score", 
+               "crf_means_score",
+               "ms_means_score", 
+               "sports_skill_score"),
+    ssnonpartest_out = item_local_multicomp_sex,
+    x_label = "CAPL-2 item scores",
+    point_size = 4,
+    show_all_possible_combination = FALSE
+  ) +
+    scale_x_discrete(
+      limits = rev,
+      labels = c(
+        "Improve sport skill",
+        "Muscular strength and endurance definition",
+        "Cardiorespiratory fitness definition",
+        "Daily PA guidelines",
+        "PA comprehension and understanding",
+        "Adequacy",
+        "Predilection",
+        "Competence",
+        "Intrinsic motivation",
+        "Self-reported number of days with MVPA",
+        "Average daily step count",
+        "Plank",
+        "CAMSA",
+        "PACER shuttle run"
+      )
+    ) +
+    scale_fill_manual(values = rep(c("grey95", "white"), 7)) +
+    theme(
+      legend.position = "none",
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.text = element_text(size = 20),
+      axis.title = element_text(size = 25),
+      strip.text = element_text(size = 15)
+    ) +
+    coord_flip(expand = FALSE) +
+    facet_wrap(~ num_items, ncol = 1, scales = "free_x")
+),
   
 # BETWEEN-PHYSICAL LITERACY PROFILE COMPARISONS OF MOVEMENT BEHAVIOURS ----
   
@@ -2556,6 +2615,275 @@ list(
     )
     )
   ),
+
+  #### Get a graphic with all significant sets of item scores for 
+  #### between-sex differences ----
+  tar_target(
+    name = metrics_local_multicomp_profile_graph,
+    command = get_multicomp_graph(
+      scores = c("percent_SED",
+                 "percent_MVPA",
+                 "total_steps",
+                 "max_steps_60min",
+                 "ig",
+                 "mean_breaks",
+                 "UBD"),
+      ssnonpartest_out = metrics_local_multicomp_profile,
+      x_label = "Movement behaviour metrics",
+      skip = 5
+    ) +
+      scale_fill_manual(values = c(rep(c("grey95", "white"), 3), "grey95")) +
+      scale_x_discrete(
+        limits = rev,
+        labels = c(
+          "Usual SED bout duration",
+          "Daily mean number of SED breaks ",
+          "Daily intensity gradient",
+          "Daily maximum 60-min step accumulation",
+          "Daily total step count",
+          "Daily percentage MVPA",
+          "Daily percentage SED"
+        )
+      ) +
+      theme(
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text = element_text(size = 20),
+        axis.title = element_text(size = 25),
+        strip.text = element_text(size = 15)
+      ) +
+      coord_flip(expand = FALSE) +
+      facet_wrap(~ num_items, ncol = 1, scales = "free_x")
+  ),
+
+  ## Export Table 1 ----
+  tar_target(
+    name = table1,
+    format = "file",
+    command = {
+      
+      ### Get n infos
+      output <- capture.output(desc_stats_capl_by_sex |> gtsummary::show_header_names())
+      n_girls <- substr(output[4], 73, 74)
+      n_boys <- substr(output[5], 73, 74)
+      
+      ### Build table
+      general_table_for_capl2_results <-
+        desc_stats_capl_by_sex |>
+        gtsummary::modify_header(
+          list(
+            label = "Score",
+            stat_0 = "All participants  \nN = {N}",
+            stat_1 = "Girls  \nN = {n}",
+            stat_2 = "Boys  \nN = {n}"
+          )
+        ) |>
+        tibble::as_tibble() |>
+        dplyr::left_join(
+          domain_global_multicomp_sex_rel_eff |>
+            dplyr::bind_rows(item_global_multicomp_sex_rel_eff) |>
+            dplyr::bind_rows(
+              tibble::tibble(
+                Score = as.factor("Physical literacy (/100)"),
+                `N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_girls, "  \n(0.00/1.00)"),
+                `N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_boys, "  \n(0.00/1.00)"),
+                `Rel. Eff. Girls` = 1 - janitor::round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2),
+                `Rel. Eff. Boys` = janitor::round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2)
+              )
+            ) |>
+            dplyr::mutate(Score = factor(
+              Score,
+              levels = c(
+                "Physical competence (/30)",
+                "PACER shuttle run (/10)",
+                "CAMSA (/10)",
+                "Plank (/10)",
+                "Daily behaviour (/30)",
+                "Average daily step count (/25)",
+                "Self-reported number of days with MVPA (/5)",
+                "Motivation and confidence (/30)",
+                "Intrinsic motivation (/7.5)",
+                "Competence (/7.5)",
+                "Predilection (/7.5)",
+                "Adequacy (/7.5)",
+                "Knowledge and understanding (/10)",
+                "PA comprehension and understanding (/6)",
+                "Daily PA guidelines (/1)",
+                "Cardiorespiratory fitness definition (/1)",
+                "Muscular strength and endurance definition (/1)",
+                "Improve sport skill (/1)",
+                "Physical literacy (/100)"
+              )
+            ))
+        ) |>
+        flextable() |>
+        bold(i = 1, part = "header") |>
+        bold(i = c(1, 5, 8, 13, 19), j = 1:8) |>
+        valign(valign = "top", part = "header") |>
+        align(j = 2:8, align = "center", part = "all") |>
+        width(j = 1:6, width = c(2, 2, 2, 3, 2.5, 2.5)) |> 
+        bg( ~ `Rel. Eff. Girls` > 0.5, 7, bg = "grey90") |>
+        bg( ~ `Rel. Eff. Boys` > 0.5, 8, bg = "grey90")|>
+        add_footer_lines(
+          "Descriptive statistics are medians (Q1 - Q3), means ± SD or counts (%) of participants who obtained a score of 1/1. Min./ Max. Theo. Rel. Eff. = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from both groups (girls and boys). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and score based on the number of girls and boys available for the considered score. Grey cells highlight the highest relative effects among girls and boys."
+        )
+      
+      ### Set table export properties
+      sect_properties <- prop_section(
+        page_size = page_size(
+          orient = "landscape",
+          width = 17,
+          height = 10
+        ),
+        type = "continuous",
+        page_margins = page_mar()
+      )
+      
+      ### Export table
+      save_as_docx(general_table_for_capl2_results,
+                   path = "out/Table1.docx",
+                   pr_section = sect_properties)
+      
+    }
+  ),
+
+  ## Export Table 2 ----
+  tar_target(
+    name = table2,
+    format = "file",
+    command = {
+      
+      ### Build table
+      general_table_for_pa_metrics <-
+        tbl_retained_metrics |>
+        gtsummary::modify_header(
+          list(
+            label = "Metric",
+            stat_0 = "All participants  \nN = {N}",
+            stat_1 = "Beginning  \nN = {n}",
+            stat_2 = "Progressing  \nN = {n}" ,
+            stat_3 = "Achieving  \nN = {n}",
+            stat_4 =  "Excelling  \nN = {n}"
+          )
+        ) |>
+        tibble::as_tibble() |>
+        dplyr::left_join(metrics_global_multicomp_profile_rel_eff) |>
+        flextable() |>
+        bold(i = 1, part = "header") |>
+        bg( ~ `Rel. Eff. Beginning` > 0.5, 11, bg = "grey90") |>
+        bg( ~ `Rel. Eff. Progressing` > 0.5, 12, bg = "grey90") |>
+        bg( ~ `Rel. Eff. Achieving` > 0.5, 13, bg = "grey90") |>
+        bg( ~ `Rel. Eff. Excelling` > 0.5, 14, bg = "grey90") |>
+        width(j = 1, width = 2.5) |>
+        width(j = 1:14, width = c(2, 2, 2, 2, 2, 2, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5, 1.5, 1.5)) |> 
+        valign(
+          i = 1,
+          j = 1:9,
+          valign = "top",
+          part = "header"
+        ) |>
+        align(j = 2:14, part = "all", align = "center") |>
+        add_footer_lines(
+          "Numbers are medians (Q1 - Q3) and means ± SD. SED = sedentary, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except usual bout duration that was based on the entire week of measurement. Min./ Max. Theo. Rel. Eff. = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells highlight the highest relative effects among the physical literacy profiles."
+        )
+      
+      ### Set table export properties
+      sect_properties2 <- prop_section(
+        page_size = page_size(
+          orient = "landscape",
+          width = 24,
+          height = 10
+        ),
+        type = "continuous",
+        page_margins = page_mar()
+      )
+      
+      ### Export table
+      save_as_docx(general_table_for_pa_metrics,
+                   path = "out/Table2.docx",
+                   pr_section = sect_properties2)
+    }
+  ),
+
+  ## Export CAPL-2 database ----
+  tar_target(
+    name = capl_res_csv,
+    format = "file",
+    command = {
+      readr::write_csv2(capl_res, "out/capl_res.csv")
+      "out/capl_res.csv"
+    }
+  ),
+
+  ## Export database with CAPL-2 and PL profiles with valid data ----
+  tar_target(
+    name = capl_res_4_valid_days_csv,
+    format = "file",
+    command ={
+      readr::write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days.csv")
+      "out/capl_res_4_valid_days.csv"
+    }
+  ),
+
+  ## Export Figure 1
+  tar_target(
+    name = fig1,
+    format = "file",
+    command = ggsave(
+      "out/fig1.png",
+      domain_local_multicomp_sex_graph,
+      scale = 1,
+      height = 5,
+      width = 7,
+      dpi = 300
+    )
+  ),
+
+  ## Export Figure 1
+  tar_target(
+    name = fig2,
+    format = "file",
+    command = ggsave(
+      "out/fig2.png",
+      metrics_local_multicomp_profile_graph,
+      scale = 2,
+      height = 7,
+      width = 9,
+      dpi = 300
+    )
+  ),
+
+
+  ## Export Supplemental data file 1 (CAPL-2 figure by sex) ---
+  tar_target(
+    name = sm1,
+    format = "file",
+    command = ggsave(
+      "out/sm1.png",
+      p_capl_all_domains_by_sex,
+      scale = 1.5,
+      height = 10,
+      width = 10,
+      dpi = 300
+    )
+  ), 
+
+## Export Supplemental data file 1 (significant CAPL-2 item score combinations) ---
+tar_target(
+  name = sm2,
+  format = "file",
+  command = ggsave(
+    "out/sm2.png",
+    item_local_multicomp_sex_graph,
+    scale = 2.2,
+    height = 20,
+    width = 40,
+    dpi = 300,
+    limitsize = FALSE
+  )
+),
 
   ## Render report ----
   tar_quarto(report, "report.qmd")
