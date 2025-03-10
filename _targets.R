@@ -1718,7 +1718,7 @@ list(
   ), 
 
 
-  ## Comparison of CAPL-2 scores between girls and boys
+  ## Comparison of CAPL-2 scores between girls and boys ----
 
   ### Test
   tar_target(
@@ -2665,9 +2665,8 @@ tar_target(
     command = {
       
       ### Get n infos
-      output <- capture.output(desc_stats_capl_by_sex |> gtsummary::show_header_names())
-      n_girls <- substr(output[4], 73, 74)
-      n_boys <- substr(output[5], 73, 74)
+      n_tab_girls <- capl_res |> filter(!is.na(capl_score) & gender == "girl") |> nrow()
+      n_tab_boys <- capl_res |> filter(!is.na(capl_score) & gender == "boy") |> nrow()
       
       ### Build table
       general_table_for_capl2_results <-
@@ -2687,8 +2686,8 @@ tar_target(
             dplyr::bind_rows(
               tibble::tibble(
                 Score = as.factor("Physical literacy (/100)"),
-                `N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_girls, "  \n(0.00/1.00)"),
-                `N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_boys, "  \n(0.00/1.00)"),
+                `N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_tab_girls, "  \n(0.00/1.00)"),
+                `N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_tab_boys, "  \n(0.00/1.00)"),
                 `Rel. Eff. Girls` = 1 - janitor::round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2),
                 `Rel. Eff. Boys` = janitor::round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2)
               )
@@ -2807,32 +2806,26 @@ tar_target(
     }
   ),
 
-  ## Export CAPL-2 database ----
-  tar_target(
-    name = capl_res_csv,
-    format = "file",
-    command = {
-      readr::write_csv2(capl_res, "out/capl_res.csv")
-      "out/capl_res.csv"
-    }
-  ),
-
-  ## Export database with CAPL-2 and PL profiles with valid data ----
-  tar_target(
-    name = capl_res_4_valid_days_csv,
-    format = "file",
-    command ={
-      readr::write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days.csv")
-      "out/capl_res_4_valid_days.csv"
-    }
-  ),
-
-  ## Export Figure 1
+  ## Export Figure 1 ----
   tar_target(
     name = fig1,
     format = "file",
     command = ggsave(
       "out/fig1.png",
+      p_capl_all_domains_by_sex & theme(strip.text.x = element_text(size = 9)),
+      scale = 2,
+      height = 7,
+      width = 7,
+      dpi = 300
+    )
+  ),
+
+  ## Export Figure 2 ----
+  tar_target(
+    name = fig2,
+    format = "file",
+    command = ggsave(
+      "out/fig2.png",
       domain_local_multicomp_sex_graph,
       scale = 1,
       height = 5,
@@ -2841,12 +2834,31 @@ tar_target(
     )
   ),
 
-  ## Export Figure 1
+  ## Export Figure 3 ----
   tar_target(
-    name = fig2,
+    name = fig3,
     format = "file",
     command = ggsave(
-      "out/fig2.png",
+      "out/fig3.png",
+      p_distri_all_metrics_by_profile  & theme(
+        strip.text.x = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12)
+        ),
+      scale = 2,
+      height = 7,
+      width = 7,
+      dpi = 300
+    )
+  ),
+
+  ## Export Figure 4 ----
+  tar_target(
+    name = fig4,
+    format = "file",
+    command = ggsave(
+      "out/fig4.png",
       metrics_local_multicomp_profile_graph,
       scale = 2,
       height = 7,
@@ -2856,7 +2868,7 @@ tar_target(
   ),
 
 
-  ## Export Supplemental data file 1 (CAPL-2 figure by sex) ---
+  ## Export Supplemental data file 1 (CAPL-2 figure by sex) ----
   tar_target(
     name = sm1,
     format = "file",
@@ -2870,20 +2882,41 @@ tar_target(
     )
   ), 
 
-## Export Supplemental data file 1 (significant CAPL-2 item score combinations) ---
-tar_target(
-  name = sm2,
-  format = "file",
-  command = ggsave(
-    "out/sm2.png",
-    item_local_multicomp_sex_graph,
-    scale = 2.2,
-    height = 20,
-    width = 40,
-    dpi = 300,
-    limitsize = FALSE
-  )
-),
+  ## Export Supplemental data file 1 (significant CAPL-2 item score combinations) ----
+  tar_target(
+    name = sm2,
+    format = "file",
+    command = ggsave(
+      "out/sm2.png",
+      item_local_multicomp_sex_graph,
+      scale = 2.2,
+      height = 20,
+      width = 40,
+      dpi = 300,
+      limitsize = FALSE
+    )
+  ),
+
+
+  ## Export CAPL-2 database ----
+  tar_target(
+    name = capl_res_csv,
+    format = "file",
+    command = {
+      readr::write_csv2(capl_res, "out/capl_res.csv")
+      "out/capl_res.csv"
+    }
+  ),
+  
+  ## Export database with CAPL-2 and PL profiles with valid data ----
+  tar_target(
+    name = capl_res_4_valid_days_csv,
+    format = "file",
+    command ={
+      readr::write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days.csv")
+      "out/capl_res_4_valid_days.csv"
+    }
+  ),
 
   ## Render report ----
   tar_quarto(report, "report.qmd")

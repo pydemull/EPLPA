@@ -1,5 +1,5 @@
 ---
-title: "Comparing physical literacy scores between sexes and movement behaviours between physical literacy profiles in French elementary school students (10- to 11-years old): an exploratory study from the ‘EPLPA’ project"
+title: "Comparing physical literacy scores by sex and movement behaviours across physical literacy profiles in French elementary school students (10- to 11-years old): an exploratory study from the ‘EPLPA’ project"
 authors:
   - name: Henri Moncanis
     affiliation: 
