@@ -6,6 +6,7 @@ library(tarchetypes)
 # Set target options ----
 tar_option_set(
   packages = c(
+    "activAnalyzer",
     "activAnalyzer.batch",
     "capl",
     "correlation",
@@ -94,7 +95,8 @@ list(
           "STREAM_FRAME_CHILD",     
           "VALID_WEAR_TIME_START",
           "VALID_WEAR_TIME_END",
-          "MINIMUM_WEAR_TIME"
+          "MINIMUM_WEAR_TIME",
+          "EHCV_CHILD"
         )
       )
   ),
@@ -111,7 +113,46 @@ list(
       content = "option_3"
     )
     ),
-  
+  ## Export pa vizualization for controlling quality ----
+  tar_target(
+    name = export_pa_viz,
+    command = lapply(
+      (pa_data$data_with_intensity_marks |> mutate(id_copy = id) |>  nest(.by = id_copy))$data,
+      \(x) {
+        
+        id <- x$id[[1]]
+        g <- plot_data_with_intensity(
+          x,   
+          valid_wear_time_start = "06:00:00",
+          valid_wear_time_end = "23:59:59"
+          )
+        if(id < 10) {nb_zeros <- "00"}
+        if(id %in% c(10:99)) {nb_zeros <- "0"}
+        if(id >= 100) {nb_zeros <- ""}
+        ggsave(paste0("./out/pa_viz/", nb_zeros, id, ".png"), units = "cm", height = 10, width = 15, scale = 2)
+        
+      }
+    )
+  ),
+
+  ## Export log-log plots (intensity gradients) ----
+  tar_target(
+    name = export_p_log,
+    command = {
+      list_id <- list.files("data/agd") |> substr(1, 3) |> as.numeric()
+      
+      for (i in seq_along(list_id)) {
+        id <- list_id[i]
+        g <- pa_data$p_log[[i]]
+        if(id < 10) {nb_zeros <- "00"}
+        if(id %in% c(10:99)) {nb_zeros <- "0"}
+        if(id >= 100) {nb_zeros <- ""}
+        ggsave(paste0("./out/p_log/", nb_zeros, id, ".png"), g, units = "cm", height = 10, width = 15, scale = 2)
+      } 
+      
+    }
+  ),
+
   ## Import data ----
   ### Demographic data
   tar_target(
@@ -1718,7 +1759,7 @@ list(
   ), 
 
 
-  ## Comparison of CAPL-2 scores between girls and boys ----
+  ## Comparison of CAPL-2 total scores between girls and boys ----
 
   ### Test
   tar_target(
@@ -1791,12 +1832,16 @@ list(
     #### Raw output
     tar_target(
       name = domain_global_multicomp_sex,
-      command = nonpartest(
-        pc_score | db_score | mc_score | ku_score ~ gender,
-        data = capl_res,
-        permreps = 1000,
-        plots = FALSE
-      )
+      command = 
+        {
+          set.seed(123)
+          nonpartest(
+            pc_score | db_score | mc_score | ku_score ~ gender,
+            data = capl_res,
+            permreps = 1000,
+            plots = FALSE
+          )
+        }
     ), 
 
     #### Formated output
@@ -1852,15 +1897,18 @@ list(
     ### Test local between-sex differences for physical literacy domain scores  ----
     tar_target(
       name = domain_local_multicomp_sex,
-      command = capture.output(
-        ssnonpartest(
-        pc_score | db_score | mc_score | ku_score ~ gender,
-        data = capl_res,
-        test = c(1, 0, 0, 0),
-        alpha = 0.05,
-        factors.and.variables = TRUE
-      )
-      )
+      command = {
+        set.seed(123)
+        capture.output(
+          ssnonpartest(
+            pc_score | db_score | mc_score | ku_score ~ gender,
+            data = capl_res,
+            test = c(1, 0, 0, 0),
+            alpha = 0.05,
+            factors.and.variables = TRUE
+          )
+        )
+      }
     ),
 
     ### Get a graphic with all significant sets of domain scores for 
@@ -1984,15 +2032,18 @@ list(
     #### Raw output
     tar_target(
       name = item_global_multicomp_sex,
-      command = nonpartest(
+      command = {
+        set.seed(123)
+        nonpartest(
           pacer_score | camsa_score | plank_score | 
-          step_score	| self_report_pa_score |
-          intrinsic_motivation_score | pa_competence_score | predilection_score | adequacy_score | 
-          fill_in_the_blanks_score | pa_guideline_score | crf_means_score | ms_means_score | sports_skill_score ~ gender,
-        data = capl_res,
-        permreps = 1000,
-        plots = FALSE
-      )
+            step_score	| self_report_pa_score |
+            intrinsic_motivation_score | pa_competence_score | predilection_score | adequacy_score | 
+            fill_in_the_blanks_score | pa_guideline_score | crf_means_score | ms_means_score | sports_skill_score ~ gender,
+          data = capl_res,
+          permreps = 1000,
+          plots = FALSE
+        )
+      }
     ), 
 
     #### Formated output
@@ -2126,18 +2177,21 @@ list(
     ### Test local between-sex differences for physical literacy item scores ----
     tar_target(
       name = item_local_multicomp_sex,
-      command = capture.output(
-        ssnonpartest(
-          pacer_score | camsa_score | plank_score | 
-          step_score	| self_report_pa_score |
-          intrinsic_motivation_score | pa_competence_score | predilection_score | adequacy_score | 
-          fill_in_the_blanks_score | pa_guideline_score | crf_means_score | ms_means_score | sports_skill_score ~ gender,
-        data = capl_res,
-        test = c(1, 0, 0, 0),
-        alpha = 0.05,
-        factors.and.variables = TRUE
-      )
-      )
+      command = {
+        set.seed(123)
+        capture.output(
+          ssnonpartest(
+            pacer_score | camsa_score | plank_score | 
+              step_score	| self_report_pa_score |
+              intrinsic_motivation_score | pa_competence_score | predilection_score | adequacy_score | 
+              fill_in_the_blanks_score | pa_guideline_score | crf_means_score | ms_means_score | sports_skill_score ~ gender,
+            data = capl_res,
+            test = c(1, 0, 0, 0),
+            alpha = 0.05,
+            factors.and.variables = TRUE
+          )
+        )
+      }
     ), 
 
 ### Get a graphic with all significant sets of item scores for 
@@ -2264,8 +2318,8 @@ tar_target(
         "MX 5 min" = "M5",
         "Number of SED breaks" = "mean_breaks",
         "Power low exponent alpha" = "alpha",
-        "Median bout duration (min)" = "MBD",
-        "Usual bout duration (min)" = "UBD",
+        "Median SED bout duration (min)" = "MBD",
+        "Usual SED bout duration (min)" = "UBD",
         "Gini index" = "gini"
       ) |>
       pivot_longer(cols = c(everything(), -id, -capl_interpretation),
@@ -2308,8 +2362,8 @@ tar_target(
           "MX 5 min",
           "Number of SED breaks",
           "Power low exponent alpha",
-          "Median bout duration (min)",
-          "Usual bout duration (min)",
+          "Median SED bout duration (min)",
+          "Usual SED bout duration (min)",
           "Gini index"
         )
       ) 
@@ -2423,7 +2477,7 @@ tar_target(
         "60-min max step accum.",
         "Intensity gradient",
         "Number of SED breaks",
-        "Usual bout duration (min)"
+        "Usual SED bout duration (min)"
       )
     )
   ),
@@ -2479,7 +2533,7 @@ tar_target(
           peak_steps_60min = "60-min peak step accum.",
           ig = "Intensity gradient",
           mean_breaks = "Number of SED breaks",
-          UBD = "Usual bout duration (min)",
+          UBD = "Usual SED bout duration (min)",
           gini = "Gini index"
         ),
         missing = "no",
@@ -2491,7 +2545,7 @@ tar_target(
       add_overall() |> 
       modify_header(label ~ "**Metric**") |> 
       modify_footnote(c(stat_0, stat_1, stat_2, stat_3, stat_4) ~ "Numbers are medians (Q1 - Q3) and means ± SD.
-      SED = sedentary, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except usual bout duration that was based on the entire week of measurement."
+      SED = sedentary, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except usual SED bout duration that was based on the entire week of measurement."
                       ) |> 
       gtsummary::modify_header(list(
         stat_0 = "**All participants**  \nN = {N}"
@@ -2514,12 +2568,15 @@ tar_target(
   ##### Raw output 
  tar_target(
     name = metrics_global_multicomp_profile,
-    command = nonpartest(
-      testing_formula_metrics,
-      data = capl_res_4_valid_days,
-      permreps = 1000,
-      plots = FALSE
-    )
+    command = {
+      set.seed(123)
+      nonpartest(
+        testing_formula_metrics,
+        data = capl_res_4_valid_days,
+        permreps = 1000,
+        plots = FALSE
+      )
+    }
   ),
 
   ##### Formated output
@@ -2563,7 +2620,7 @@ tar_target(
           "60-min max step accum.",
           "Intensity gradient",
           "Number of SED breaks",
-          "Usual bout duration (min)"
+          "Usual SED bout duration (min)"
         )
       )) |> 
       tidyr::drop_na() |> 
@@ -2588,7 +2645,7 @@ tar_target(
                                          "60-min max step accum." = "max_steps_60min",
                                          "Intensity gradient" = "ig",
                                          "Number of SED breaks" = "mean_breaks",
-                                         "Usual bout duration (min)" = "UBD"
+                                         "Usual SED bout duration (min)" = "UBD"
             ),
             dplyr::across(c(Beginning:Excelling), ~janitor::round_half_up(.x, digits = 2))
           ) |> 
@@ -2606,14 +2663,17 @@ tar_target(
   #### Test for local differences of movement behaviours between PL profiles ----
   tar_target(
     name = metrics_local_multicomp_profile,
-    command = capture.output(ssnonpartest(
-      testing_formula_metrics,
-      data = capl_res_4_valid_days,
-      test = c(1, 0, 0, 0),
-      alpha = 0.05,
-      factors.and.variables = TRUE
-    )
-    )
+    command = {
+      set.seed(123)
+      capture.output(ssnonpartest(
+        testing_formula_metrics,
+        data = capl_res_4_valid_days,
+        test = c(1, 0, 0, 0),
+        alpha = 0.05,
+        factors.and.variables = TRUE
+      )
+      )
+    }
   ),
 
   #### Get a graphic with all significant sets of item scores for 
@@ -2785,7 +2845,7 @@ tar_target(
         ) |>
         align(j = 2:14, part = "all", align = "center") |>
         add_footer_lines(
-          "Numbers are medians (Q1 - Q3) and means ± SD. SED = sedentary, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except usual bout duration that was based on the entire week of measurement. Min./ Max. Theo. Rel. Eff. = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells highlight the highest relative effects among the physical literacy profiles."
+          "Numbers are medians (Q1 - Q3) and means ± SD. SED = sedentary, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except usual SED bout duration that was based on the entire week of measurement. Min./ Max. Theo. Rel. Eff. = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells highlight the highest relative effects (>0.5) among the physical literacy profiles."
         )
       
       ### Set table export properties
@@ -2868,26 +2928,12 @@ tar_target(
   ),
 
 
-  ## Export Supplemental data file 1 (CAPL-2 figure by sex) ----
+  ## Export Supplemental data file 1 (significant CAPL-2 item score combinations) ----
   tar_target(
     name = sm1,
     format = "file",
     command = ggsave(
       "out/sm1.png",
-      p_capl_all_domains_by_sex,
-      scale = 1.5,
-      height = 10,
-      width = 10,
-      dpi = 300
-    )
-  ), 
-
-  ## Export Supplemental data file 1 (significant CAPL-2 item score combinations) ----
-  tar_target(
-    name = sm2,
-    format = "file",
-    command = ggsave(
-      "out/sm2.png",
       item_local_multicomp_sex_graph,
       scale = 2.2,
       height = 20,

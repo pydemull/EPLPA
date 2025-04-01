@@ -96,10 +96,10 @@ This document presents the results of the analytical pipeline of the 'EPLPA' pro
 
 ## Pre-analysis information
 
-The document shows results related to CAPL-2 scores and movement behaviour metrics. CAPL-2 scores are partly based on scores related to mean daily step counts. All movement behaviour metrics (including mean daily step count) were obtained using a week-based measurement with a wGT3X-BT accelerometer (ActiGraph). The settings that have been used to process the accelerometer data files are shown in the table below. The `EPOCH_TARGET_CHILD` setting (epoch duration with which counts have been accumulated) is in seconds. The cut-points settings (intensity thresholds to perform intensity classification) are in counts/min. The `FRAME_CHILD`, `ALLOWANCE_FRAME_CHILD` and `STREAM_FRAME_CHILD` settings (to detect nonwear time) are in minutes. The `MINIMUM_WEAR_TIME` setting (to consider a day as valid for further analysis) is in hours.
+The document shows results related to CAPL-2 scores and movement behaviour metrics. CAPL-2 scores are partly based on scores related to mean daily step counts. All movement behaviour metrics (including mean daily step count) were obtained using a week-based measurement with a wGT3X-BT accelerometer (ActiGraph). The settings that have been used to process the accelerometer data files are shown in the table below. The `EPOCH_TARGET_CHILD` setting (epoch duration with which counts have been accumulated) is in seconds. The cut-points settings (intensity thresholds to perform intensity classification) are in counts/min. The `FRAME_CHILD`, `ALLOWANCE_FRAME_CHILD` and `STREAM_FRAME_CHILD` settings (to detect nonwear time) are in minutes. The `MINIMUM_WEAR_TIME` setting (to consider a day as valid for further analysis) is in hours. The `EHCV` setting is the value at and above which vertical axis counts (in counts/min) were considered abnormal. In this case, for the detected epochs, activity data were set to NAs and epochs were considered as "nonwear".
 
 ```{r show_pa_metrics_config}
-rmarkdown::paged_table(tab_pa_metrics_config, options = list(rows.print = 11))
+rmarkdown::paged_table(tab_pa_metrics_config, options = list(rows.print = 12))
 ```
 
 The package used to compute CAPL-2 scores (i.e., `{capl}`) required at least 4 valid days of movement behaviour measurement to compute a mean daily step count to be used for further analysis. If only 3 valid days were available, a step count for a fourth valid day was obtained by randomly sampling a step count among the available valid daily step counts (action performed by the package `{capl}`). No computations were performed when less than 3 valid days were available.
@@ -211,9 +211,9 @@ This section focuses only on the counts and percentages of participants by sex a
 p_interpretation_by_sex
 ```
 
-### Comparison of CAPL-2 global scores
+### Comparison of CAPL-2 total scores
 
-The global comparison has been performed using a Brunner-Munzel test, that is a procedure testing the stochastic equality of the compared groups.
+The comparison has been performed using a Brunner-Munzel test, that is a procedure testing the stochastic equality of the compared groups.
 
 ```{r capl_comp_sex}
 capl_comp_sex
@@ -247,16 +247,21 @@ performance::check_outliers(
   method = "mcd") # recommended in DOI: 10.3758/s13428-024-02356-w
 ```
 
-#### Non-parametric multivariate analysis
+#### Nonparametric multivariate analysis
 
-The comparison of the multivariate distributions of domain scores between girls and boys has been performed using non-parametric analysis implemented in functions from the `{npmv}` package.
+The comparison of the multivariate distributions of domain scores between girls and boys has been performed using nonparametric analysis implemented in functions from the `{npmv}` package.
 
 ##### R output for global comparison
+
 ###### Raw output
 
 ```{r domain_global_multicomp_sex}
 domain_global_multicomp_sex
 ```
+
+:::{.callout-note}
+The global analysis, based on the ANOVA type test p-value, suggests that girls and boys come from two different multivariate distributions related to the CAPL-2 domain scores. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a girl or a boy randomly sampled respectively from girls or boys has a higher value than the one associated to a participant randomly sampled from both the girls and boys.
+:::
 
 ###### Formated output
 
@@ -284,10 +289,6 @@ domain_global_multicomp_sex_rel_eff |>
   )
 ```
 
-:::{.callout-note}
-The global analysis, based on the ANOVA type test p-value, suggests that girls and boys come from two different multivariate distributions related to the CAPL-2 domain scores. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a girl or a boy randomly sampled respectively from girls or boys has a higher value than the one associated to a participant randomly sampled from both the girls and boys.
-:::
-
 ##### R output for local comparisons
 
 ###### Raw output
@@ -296,7 +297,7 @@ The global analysis, based on the ANOVA type test p-value, suggests that girls a
 cat(domain_local_multicomp_sex, sep = "\n")
 ```
 
-###### Graphical output
+###### Graphical output (combinations of variables for which groups significantly differed)
 
 ```{r domain_local_multicomp_sex_graph}
 #| fig-align: 'center'
@@ -342,13 +343,17 @@ performance::check_outliers(
 
 #### R output for global comparison
 
-The comparison of the multivariate distributions of item scores between girls and boys has been performed using non-parametric analysis implemented in functions from the `{npmv}` package.
+The comparison of the multivariate distributions of item scores between girls and boys has been performed using nonparametric analysis implemented in functions from the `{npmv}` package.
 
 ##### Raw output
 
 ```{r item_global_multicomp_sex}
 item_global_multicomp_sex
 ```
+
+:::{.callout-note}
+The global analysis, based on the ANOVA type test p-value, suggests that girls and boys come from two different multivariate distributions related to the CAPL-2 item scores. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a girl or a boy randomly sampled respectively from girls or boys has a higher value than the one associated to a participant randomly sampled from both the girls and boys.
+:::
 
 ##### Formated output
 
@@ -376,10 +381,6 @@ item_global_multicomp_sex_rel_eff |>
   )
 ```
 
-:::{.callout-note}
-The global analysis, based on the ANOVA type test p-value, suggests that girls and boys come from two different multivariate distributions related to the CAPL-2 item scores. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a girl or a boy randomly sampled respectively from girls or boys has a higher value than the one associated to a participant randomly sampled from both the girls and boys.
-:::
-
 #### R output for local comparisons
 
 ##### Raw output
@@ -388,7 +389,7 @@ The global analysis, based on the ANOVA type test p-value, suggests that girls a
 cat(item_local_multicomp_sex, sep = "\n")
 ```
 
-##### Graphical output
+##### Graphical output (combinations of variables for which groups significantly differed)
 
 ```{r item_local_multicomp_sex_graph}
 #| column: screen
@@ -402,7 +403,7 @@ item_local_multicomp_sex_graph
 
 ## Between-physical literacy profile comparisons of movement behaviours
 
-This part includes two subsections: a section showing the comparisons of the multivariate distributions of movement behaviour metrics between the physical literacy profiles; and a section showing the comparisons of the pattern of movement behaviours across the week between the physical literacy profiles. These analyses are based on data from participants having at least 4 valid days for the accelerometer-based measurement of movement behaviours and who had a valid CAPL-2 profile.
+This part includes the comparisons of the multivariate distributions of movement behaviour metrics between the physical literacy profiles. These analyses are based on data from participants having at least 4 valid days for the accelerometer-based measurement of movement behaviours and who had a valid CAPL-2 profile.
 
 ### Data skimming
 
@@ -424,7 +425,7 @@ skimr::skim(capl_res_4_valid_days)
 
 ### Distributions of the movement behaviour metrics
 
-This section shows the distributions of the movement behaviour metrics that were deemed of potential interest for exploratory analysis. These metrics were directly available from the {activAnalyzer} package. Some metrics have been removed from the initial list of the available metrics. MPA and VPA minutes and related percentages of wear time have been removed because we had no tresholds to make a distinction between moderate and vigorous physical activity in children. Total kilocalories, physical activity level, and MVPA MET-hours have been removed because they were not based on children-specific equations (no appropriate equations were available in the {activAnalyzer} package) and there was also no consideration for these metrics that are usually poorly estimated. The retained metrics represent different movement behaviour concepts: activity volume, step accumulation, intensity distribution, and sedentary time accumulation pattern. Details about what the metrics mean are available in the manual of the {activAnalyzer} package. Of note, in the figure below, the list of the metrics that goes from `Wear time (min)` to `Number of breaks` represent daily means while the remaining metrics were computed considering the whole set of valid days of measurement.
+This section shows the distributions of the movement behaviour metrics that were deemed of potential interest for exploratory analysis. These metrics were directly available from the {activAnalyzer} R package. Some metrics have been removed from the initial list of the available metrics. MPA and VPA minutes and related percentages of wear time have been removed because there was no tresholds, in the study we used to get the MPA cutpoint, to make a distinction between MPA and VPA in children. Total kilocalories, physical activity level, and MVPA MET-hours have been removed because they were not based on children-specific equations (no appropriate equations were available in the {activAnalyzer} package) and there was also no consideration for these metrics that are usually poorly estimated. The retained metrics represent different movement behaviour concepts: activity volume, step accumulation, intensity distribution, and sedentary time accumulation pattern. Details about what the metrics mean are available in the manual of the {activAnalyzer} package. Of note, in the figure below, the list of the metrics that goes from `Wear time (min)` to `Number of breaks` represent daily means while the remaining metrics were computed considering the whole set of valid days of measurement.
 
 ```{r p_distri_all_metrics}
 #| out-width: '100%'
@@ -446,7 +447,7 @@ p_biplot_metrics
 Based on the PCA biplot, we kept for further analysis: 
 
 * For activity volume metrics: 
-  + `vm_perm_min`
+  + `vm_per_min`
   + `percent_SED`
   + `percent_LPA`
   + `percent_MVPA`
@@ -472,7 +473,7 @@ check_cor_metrics
 ```
 
 :::{.callout-note}
-Based on the correlation results, we finally removed `vm_perm_min`, `percent_LPA`, `peak_steps_60min` and `gini` to keep variables with lower correlations. The final list of the retained metrics is the following: 
+Based on the correlation results, we finally removed `vm_per_min`, `percent_LPA`, `peak_steps_60min` and `gini` to keep variables with lower correlations. The final list of the retained metrics is the following: 
 
 * For activity volume metrics: 
   + `percent_SED`
@@ -499,7 +500,7 @@ performance::check_outliers(
   method = "mahalanobis_robust") # too many variables to use MCD method; alternative method chosen based on DOI: 10.3758/s13428-024-02356-w
 ```
 
-### Non-parametric multivariate analysis
+### Nonparametric multivariate analysis
 
 #### Graphical analysis
 
@@ -521,7 +522,7 @@ tbl_retained_metrics |>
 
 #### Checking sex distribution across physical literacy profiles
 
-We check that girls and boys were approximately equally distributed across the physical literacy profiles so that potential differences bewteen the profiles are not confounded by sex differences.
+We checked sex distribution across the physical literacy profiles to get additionnal context to the results.
 
 ```{r counts_sex_by_capl_profile}
 tar_read(capl_res_4_valid_days) |> 
@@ -535,13 +536,17 @@ The distribution of girls and boys was quite balanced across the physical litera
 
 #### R output for global comparison
 
-The comparisons of the multivariate distributions of movement behaviour metrics between physical literacy profiles have been performed using non-parametric analysis implemented in functions from the `{npmv}` package.
+The comparisons of the multivariate distributions of movement behaviour metrics between physical literacy profiles have been performed using nonparametric analysis implemented in functions from the `{npmv}` package.
 
 ##### Raw output
 
 ```{r metrics_global_multicomp_profile}
 metrics_global_multicomp_profile
 ```
+
+:::{.callout-note}
+The global analysis, based on the ANOVA type test p-value, suggests that the physical literacy profiles come from different multivariate distributions related to movement behaviour metrics. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a participant randomly sampled from a given physical literacy profile has a higher value than the one associated to a participant randomly sampled from all physical literacy profiles together.
+:::
 
 ##### Formated output
 
@@ -572,10 +577,6 @@ metrics_global_multicomp_profile_rel_eff |>
   )
 ```
 
-:::{.callout-note}
-The global analysis, based on the ANOVA type test p-value, suggests that the physical literacy profiles come from different multivariate distributions related to movement behaviour metrics. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a participant randomly sampled from a given physical literacy profile has a higher value than the one associated to a participant randomly sampled from all physical literacy profiles together.
-:::
-
 #### R output for local comparisons
 
 ##### Raw output
@@ -584,7 +585,7 @@ The global analysis, based on the ANOVA type test p-value, suggests that the phy
 cat(metrics_local_multicomp_profile, sep = "\n")
 ```
 
-##### Graphical output
+##### Graphical output (combinations of variables for which groups significantly differed)
 
 ```{r metrics_local_multicomp_profile_graph}
 #| out-width: '100%'
