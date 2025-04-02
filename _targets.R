@@ -2317,7 +2317,7 @@ tar_target(
         "MX 15 min" = "M15",
         "MX 5 min" = "M5",
         "Number of SED breaks" = "mean_breaks",
-        "Power low exponent alpha" = "alpha",
+        "Power law exponent alpha" = "alpha",
         "Median SED bout duration (min)" = "MBD",
         "Usual SED bout duration (min)" = "UBD",
         "Gini index" = "gini"
@@ -2361,7 +2361,7 @@ tar_target(
           "MX 15 min",
           "MX 5 min",
           "Number of SED breaks",
-          "Power low exponent alpha",
+          "Power law exponent alpha",
           "Median SED bout duration (min)",
           "Usual SED bout duration (min)",
           "Gini index"
@@ -2372,28 +2372,53 @@ tar_target(
   ### Get a plot with the distributions of all the movement behaviour metrics ----
   tar_target(
     name = p_distri_all_metrics,
-    command = capl_res_4_valid_days_piv |>  
-      ggplot(aes(x = 0, y = Value)) +
-      geom_rain(
-        fill = "grey90",
-        point.args = rlang::list2(
-          alpha = 0.3,
-          size = 2
-        )) +
-      facet_wrap( ~ Metric, scales = "free")  +
-      coord_flip(xlim = c(-0.1, 0.55)) +
-      labs(x = NULL) +
-      theme_bw() +
-      theme(
-        legend.position = "none",
-        axis.text.x = element_text(color = "grey40", angle = 90, hjust = 1, vjust = 0.5),
-        axis.ticks.x = element_line(color = "grey40"),
-        axis.ticks.y = element_blank(),
-        axis.text.y = element_blank(),
-        strip.background = element_rect(fill = "grey40", color = "grey40"),
-        strip.text = element_text(color = "white", face = "bold", size = 10),
-        panel.border = element_rect(color = "grey40")
-      )
+    command = {
+      
+      # Compute stats
+      capl_res_4_valid_days_piv_stats <-
+        capl_res_4_valid_days_piv |> 
+        group_by(Metric) |> 
+        summarise(
+          mean = mean(Value),
+          sd = sd(Value),
+          med = median(Value),
+          q1 = quantile(Value, probs = c(0.25)),
+          q3 = quantile(Value, probs = c(0.75)), 
+          min = min(Value)
+        ) |> 
+        mutate(
+          mean_sd_text = paste0(trimws(format(janitor::round_half_up(mean, 2), nsmall = 2)), " ± ", trimws(format(janitor::round_half_up(sd, 2), nsmall = 2))),
+          med_quant_text = paste0(trimws(format(janitor::round_half_up(med, 2), nsmall = 2)), " (", trimws(format(janitor::round_half_up(q1, 2), nsmall = 2)), "-", trimws(format(janitor::round_half_up(q3, 2), nsmall = 2)), ")")
+          
+        )
+      
+      # Shown graphic
+      capl_res_4_valid_days_piv |>  
+        ggplot(aes(x = 0, y = Value)) +
+        geom_rain(
+          fill = "grey90",
+          point.args = rlang::list2(
+            alpha = 0.3,
+            size = 2
+          )) +
+        geom_hline(data = capl_res_4_valid_days_piv_stats, aes(yintercept = mean, color = "Mean"), linetype = "dashed") +
+        geom_hline(data = capl_res_4_valid_days_piv_stats, aes(yintercept = med, color = "Median"), linetype = "dashed") +
+        scale_color_manual(values = c("blue", "red"), breaks = c("Mean", "Median")) +
+        facet_wrap( ~ Metric, scales = "free")  +
+        coord_flip(xlim = c(-0.1, 0.55)) +
+        labs(x = NULL, color = NULL) +
+        theme_bw() +
+        theme(
+          legend.position = "bottom",
+          axis.text.x = element_text(color = "grey40", angle = 90, hjust = 1, vjust = 0.5),
+          axis.ticks.x = element_line(color = "grey40"),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          strip.background = element_rect(fill = "grey40", color = "grey40"),
+          strip.text = element_text(color = "white", face = "bold", size = 10),
+          panel.border = element_rect(color = "grey40")
+        )
+    }
   ),
 
   ### Make a PCA biplot to identify (un)correlated variables ----
@@ -2524,17 +2549,13 @@ tar_target(
         include = selected_metrics$raw_names,
         by = capl_interpretation,
         label = list(
-          vm_per_min = "VM counts/min",
           percent_SED = "% Wear time SED",
-          percent_LPA = "% Wear time LPA",
           percent_MVPA = "% Wear time MVPA",
           total_steps = "Step count",
           max_steps_60min = "60-min max step accum.",
-          peak_steps_60min = "60-min peak step accum.",
           ig = "Intensity gradient",
           mean_breaks = "Number of SED breaks",
-          UBD = "Usual SED bout duration (min)",
-          gini = "Gini index"
+          UBD = "Usual SED bout duration (min)"
         ),
         missing = "no",
         statistic = list(
@@ -2943,6 +2964,73 @@ tar_target(
     )
   ),
 
+  ## Export Supplemental data file 2 (table with all PA metrics) ----
+  tar_target(
+    name = sm2,
+    format = "file",
+    command = {
+      
+      # Build table
+      table_for_ALL_pa_metrics <-
+        capl_res_4_valid_days |>
+        select(id, valid_days:gini) |>
+        tbl_summary(
+          include = c(-id),
+          label = list(
+            valid_days = "Valid days (n)",
+            wear_time = "Wear time (min)",
+            total_counts_axis1 = "Vertical axis total counts",
+            total_counts_vm = "Vector magnitude total counts",
+            axis1_per_min = "Vertical axis counts/min",
+            minutes_SED = "Minutes SED",
+            minutes_LPA = "Minutes LPA",
+            minutes_MVPA = "Minutes MVPA",
+            vm_per_min = "VM counts/min",
+            percent_SED = "% Wear time SED",
+            percent_LPA = "% Wear time LPA",
+            percent_MVPA = "% Wear time MVPA",
+            ratio_mvpa_sed = "MVPA / SED ratio",
+            total_steps = "Step count",
+            max_steps_60min = "60-min max step accum.",
+            max_steps_30min = "30-min max step accum.",
+            max_steps_20min = "20-min max step accum.",
+            max_steps_5min = "5-min max step accum.",
+            max_steps_1min = "1-min max step accum.",
+            peak_steps_60min = "60-min peak step accum.",
+            peak_steps_30min = "30-min peak step accum.",
+            peak_steps_20min = "20-min peak step accum.",
+            peak_steps_5min = "5-min peak step accum.",
+            peak_steps_1min = "1-min peak step accum.",
+            ig = "Intensity gradient",
+            `M1/3` = "MX 8 hours",
+            M120 = "MX 120 min",
+            M60 = "MX 60 min",
+            M30 = "MX 30 min",
+            M15 = "MX 15 min",
+            M5 = "MX 5 min",
+            mean_breaks = "Number of SED breaks",
+            alpha = "Power law exponent alpha",
+            MBD = "Median SED bout duration",
+            UBD = "Usual SED bout duration (min)",
+            gini = "Gini index"
+          ),
+          type = list(valid_days = "continuous", MBD = "continuous"),
+          missing = "no",
+          statistic = list(all_continuous() ~ "{median} ({p25} - {p75})  \n {mean} ± {sd}"),
+          digits = list(all_continuous() ~ 1)
+        )   |>
+        modify_header(label ~ "**Metric**") |>
+        modify_footnote(
+          c(stat_0) ~ "Numbers are medians (Q1 - Q3) and means ± SD.
+      SED = sedentary, LPA = light physical activity, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except power law exponent alpha, median and usual SED bout durations and Gini index that were based on the entire week of measurement."
+        ) |>
+        as_flex_table()
+    
+      save_as_docx(table_for_ALL_pa_metrics, path = "out/sm2.docx")
+    
+    }
+    
+  ),
 
   ## Export CAPL-2 database ----
   tar_target(
