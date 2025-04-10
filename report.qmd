@@ -53,7 +53,9 @@ editor: source
 # Packages
 library(flextable)
 library(ggplot2)
+library(report)
 library(targets)
+
 
 # Targets
 tar_load(tab_pa_metrics_config)
@@ -530,6 +532,10 @@ tar_read(capl_res_4_valid_days) |>
   tidyr::pivot_wider(names_from = gender, values_from = n)
 ```
 
+```{r}
+table(capl_res_4_valid_days$gender)
+```
+
 :::{.callout-note}
 The distribution of girls and boys was quite balanced across the physical literacy profiles.
 :::
@@ -594,4 +600,33 @@ cat(metrics_local_multicomp_profile, sep = "\n")
 metrics_local_multicomp_profile_graph
 ```
 
+## List of the R packages used
+
+```{r load_package_to_be_cited}
+#| echo: false
+#| warning: false
+#| message: false
+
+library(activAnalyzer)
+library(activAnalyzer.batch)
+library(capl)
+library(correlation)
+library(tidyverse)
+library(tidyselect)
+library(factoextra)
+library(flextable)
+library(ggrain)
+library(ggplot2)
+library(Hmisc)
+library(gtsummary)
+library(npmv)
+library(patchwork)
+library(rankFD)
+library(skimr)
+library(stats)
+```
+
+```{r packages_list}
+cite_packages()
+```
 
