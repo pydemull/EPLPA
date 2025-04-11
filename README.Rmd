@@ -16,6 +16,8 @@ knitr::opts_chunk$set(
 
 # README
 
+**(WARNING: The procedure described in this README can be implemented only using a directory that contains all the raw data. Due to space contraints, the data directory has been left empty on GitHub. A directory with all  data can be found at [TO BE CONFIGURED].)**
+
 The present directory contains all the materials required to reproduce the results of the 'EPLPA' project, which aimed at conducting sex comparisons regarding physical literacy scores as well as comparisons of movement behaviour metrics across physical literacy profiles in French children.
 
 
