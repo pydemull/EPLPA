@@ -55,8 +55,8 @@ targets::tar_make()
 This last step will produce all the objects relating to the analytical
 process. It also will generate the materials that are deemed to be used
 for a scientific publication. Because the pipeline will process 99
-accelerometer data file with 15-s epochs and will also generate high
-resolution figures relating to each accelerometer data file, running the
+accelerometer data files with 15-s epochs and will also generate high
+resolution figures related to each accelerometer data file, running the
 pipeline will take a lot of time, likely around an hour.
 
 The list of the objects created during the analytical process is shown
@@ -99,8 +99,8 @@ Version 3.0 (please see LICENSE.md file).
 ### Data
 
 <p xmlns:cc="http://creativecommons.org/ns#">
-The accelerometer data files (.agd) and the project databases are
-licensed under
+The raw data (accelerometer .agd files and Excel databases) and the
+exported materials placed in the `out/` directory are licensed under
 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative
 Commons Attribution-NonCommercial-NoDerivatives 4.0
 International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg?ref=chooser-v1" alt=""></a>
