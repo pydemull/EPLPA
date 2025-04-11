@@ -1,4 +1,6 @@
-data/
+data/*
+!data/
+!data/README.txt
 .Rproj.user
 .Rhistory
 .Rdata
