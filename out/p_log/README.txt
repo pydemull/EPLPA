@@ -1,0 +1,1 @@
+Will contains a series a graphics illustrating intensity gradient for each participant.

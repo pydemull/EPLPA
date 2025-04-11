@@ -1,0 +1,1 @@
+Will contains a series a graphics showing the accelerometer counts in function of time for each participant.

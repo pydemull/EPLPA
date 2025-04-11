@@ -8,6 +8,12 @@ data/
 article/
 figure/
 litt/
-out/
+out/*
+out/p_log/*
+out/p_viz/*
+!out/p_log
+!out/pa_viz
+!out/p_log/README.txt
+!out/pa_viz/README.txt
 temp/
 report.html
