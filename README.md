@@ -8,11 +8,10 @@ only using a directory that contains all the raw data. Due to space
 contraints, the data directory has been left empty on GitHub. A
 directory with all data can be found at \[TO BE CONFIGURED\].)**
 
-The present directory contains all the materials required to reproduce
-the results of the ‘EPLPA’ project, which aimed at conducting sex
-comparisons regarding physical literacy scores as well as comparisons of
-movement behaviour metrics across physical literacy profiles in French
-children.
+The present directory contains the information to reproduce the results
+of the ‘EPLPA’ project, which aimed at conducting sex comparisons
+regarding physical literacy scores as well as comparisons of movement
+behaviour metrics across physical literacy profiles in French children.
 
 ## Running the analytical pipeline to get the results of the ‘EPLPA’ project with R and RStudio
 
@@ -43,8 +42,8 @@ steps below to run the pipeline:
 renv::restore()
 ```
 
-This may take several minutes so that all the required packages are
-downloaded from the web and then installed in the project directory.
+This may take several tens of minutes so that all the required packages
+are downloaded from the web and then installed in the project directory.
 
 - Step 4: Run the analytical pipeline with `{targets}` using the
   following command line in the Console:
@@ -55,7 +54,10 @@ targets::tar_make()
 
 This last step will produce all the objects relating to the analytical
 process. It also will generate the materials that are deemed to be used
-for a scientific publication.
+for a scientific publication. Because the pipeline will process 99
+accelerometer data file with 15-s epochs and will also generate high
+resolution figures relating to each accelerometer data file, running the
+pipeline will take a lot of time, likely around an hour.
 
 The list of the objects created during the analytical process is shown
 in the Console after each ‘target’ expression. Once the analytical
