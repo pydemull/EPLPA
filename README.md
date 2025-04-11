@@ -3,6 +3,11 @@
 
 # README
 
+**(WARNING: The procedure described in this README can be implemented
+only using a directory that contains all the raw data. Due to space
+contraints, the data directory has been left empty on GitHub. A
+directory with all data can be found at \[TO BE CONFIGURED\].)**
+
 The present directory contains all the materials required to reproduce
 the results of the ‘EPLPA’ project, which aimed at conducting sex
 comparisons regarding physical literacy scores as well as comparisons of
@@ -94,7 +99,7 @@ Version 3.0 (please see LICENSE.md file).
 <p xmlns:cc="http://creativecommons.org/ns#">
 The accelerometer data files (.agd) and the project databases are
 licensed under
-<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC
-BY-NC-ND
-4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg?ref=chooser-v1" alt=""></a>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative
+Commons Attribution-NonCommercial-NoDerivatives 4.0
+International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg?ref=chooser-v1" alt=""></a>
 </p>
