@@ -22,6 +22,7 @@ tar_option_set(
     "officer",
     "patchwork",
     "purrr",
+    "quarto",
     "rankFD",
     "readr",
     "scales",
