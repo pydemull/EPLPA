@@ -100,7 +100,7 @@ list(
         )
       )
   ),
-  
+
   ## Get movement behaviour metrics ----
   tar_target(
     name = pa_data,
@@ -113,6 +113,7 @@ list(
       content = "option_3"
     )
     ),
+
   ## Export pa vizualization for controlling quality ----
   tar_target(
     name = export_pa_viz,
@@ -3054,5 +3055,4 @@ tar_target(
 
   ## Render report ----
   tar_quarto(report, "report.qmd")
-  
   )
