@@ -12,7 +12,7 @@ figure/
 litt/
 out/*
 out/p_log/*
-out/p_viz/*
+out/pa_viz/*
 !out/p_log
 !out/pa_viz
 !out/p_log/README.txt
