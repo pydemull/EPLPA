@@ -600,7 +600,7 @@ cat(metrics_local_multicomp_profile, sep = "\n")
 metrics_local_multicomp_profile_graph
 ```
 
-## List of the R packages used
+## References of the R packages used
 
 ```{r load_package_to_be_cited}
 #| echo: false
@@ -628,5 +628,11 @@ library(stats)
 
 ```{r packages_list}
 cite_packages()
+```
+
+## Session information
+
+```{r}
+sessioninfo::session_info()
 ```
 
