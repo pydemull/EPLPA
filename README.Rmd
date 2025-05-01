@@ -6,7 +6,7 @@ output: github_document
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  eval = FALSE,
+  eval = TRUE,
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
@@ -14,46 +14,373 @@ knitr::opts_chunk$set(
 )
 ```
 
-# README
+# 'EPLPA' project: 'Evaluation et promotion de la littératie physique à Avrillé'
 
-**(WARNING: The procedure described in this README can be implemented only using a directory that contains all the raw data. Due to space contraints, the data directory has been left empty on GitHub. A directory with all  data can be found at [TO BE CONFIGURED].)**
+## Overview of the content of the repository
 
-The present directory contains the information to reproduce the results of the 'EPLPA' project, which aimed at conducting sex comparisons regarding physical literacy scores as well as comparisons of movement behaviour metrics across physical literacy profiles in French children.
+The aim of the present repository is to allow the reproduction of the exploratory analyses and results from the first series of measurements of the 'EPLPA' project, which aimed at conducting sex comparisons regarding physical literacy scores, as well as comparisons of movement behaviour metrics across physical literacy profiles in French children. The rationale of the present work, as well as the corresponding  analyses and results that can be generated thanks to the code available in the present repository, are presented in a preprint available at [TO DO].
 
+The present repository is hosted in two different places: on GitHub (https://github.com/pydemull/EPLPA), and on Zenodo [LINK]. Due to space constraints, the repository hosted on GitHub does not contain the raw data that should be used along with the code of the repository to obtain the results. Data are available only in the Zenodo repository. Thus, if you are interested  in reading the code only, you can simply navigate online in the GitHub repository. However, if you want to run the code to reproduce the results of the project, you will have to go to the Zenodo repository and download its content.
 
-## Running the analytical pipeline to get the results of the 'EPLPA' project with R and RStudio
+## Running the analytical pipeline to reproduce the results of the 'EPLPA' project
 
-All data and statistical analyses have been implemented in an analytical pipeline using the `{targets}` R package. This pipeline performs several actions: importing data, cleaning and joining data, processing accelerometer data files, getting results, making figures and tables, generating a report, exporting relevant materials. After running the analytical pipeline in RStudio, you will be able to interactively explore the created objects (e.g., dataframes, figures, etc.). All the results will be available in the generated report. Please follow the steps below to run the pipeline: 
+To get the results of the 'EPLPA' project, an analytical pipeline based on R programming language has been implemented using the `{targets}` package. Briefly, the pipeline consists of the following general steps:
 
-* Step 1: [Install R](https://cran.rstudio.com/) (version: 4.1.1), [RStudio](https://posit.co/download/rstudio-desktop/), and the corresponding version of [Rtools](https://cran.r-project.org/bin/windows/Rtools/)  (if your are a Windows user) on your machine. To retrieve past releases of R, you can go [here](https://cran.r-project.org/bin/windows/base/old/) for Windows, and [here](https://cran.r-project.org/bin/macosx/) for Mac.
-* Step 2: Double-click  on the `EPLPA.Rproj` file to open the project in RStudio.
-* Step 3: Restore the package dependencies of the project with `{renv}` using in the Console the command line shown below and then following the instructions proposed in the Console.
+- Analyzing the .agd files from the accelerometer (ActiGraph wGT3X-BT)-based measurements of movement behaviours to get a series of various metrics for each participant included in the study. These .agd files, which are anonymized, are available with 15-s epochs.
+- Cleaning the databases that contain all the results from the field tests and questionnaires that were implemented to measure the dimensions of physical literacy.
+- Joining data from the different databases.
+- Performing statistical analyses.
+- Generating a report containing all the results.
+- Exporting relevant materials (main datasets, tables, and figures to be used for a scientific publication).
+
+To run the pipeline and then reproduce the results of the project, please follow the steps as described below:
+
+* Step 1: Make sure you have downloaded the present repository from the Zenodo platform and unzipped it.
+* Step 2: [Install R](https://cran.rstudio.com/) (version: 4.4.1), [RStudio](https://posit.co/download/rstudio-desktop/), and [Rtools 4.4](https://cran.r-project.org/bin/windows/Rtools/)  (if your are a Windows user) on your machine. To retrieve past releases of R, you can go [here](https://cran.r-project.org/bin/windows/base/old/) for Windows, and [here](https://cran.r-project.org/bin/macosx/) for Mac.
+* Step 3: Double-click  on the `EPLPA.Rproj` file from the repository to open the project in RStudio.
+* Step 4: Configure RStudio to use the correct R version. To do this, go in RStudio to Tools > Global Options... > R Session > Change... > Choose a specific version of R > Select the version 4.4.1.
+* Step 5: Install and load the project's package dependencies  by running the following command lines in the Console:
 
 ```{r, eval = FALSE}
-renv::restore()
+install.packages("groundhog")
+library("groundhog")
+pkgs <- c(
+    "activAnalyzer",
+    "github::pydemull/activAnalyzer.batch",
+    "capl",
+    "correlation",
+    "dplyr",
+    "factoextra",
+    "flextable",
+    "forcats",
+    "ggplot2",
+    "ggrain",
+    "gtsummary",
+    "hms",
+    "npmv",
+    "officer",
+    "patchwork",
+    "purrr",
+    "quarto",
+    "rankFD",
+    "readr",
+    "scales",
+    "skimr",
+    "tidyr"
+    )
+groundhog.library(pkgs, "2025-04-01", tolerate.R.version='4.4.1')
 ```
 
-This may take several tens of minutes so that all the required packages are downloaded from the web and then installed in the project directory.
-
-* Step 4: Run the analytical pipeline with `{targets}` using the following command line in the Console:
+* Step 6: Run the analytical pipeline using the following command line in the Console:
 
 ```{r, eval = FALSE}
 targets::tar_make()
 ```
 
-This last step will produce all the objects relating to the analytical process. It also will generate the materials that are deemed to be used for a scientific publication. Because the pipeline will process 99 accelerometer data files with 15-s epochs and will also generate high resolution figures related to each accelerometer data file, running the pipeline will take a lot of time, likely around an hour.
+This last step will produce all the objects related to the analytical process. It will also generate the materials that are intented to be used for a scientific publication. Because the pipeline will process 99 accelerometer data files with 15-s epochs and will also generate high resolution figures related to each accelerometer data file, running the pipeline will take a lot of time, likely more than an hour and a half.
 
-The list of the objects created during the analytical process is shown in the Console after each 'target' expression. Once the analytical pipeline ended, you will can read any created object running `targets::tar_read(OBJECT_NAME)` in the Console.  You also will can load any object in the global environment running `targets::tar_load(OBJECT_NAME)` in the Console. You also will can load all the created objects in one go running `targets::tar_load_everything()` in the Console. All the exported materials will appear in the `out/` directory placed at the root of the project directory.
+While the pipeline is running, the list of the objects that are created is shown in the Console. Once the analytical pipeline has finished, you can read any created object by running `targets::tar_read(OBJECT_NAME)` in the Console.  You can also load any object in the global environment by running `targets::tar_load(OBJECT_NAME)` in the Console and you can load all the created objects in one go by running `targets::tar_load_everything()` in the Console. All the exported materials will appear in the `out/` directory placed at the root of the project directory.
 
-To have more information about what are the computations actually performed behind the scene, you can open the `_targets.R` file placed at the root of the directory. This file essentially includes a list of `targets::tar_target()` functions, with the name of the object created as first argument, and the operations performed to get that object as second argument. 
+To learn more about what are the computations actually performed behind the scene, you can open the `_targets.R` file placed at the root of the directory. This file essentially includes a list of `targets::tar_target()` functions, with the name of the object created as first argument, and the operations performed to get that object as second argument. 
 
-## Codebook
+## Codebook for the main (cleaned) datasets on which stand the main results of the pipeline
 
-Running the analytical pipeline produces two main datasets that are exported as .csv files and that are also shown in an .html report. These datasets are called as follows: `capl_res` and  `capl_res_4_valid_days`. These datasets are those used to get the results of the project. This section describes the variables available in these two datasets.
+The two main datasets that are exported while running the analytical pipeline and from which the final results of the project are obtained are named as follows: `capl_res.csv` and  `capl_res_4_valid_days.csv`. The datasets are exported to the directory named `./out`. Below are the definitions of the variables present in these datasets.
 
-### Dataset 1: capl_res
+### Codebook for Dataset 1: `capl_res.csv`
 
-### Dataset 2: capl_res_4_valid_days
+This dataset contains the variables used to make sex comparisons regarding physical literacy scores:
+
+```{r, echo=FALSE}
+# Set variable names
+variables <- names(targets::tar_read(capl_res))
+
+# Set variable definitions
+definitions <-
+  c(
+    "Participant identification number. Numbers go from 1 to 171. Missing identification numbers correspond to children who did not want to participate to the study or who did not complete any field test or questionnaire.",
+    "Name of the school where the participant was recruited.",
+    "Sex of the participant. We are aware that gender is different from sex. While we used sex information reported by the participant, the package used to analyse physical literacy scores required a column called 'gender' to indicate whether the participant was a boy or a girl.",
+    "Participant age in years.",
+    "Skill score obtained during the first pass of the CAMSA test.",
+    "Time taken during the first pass of the CAMSA test, in seconds.",
+    "Skill score obtained during the second pass of the CAMSA test.",
+    "Time taken during the second pass of the CAMSA test, in seconds.",
+    "Plank test performance, in seconds.",
+    "Lap distance used for the PACER test, in meters.",
+    "Number of stages completed during the PACER test.",
+    "Response to the question about physical activity guidelines: 1 = '20 minutes', 2 = '30 minutes', 3 = '60 minutes or 1 hour', 4 = '120 minutes or 2 hours'.",
+    "Response to the question about the definition of cardiorespiratory fitness: 1 = 'How well the muscles can push, pull, or stretch', 2 = 'How well the heart can pump blood and the lungs can provide oxygen', 3 = 'Having a healthy weight for our height', 4 = 'Our ability to do sports that we like'.",
+    "Response to question about the definition of muscular strength and endurance: 1 = 'How well the muscles can push, pull, or stretch', 2 = 'How well the heart can pump blood and the lungs can provide oxygen', 3 = 'Having a healthy weight for our height', 4 = 'Our ability to do sports that we like'.",
+    "Response to the question about the method to improve one’s sports skills: 1 = 'Read a book about kicking and catching a ball', 2 = 'Wait until you get older', 3 = 'Try exercising or being more active', 4 = 'Watch a video, take a lesson, or have a coach teach you how to kick and catch'.",
+   "Response to complete the first blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'strech', 3 = 'endurance', 4 = 'pulse', 7 = 'good', 8 = 'strength'.",
+  "Response to complete the second blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'strech', 3 = 'endurance', 4 = 'pulse', 7 = 'good', 8 = 'strength'.",
+  "Response to complete the third blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'strech', 3 = 'endurance', 4 = 'pulse', 7 = 'good', 8 = 'strength'.",
+  "Response to complete the fourth blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'strech', 3 = 'endurance', 4 = 'pulse', 7 = 'good', 8 = 'strength'.",
+    "Response to complete the fifth blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'Strech', 3 = 'Endurance', 4 = 'Pulse', 7 = 'Good', 8 = 'Strength'.",
+    "Response to complete the sixth blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'strech', 3 = 'endurance', 4 = 'pulse', 7 = 'good', 8 = 'strength'.",
+  "Response to the first question regarding predilection for physical activity: 'Some kids don’t like playing active games (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids really like playing active games' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+    "Response to the first question regarding adequacy for physical activity: 'Some kids are good at active games (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids find active games hard to play' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+    "Response to the second question regarding predilection for physical activity: 'Some kids don’t have much fun playing   sports (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids have a good time playing sports' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+      "Response to the second question regarding adequacy for physical activity: 'Some kids do well in most sports (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids feel they aren’t good at sports' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+      "Response to the third question regarding predilection for physical activity: 'Some kids don’t like playing sports (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids really enjoy playing sports' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+        "Response to the third question regarding adequacy for physical activity: 'Some kids learn to play active games easily (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids find it hard learning to play active games' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+  "Response to the question 'Why are you active? I am active because... being active is fun':  1 = 'Not true for me', 2 = 'Not really true for me', 3 = 'Sometimes true for me', 4 = 'Often true for me', 5 = 'Very true for me'.",
+    "Response to the question 'Why are you active? I am active because... I enjoy being active':  1 = 'Not true for me', 2 = 'Not really true for me', 3 = 'Sometimes true for me', 4 = 'Often true for me', 5 = 'Very true for me'.",
+      "Response to the question 'Why are you active? I am active because... I like being active':  1 = 'Not true for me', 2 = 'Not really true for me', 3 = 'Sometimes true for me', 4 = 'Often true for me', 5 = 'Very true for me'.",
+        "Response to the question 'How do you feel about being active? When it comes to playing active games, I think I am pretty good.':  1 = 'Not like me at all', 2 = 'Not really like me', 3 = 'Sometimes like me', 4 = 'Quite a lot like me', 5 = 'Really like me'.",
+      "Response to the question 'How do you feel about being active? I think I do well at activities compared to other children':  1 = 'Not like me at all', 2 = 'Not really like me', 3 = 'Sometimes like me', 4 = 'Quite a lot like me', 5 = 'Really like me'.",
+            "Response to the question 'How do you feel about being active? When it comes to being active, I have good skills':  1 = 'Not like me at all', 2 = 'Not really like me', 3 = 'Sometimes like me', 4 = 'Quite a lot like me', 5 = 'Really like me'.",
+  "Number of days, over the past seven days, during which the participant self-reported being physically active for at least 60 minutes.",
+  "Number of non-wear minutes on day 1.",
+  "Number of non-wear minutes on day 2.",
+  "Number of non-wear minutes on day 3.",
+  "Number of non-wear minutes on day 4.",
+  "Number of non-wear minutes on day 5.",
+  "Number of non-wear minutes on day 6.",
+  "Number of non-wear minutes on day 7.",
+  "Number of wear minutes on day 1.",
+  "Number of wear minutes on day 2.",
+  "Number of wear minutes on day 3.",
+  "Number of wear minutes on day 4.",
+  "Number of wear minutes on day 5.",
+  "Number of wear minutes on day 6.",
+  "Number of wear minutes on day 7.",
+  "Number of steps taken during day 1.",
+  "Number of steps taken during day 2.",
+  "Number of steps taken during day 3.",
+  "Number of steps taken during day 4.",
+  "Number of steps taken during day 5.",
+  "Number of steps taken during day 6.",
+  "Number of steps taken during day 7.",
+  "Dummy time of the start of the considered period of measurement on day 1. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 2. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 3. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 4. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 5. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 6. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 7. It is 06:00 by default.",
+  "Dummy time of the end of the considered period of measurement on day 1. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 2. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 3. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 4. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 5. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 6. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 7. It is obtained by adding estimated wearing time to 06:00.",
+  "Number of 20-meter laps completed during the PACER test.",
+  "CAPL-2 score corresponding to the performance at the PACER test.",
+  "Interpretation of the score obtained at the PACER test.",
+  "CAPL-2 score corresponding to the performance at the plank test.",
+  "Interpretation of the score obtained at the plank test.",
+  "Score corresponding to the time taken during the first trial of the CAMSA test.",
+  "Score corresponding to the time taken during the second trial of the CAMSA test.",
+  "Total score obtained during the first trial of the CAMSA test.",
+  "Total score obtained during the second trial of the CAMSA test.",
+  "CAPL-2 score corresponding to the CAMSA test.",
+  "Interpretation of the score obtained at the CAMSA test.",
+  "CAPL-2 score corresponding to the physical competence domain.",
+  "Interpretation of the score obtained for the physical competence domain.",
+  "Completion status regarding physical competence domain assessment.",
+  "Number of days with 10 hours or more of accelerometer wear.",
+  "Average daily step count obtained using the valid days.",
+  "CAPL-2 score corresponding to the average daily step count.",
+  "Interpretation of the score obtained for the average daily step count.",
+  "CAPL-2 score corresponding to self-reported physical activity.",
+  "CAPL-2 score corresponding to the daily behaviour domain.",
+  "Interpretation of the score obtained for the daily behaviour domain.",
+  "Completion status regarding the daily behaviour domain assessment.",
+  "CAPL-2 score corresponding to predilection for physical activity.",
+  "CAPL-2 score corresponding to adequacy with physical activity.",
+  "CAPL-2 score corresponding to intrinsic motivation for physical activity.",
+  "CAPL-2 score corresponding to self-efficacy in physical activity.",
+  "CAPL-2 score corresponding to the motivation and confidence domain.",
+  "Interpretation of the score obtained for the motivation and confidence domain.",
+  "Completion status regarding the motivation and confidence domain.",
+  "CAPL-2 score corresponding to the questions about physical activity guidelines.",
+  "CAPL-2 score corresponding to the question about cardiorespiratory fitness.",
+  "CAPL-2 score corresponding to the question about muscular strength and endurance.",
+  "CAPL-2 score corresponding to the question about methods to improve sports skills.",
+  "CAPL-2 score corresponding to the fill-in-the-blank text.",
+  "CAPL-2 score corresponding to the knowledge and understanding domain.",
+  "Interpretation of the score obtained for the knowledge and understanding domain.",
+  "Completion status regarding the knowledge and understanding domain.",
+  "Total CAPL-2 score.",
+  "Interpretation of the total CAPL-2 score.",
+  "Completion status regarding the whole CAPL-2 evaluation."
+  )
+  
+tibble::tibble(
+  Variable = variables, 
+  Definition = definitions
+) |> 
+  knitr::kable(format = "markdown")
+```
+
+### Codebook for Dataset 2: `capl_res_4_valid_days.csv`
+
+This dataset contains the variables used to make comparisons of movement behaviour metrics across the different physical literacy profiles. Only the participants who had 4 valid days ore more are present in the dataset.
+
+```{r, echo=FALSE}
+# Set variable names
+variables2 <- names(targets::tar_read(capl_res_4_valid_days))
+
+# Set variable definitions
+definitions2 <-
+  c(
+"Participant identification number. Numbers go from 1 to 171. Missing identification numbers correspond to children who did not want to participate to the study or who did not complete any field test or questionnaire.",
+"Number of days with 10 hours or more of wear time.",   
+"Daily average of wear time.",
+"Daily average of total counts for the vertical axis.",
+"Daily average of total counts for the vector magnitude.",
+"Daily average of the mean of the counts per minute for the vertical axis.",
+"Daily average of the mean of the counts per minute for the vector magnitude.",
+"Daily average of total minutes spent in sedentary behaviour.",
+"Daily average of total minutes spent in light physical activity.",
+"Daily average of total minutes spent in moderate-to-vigorous physical activity.",
+"Daily average of the proportion of wear time spent in sedentary behaviour.",
+"Daily average of the proportion of wear time spent in light physical activity.",
+"Daily average of the proportion of wear time spent in moderate-to-vigorous physical activity.",
+"Daily average of the ratio between moderate-to-vigorous physical activity and sedentary times (minutes_MVPA / minutes_SED).",
+
+"Daily average of total step count.",
+"Daily average of the best step accumulation per minute averaged over a window of 60 continuous minutes.",
+"Daily average of the best step accumulation per minute averaged over a window of 30 continuous minutes.",
+"Daily average of the best step accumulation per minute averaged over a window of 20 continuous minutes.",
+"Daily average of the best step accumulation per minute averaged over a window of 5 continuous minutes.",
+"Daily average of the best step accumulation per minute over a window of 1 minute.", 
+"Daily average of the step accumulation per minute averaged over the best 60 continuous or discontinuous minutes.",
+"Daily average of the step accumulation per minute averaged over the best 30 continuous or discontinuous minutes.",
+"Daily average of the step accumulation per minute averaged over the best 20 continuous or discontinuous minutes.",
+"Daily average of the step accumulation per minute averaged over the best 5 continuous or discontinuous minutes.",
+"Daily average of the step accumulation per minute over the best minute (same result as for max_steps_1min).",
+
+"Daily average of the intensity gradient.",
+"Daily average of the count value (in counts/15s) at and above which the most active 8h are accumulated over the day",
+"Daily average of the count value (in counts/15s) at and above which the most active 120 minutes are accumulated over the day",
+"Daily average of the  count value (in counts/15s) at and above which the most active 60 minutes are accumulated over the day",
+"Daily average of the  count value (in counts/15s) at and above which the most active 30 minutes are accumulated over the day",
+"Daily average of the  count value (in counts/15s) at and above which the most active 15 minutes are accumulated over the day",
+"Daily average of the count value (in counts/15s) at and above which the most active 5 minutes are accumulated over the day",
+"Daily average of the number of transitions from a sedentary bout to a physical activity bout; this actually corresponds to the mean daily total number of sedentary bouts detected.",
+"Power-law exponent alpha. It provides information on the relative proportion of short and long sedentary bouts. The higher the alpha coefficient, the more the individual tends to accumulate sedentary time using relatively short bouts. Alpha is computed using all the sedentary bouts from the valid days of the measurement period using the formula provided by Chastin and Granat (2010; DOI: 10.1016/j.gaitpost.2009.09.002).",
+"Median sedentary bout duration. It is computed using all the sedentary bouts from the valid days of the measurement period.",
+"Usual bout duration. It refers to the bout duration under/above which 50% of sedentary time is accumulated. It is computed using all the sedentary bouts from the valid days of the measurement period. It is determined as described in Belletiere et al. (2021; doi: 10.1123/jmpb.2020-0036) supplementary files.",
+"Gini index. It provides information on the equality with which bout durations contribute to total sedentary time. A value of 1 reveals perfect inequality, and a value of 0 reveals perfect equality. Gini index is computed using all the sedentary bouts from the valid days of the measurement period. Gini index is computed following the procedure described at the following link: https://www.statology.org/gini-coefficientexcel/.",
+    "Name of the school where the participant was recruited.",
+    "Sex of the participant. We are aware that gender is different from sex. While we used sex information reported by the participant, the package used to analyse physical literacy scores required a column called 'gender' to indicate whether the participant was a boy or a girl.",
+    "Participant age in years.",
+    "Skill score obtained during the first pass of the CAMSA test.",
+    "Time taken during the first pass of the CAMSA test, in seconds.",
+    "Skill score obtained during the second pass of the CAMSA test.",
+    "Time taken during the second pass of the CAMSA test, in seconds.",
+    "Plank test performance, in seconds.",
+    "Lap distance used for the PACER test, in meters.",
+    "Number of stages completed during the PACER test.",
+    "Response to the question about physical activity guidelines: 1 = '20 minutes', 2 = '30 minutes', 3 = '60 minutes or 1 hour', 4 = '120 minutes or 2 hours'.",
+    "Response to the question about the definition of cardiorespiratory fitness: 1 = 'How well the muscles can push, pull, or stretch', 2 = 'How well the heart can pump blood and the lungs can provide oxygen', 3 = 'Having a healthy weight for our height', 4 = 'Our ability to do sports that we like'.",
+    "Response to question about the definition of muscular strength and endurance: 1 = 'How well the muscles can push, pull, or stretch', 2 = 'How well the heart can pump blood and the lungs can provide oxygen', 3 = 'Having a healthy weight for our height', 4 = 'Our ability to do sports that we like'.",
+    "Response to the question about the method to improve one’s sports skills: 1 = 'Read a book about kicking and catching a ball', 2 = 'Wait until you get older', 3 = 'Try exercising or being more active', 4 = 'Watch a video, take a lesson, or have a coach teach you how to kick and catch'.",
+   "Response to complete the first blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'strech', 3 = 'endurance', 4 = 'pulse', 7 = 'good', 8 = 'strength'.",
+  "Response to complete the second blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'strech', 3 = 'endurance', 4 = 'pulse', 7 = 'good', 8 = 'strength'.",
+  "Response to complete the third blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'strech', 3 = 'endurance', 4 = 'pulse', 7 = 'good', 8 = 'strength'.",
+  "Response to complete the fourth blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'strech', 3 = 'endurance', 4 = 'pulse', 7 = 'good', 8 = 'strength'.",
+    "Response to complete the fifth blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'Strech', 3 = 'Endurance', 4 = 'Pulse', 7 = 'Good', 8 = 'Strength'.",
+    "Response to complete the sixth blank in the fill-in-the-blank text: 1 = 'fun', 2 = 'strech', 3 = 'endurance', 4 = 'pulse', 7 = 'good', 8 = 'strength'.",
+  "Response to the first question regarding predilection for physical activity: 'Some kids don’t like playing active games (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids really like playing active games' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+    "Response to the first question regarding adequacy for physical activity: 'Some kids are good at active games (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids find active games hard to play' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+    "Response to the second question regarding predilection for physical activity: 'Some kids don’t have much fun playing   sports (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids have a good time playing sports' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+      "Response to the second question regarding adequacy for physical activity: 'Some kids do well in most sports (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids feel they aren’t good at sports' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+      "Response to the third question regarding predilection for physical activity: 'Some kids don’t like playing sports (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids really enjoy playing sports' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+        "Response to the third question regarding adequacy for physical activity: 'Some kids learn to play active games easily (1 = 'Really true for me', 2 = 'Sort of true for me') BUT Other kids find it hard learning to play active games' (3 = 'Really true for me', 4 = 'Sort of true for me').",
+  "Response to the question 'Why are you active? I am active because... being active is fun':  1 = 'Not true for me', 2 = 'Not really true for me', 3 = 'Sometimes true for me', 4 = 'Often true for me', 5 = 'Very true for me'.",
+    "Response to the question 'Why are you active? I am active because... I enjoy being active':  1 = 'Not true for me', 2 = 'Not really true for me', 3 = 'Sometimes true for me', 4 = 'Often true for me', 5 = 'Very true for me'.",
+      "Response to the question 'Why are you active? I am active because... I like being active':  1 = 'Not true for me', 2 = 'Not really true for me', 3 = 'Sometimes true for me', 4 = 'Often true for me', 5 = 'Very true for me'.",
+        "Response to the question 'How do you feel about being active? When it comes to playing active games, I think I am pretty good.':  1 = 'Not like me at all', 2 = 'Not really like me', 3 = 'Sometimes like me', 4 = 'Quite a lot like me', 5 = 'Really like me'.",
+      "Response to the question 'How do you feel about being active? I think I do well at activities compared to other children':  1 = 'Not like me at all', 2 = 'Not really like me', 3 = 'Sometimes like me', 4 = 'Quite a lot like me', 5 = 'Really like me'.",
+            "Response to the question 'How do you feel about being active? When it comes to being active, I have good skills':  1 = 'Not like me at all', 2 = 'Not really like me', 3 = 'Sometimes like me', 4 = 'Quite a lot like me', 5 = 'Really like me'.",
+  "Number of days, over the past seven days, during which the participant self-reported being physically active for at least 60 minutes.",
+  "Number of non-wear minutes on day 1.",
+  "Number of non-wear minutes on day 2.",
+  "Number of non-wear minutes on day 3.",
+  "Number of non-wear minutes on day 4.",
+  "Number of non-wear minutes on day 5.",
+  "Number of non-wear minutes on day 6.",
+  "Number of non-wear minutes on day 7.",
+  "Number of wear minutes on day 1.",
+  "Number of wear minutes on day 2.",
+  "Number of wear minutes on day 3.",
+  "Number of wear minutes on day 4.",
+  "Number of wear minutes on day 5.",
+  "Number of wear minutes on day 6.",
+  "Number of wear minutes on day 7.",
+  "Number of steps taken during day 1.",
+  "Number of steps taken during day 2.",
+  "Number of steps taken during day 3.",
+  "Number of steps taken during day 4.",
+  "Number of steps taken during day 5.",
+  "Number of steps taken during day 6.",
+  "Number of steps taken during day 7.",
+  "Dummy time of the start of the considered period of measurement on day 1. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 2. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 3. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 4. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 5. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 6. It is 06:00 by default.",
+  "Dummy time of the start of the considered period of measurement on day 7. It is 06:00 by default.",
+  "Dummy time of the end of the considered period of measurement on day 1. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 2. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 3. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 4. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 5. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 6. It is obtained by adding estimated wearing time to 06:00.",
+  "Dummy time of the end of the considered period of measurement on day 7. It is obtained by adding estimated wearing time to 06:00.",
+  "Number of 20-meter laps completed during the PACER test.",
+  "CAPL-2 score corresponding to the performance at the PACER test.",
+  "Interpretation of the score obtained at the PACER test.",
+  "CAPL-2 score corresponding to the performance at the plank test.",
+  "Interpretation of the score obtained at the plank test.",
+  "Score corresponding to the time taken during the first trial of the CAMSA test.",
+  "Score corresponding to the time taken during the second trial of the CAMSA test.",
+  "Total score obtained during the first trial of the CAMSA test.",
+  "Total score obtained during the second trial of the CAMSA test.",
+  "CAPL-2 score corresponding to the CAMSA test.",
+  "Interpretation of the score obtained at the CAMSA test.",
+  "CAPL-2 score corresponding to the physical competence domain.",
+  "Interpretation of the score obtained for the physical competence domain.",
+  "Completion status regarding physical competence domain assessment.",
+  "Average daily step count obtained using the valid days.",
+  "CAPL-2 score corresponding to the average daily step count.",
+  "Interpretation of the score obtained for the average daily step count.",
+  "CAPL-2 score corresponding to self-reported physical activity.",
+  "CAPL-2 score corresponding to the daily behaviour domain.",
+  "Interpretation of the score obtained for the daily behaviour domain.",
+  "Completion status regarding the daily behaviour domain assessment.",
+  "CAPL-2 score corresponding to predilection for physical activity.",
+  "CAPL-2 score corresponding to adequacy with physical activity.",
+  "CAPL-2 score corresponding to intrinsic motivation for physical activity.",
+  "CAPL-2 score corresponding to self-efficacy in physical activity.",
+  "CAPL-2 score corresponding to the motivation and confidence domain.",
+  "Interpretation of the score obtained for the motivation and confidence domain.",
+  "Completion status regarding the motivation and confidence domain.",
+  "CAPL-2 score corresponding to the questions about physical activity guidelines.",
+  "CAPL-2 score corresponding to the question about cardiorespiratory fitness.",
+  "CAPL-2 score corresponding to the question about muscular strength and endurance.",
+  "CAPL-2 score corresponding to the question about methods to improve sports skills.",
+  "CAPL-2 score corresponding to the fill-in-the-blank text.",
+  "CAPL-2 score corresponding to the knowledge and understanding domain.",
+  "Interpretation of the score obtained for the knowledge and understanding domain.",
+  "Completion status regarding the knowledge and understanding domain.",
+  "Total CAPL-2 score.",
+  "Interpretation of the total CAPL-2 score.",
+  "Completion status regarding the whole CAPL-2 evaluation."
+  )
+  
+tibble::tibble(
+  Variable = variables2, 
+  Definition = definitions2
+) |> 
+  knitr::kable(format = "markdown")
+```
 
 ## Licenses
 
@@ -63,4 +390,4 @@ The code of the pipeline is provided under GNU General Public License Version 3.
 
 ### Data
 
-<p xmlns:cc="http://creativecommons.org/ns#" >The raw data (accelerometer .agd files and Excel databases) and the exported materials placed in the `out/` directory are licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg?ref=chooser-v1" alt=""></a></p>
+<p xmlns:cc="http://creativecommons.org/ns#" >The raw data (accelerometer .agd files and Excel databases) and the materials exported to the `out/` directory while running the pipeline are licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg?ref=chooser-v1" alt=""></a></p>
