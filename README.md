@@ -11,7 +11,7 @@ of the ‘EPLPA’ project, which aimed at conducting sex comparisons
 regarding physical literacy scores, as well as comparisons of movement
 behaviour metrics across physical literacy profiles in French children.
 
-The present repository is hosted in two different places: on GitHub
+The present repository is hosted on two different places: on GitHub
 (<https://github.com/pydemull/EPLPA>), and on Open Science Framework
 (<https://osf.io/w3kmf/>). Due to space constraints, the repository
 hosted on GitHub does not contain the raw data that should be used along
@@ -134,7 +134,7 @@ definitions of the variables present in these datasets.
 ### Codebook for Dataset 1: `capl_res.csv`
 
 This dataset contains the variables used to make sex comparisons
-regarding physical literacy scores:
+regarding physical literacy scores.
 
 | Variable                   | Definition                                                                                                                                                                                                                                                                                                |
 |:---------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -252,7 +252,7 @@ regarding physical literacy scores:
 
 This dataset contains the variables used to make comparisons of movement
 behaviour metrics across the different physical literacy profiles. Only
-the participants who had 4 valid days ore more are present in the
+the participants who had 4 valid days or more are present in the
 dataset.
 
 | Variable                   | Definition                                                                                                                                                                                                                                                                                                                                                                                                                                    |

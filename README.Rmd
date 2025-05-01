@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 The aim of the present repository is to allow the reproduction of the exploratory analyses and results from the first series of measurements of the 'EPLPA' project, which aimed at conducting sex comparisons regarding physical literacy scores, as well as comparisons of movement behaviour metrics across physical literacy profiles in French children.
 
-The present repository is hosted in two different places: on GitHub (https://github.com/pydemull/EPLPA), and on Open Science Framework (https://osf.io/w3kmf/). Due to space constraints, the repository hosted on GitHub does not contain the raw data that should be used along with the code of the repository to obtain the results. Data are available only in the Open Science Framework repository. Thus, if you are interested  in reading the code only, you can simply navigate online in the GitHub repository. However, if you want to run the code to reproduce the results of the project, you will have to go to the Open Science Framework repository and download its content.
+The present repository is hosted on two different places: on GitHub (https://github.com/pydemull/EPLPA), and on Open Science Framework (https://osf.io/w3kmf/). Due to space constraints, the repository hosted on GitHub does not contain the raw data that should be used along with the code of the repository to obtain the results. Data are available only in the Open Science Framework repository. Thus, if you are interested  in reading the code only, you can simply navigate online in the GitHub repository. However, if you want to run the code to reproduce the results of the project, you will have to go to the Open Science Framework repository and download its content.
 
 ## Running the analytical pipeline to reproduce the results of the 'EPLPA' project
 
@@ -89,7 +89,7 @@ The two main datasets that are exported while running the analytical pipeline an
 
 ### Codebook for Dataset 1: `capl_res.csv`
 
-This dataset contains the variables used to make sex comparisons regarding physical literacy scores:
+This dataset contains the variables used to make sex comparisons regarding physical literacy scores.
 
 ```{r, echo=FALSE}
 # Set variable names
@@ -218,7 +218,7 @@ tibble::tibble(
 
 ### Codebook for Dataset 2: `capl_res_4_valid_days.csv`
 
-This dataset contains the variables used to make comparisons of movement behaviour metrics across the different physical literacy profiles. Only the participants who had 4 valid days ore more are present in the dataset.
+This dataset contains the variables used to make comparisons of movement behaviour metrics across the different physical literacy profiles. Only the participants who had 4 valid days or more are present in the dataset.
 
 ```{r, echo=FALSE}
 # Set variable names
