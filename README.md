@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ‘EPLPA’ project: ‘Evaluation et promotion de la littératie physique à Avrillé’
+# ‘EPLPA’: ‘Evaluation et promotion de la littératie physique à Avrillé’
 
 ## Overview of the content of the repository
 
@@ -10,19 +10,17 @@ exploratory analyses and results from the first series of measurements
 of the ‘EPLPA’ project, which aimed at conducting sex comparisons
 regarding physical literacy scores, as well as comparisons of movement
 behaviour metrics across physical literacy profiles in French children.
-The rationale of the present work, as well as the corresponding analyses
-and results that can be generated thanks to the code available in the
-present repository, are presented in a preprint available at \[TO DO\].
 
 The present repository is hosted in two different places: on GitHub
-(<https://github.com/pydemull/EPLPA>), and on Zenodo \[LINK\]. Due to
-space constraints, the repository hosted on GitHub does not contain the
-raw data that should be used along with the code of the repository to
-obtain the results. Data are available only in the Zenodo repository.
-Thus, if you are interested in reading the code only, you can simply
-navigate online in the GitHub repository. However, if you want to run
-the code to reproduce the results of the project, you will have to go to
-the Zenodo repository and download its content.
+(<https://github.com/pydemull/EPLPA>), and on Open Science Framework
+(<https://osf.io/w3kmf/>). Due to space constraints, the repository
+hosted on GitHub does not contain the raw data that should be used along
+with the code of the repository to obtain the results. Data are
+available only in the Open Science Framework repository. Thus, if you
+are interested in reading the code only, you can simply navigate online
+in the GitHub repository. However, if you want to run the code to
+reproduce the results of the project, you will have to go to the Open
+Science Framework repository and download its content.
 
 ## Running the analytical pipeline to reproduce the results of the ‘EPLPA’ project
 
@@ -46,16 +44,18 @@ package. Briefly, the pipeline consists of the following general steps:
 To run the pipeline and then reproduce the results of the project,
 please follow the steps as described below:
 
-- Step 1: Make sure you have downloaded the present repository from the
-  Zenodo platform and unzipped it.
+- Step 1: Go to the repository hosted on the Open Science Framework
+  platform (<https://osf.io/w3kmf/files/osfstorage>) and download on
+  your machine all the required content by clicking on the ‘Download
+  this folder’ link. Then, unzip the folder on your machine.
 - Step 2: [Install R](https://cran.rstudio.com/) (version: 4.4.1),
   [RStudio](https://posit.co/download/rstudio-desktop/), and [Rtools
   4.4](https://cran.r-project.org/bin/windows/Rtools/) (if your are a
   Windows user) on your machine. To retrieve past releases of R, you can
   go [here](https://cran.r-project.org/bin/windows/base/old/) for
   Windows, and [here](https://cran.r-project.org/bin/macosx/) for Mac.
-- Step 3: Double-click on the `EPLPA.Rproj` file from the repository to
-  open the project in RStudio.
+- Step 3: Double-click on the `EPLPA.Rproj` file from the downloaded and
+  unzipped repository to open the project in RStudio.
 - Step 4: Configure RStudio to use the correct R version. To do this, go
   in RStudio to Tools \> Global Options… \> R Session \> Change… \>
   Choose a specific version of R \> Select the version 4.4.1.
@@ -101,7 +101,7 @@ targets::tar_make()
 
 This last step will produce all the objects related to the analytical
 process. It will also generate the materials that are intented to be
-used for a scientific publication. Because the pipeline will process 99
+used for a scientific publication. Because the pipeline will process 98
 accelerometer data files with 15-s epochs and will also generate high
 resolution figures related to each accelerometer data file, running the
 pipeline will take a lot of time, likely more than an hour and a half.
