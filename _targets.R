@@ -14,6 +14,7 @@ tar_option_set(
     "factoextra",
     "flextable",
     "forcats",
+    "ggpp",
     "ggplot2",
     "ggrain",
     "gtsummary",
