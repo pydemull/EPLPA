@@ -39,42 +39,55 @@ To run the pipeline and then reproduce the results of the project, please follow
 * Step 2: [Install R](https://cran.rstudio.com/) (version: 4.4.1), [RStudio](https://posit.co/download/rstudio-desktop/), and [Rtools 4.4](https://cran.r-project.org/bin/windows/Rtools/)  (if your are a Windows user) on your machine. To retrieve past releases of R, you can go [here](https://cran.r-project.org/bin/windows/base/old/) for Windows, and [here](https://cran.r-project.org/bin/macosx/) for Mac.
 * Step 3: Double-click  on the `EPLPA.Rproj` file from the downloaded and unzipped repository to open the project in RStudio.
 * Step 4: Configure RStudio to use the correct R version. To do this, go in RStudio to Tools > Global Options... > R Session > Change... > Choose a specific version of R > Select the version 4.4.1.
-* Step 5: Install and load the project's package dependencies  by running the following command lines in the Console:
+* Step 5: Install the project's package dependencies by running the following command lines in the Console:
 
 ```{r, eval = FALSE}
+# Install {groundhog}
 install.packages("groundhog")
+
+# Load {groundhog}
 library("groundhog")
-pkgs <- c(
-    "activAnalyzer",
-    "github::pydemull/activAnalyzer.batch",
-    "capl",
-    "correlation",
-    "dplyr",
-    "factoextra",
-    "flextable",
-    "forcats",
-    "ggpp",
-    "ggplot2",
-    "ggrain",
-    "gtsummary",
-    "hms",
-    "npmv",
-    "officer",
-    "patchwork",
-    "purrr",
-    "quarto",
-    "rankFD",
-    "readr",
-    "scales",
-    "skimr",
-    "targets",
-    "tarchetypes",
-    "tidyr"
-    )
-groundhog.library(pkgs, "2025-04-01", tolerate.R.version='4.4.1')
+
+# Install GitHub R packages
+groundhog.library("pydemull/activAnalyzer", "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library("pydemull/activAnalyzer.batch", "2025-04-01", tolerate.R.version='4.4.1')
+
+# Set the CRAN R packages dependencies
+pkgs_cran <- c(
+  "capl",
+  "correlation",
+  "dplyr",
+  "factoextra",
+  "flextable",
+  "forcats",
+  "ggpp",
+  "ggplot2",
+  "ggrain",
+  "gtsummary",
+  "Hmisc",
+  "hms",
+  "janitor",
+  "npmv",
+  "officer",
+  "patchwork",
+  "purrr",
+  "rankFD",
+  "readr",
+  "scales",
+  "skimr",
+  "targets",
+  "tarchetypes",
+  "tibble",
+  "tidyr"
+)
+
+# Install R CRAN package dependencies
+groundhog.library(pkgs_cran, "2025-04-01", tolerate.R.version='4.4.1')
 ```
 
-* Step 6: Run the analytical pipeline using the following command line in the Console:
+* Step 6: Restart R.
+
+* Step 7: Run the analytical pipeline using the following command line in the Console:
 
 ```{r, eval = FALSE}
 targets::tar_make()
