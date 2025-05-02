@@ -10,8 +10,8 @@ pkgs_cran <- c(
   "factoextra",
   "flextable",
   "forcats",
-  "ggpp",
   "ggplot2",
+  "ggpp",
   "ggrain",
   "gtsummary",
   "Hmisc",
@@ -602,7 +602,7 @@ list(
           summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
         
         #### Get plots with score distributions
-        ##### Pacer
+        ##### PACER
         p_pc_1 <-
           plot_score_distri(
             data1 = pc_scores,
@@ -1184,7 +1184,7 @@ list(
         summarise(n = sum(ifelse(!is.na(Score), 1, 0)))
       
       #### Get plots with score distributions
-      ##### Pacer
+      ##### PACER
       p_pc_1_by_sex  <-
         plot_score_distri(
           data1 = pc_scores_by_sex ,
@@ -1764,7 +1764,7 @@ list(
 
   ## Comparison of CAPL-2 total scores between girls and boys ----
 
-  ### Test
+  ### Brunner-Munzel test
   tar_target(
       name = capl_comp_sex,
       command = rank.two.samples(
