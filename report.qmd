@@ -51,10 +51,12 @@ editor: source
 #| echo: false
 
 # Packages
-library(flextable)
-library(ggplot2)
-library(report)
-library(targets)
+library(groundhog)
+groundhog.library("flextable", "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library("ggplot2", "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library("report", "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library("scales", "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library("targets", "2025-04-01", tolerate.R.version='4.4.1')
 
 # Targets
 tar_load(tab_pa_metrics_config)
@@ -606,23 +608,37 @@ metrics_local_multicomp_profile_graph
 #| warning: false
 #| message: false
 
-library(activAnalyzer)
-library(activAnalyzer.batch)
-library(capl)
-library(correlation)
-library(tidyverse)
-library(tidyselect)
-library(factoextra)
-library(flextable)
-library(ggrain)
-library(ggplot2)
-library(Hmisc)
-library(gtsummary)
-library(npmv)
-library(patchwork)
-library(rankFD)
-library(skimr)
-library(stats)
+library("groundhog")
+groundhog.library("pydemull/activAnalyzer", "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library("pydemull/activAnalyzer.batch", "2025-04-01", tolerate.R.version='4.4.1')
+pkgs_cran <- c(
+  "capl",
+  "correlation",
+  "dplyr",
+  "factoextra",
+  "flextable",
+  "forcats",
+  "ggpp",
+  "ggplot2",
+  "ggrain",
+  "gtsummary",
+  "Hmisc",
+  "hms",
+  "janitor",
+  "npmv",
+  "officer",
+  "patchwork",
+  "purrr",
+  "rankFD",
+  "readr",
+  "scales",
+  "skimr",
+  "targets",
+  "tarchetypes",
+  "tibble",
+  "tidyr"
+)
+groundhog.library(pkgs_cran, "2025-04-01", tolerate.R.version='4.4.1')
 ```
 
 ```{r packages_list}

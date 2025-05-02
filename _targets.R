@@ -1,37 +1,38 @@
 
 # Load packages ----
-library(targets)
-library(tarchetypes)
+library("groundhog")
+groundhog.library("pydemull/activAnalyzer", "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library("pydemull/activAnalyzer.batch", "2025-04-01", tolerate.R.version='4.4.1')
+pkgs_cran <- c(
+  "capl",
+  "correlation",
+  "dplyr",
+  "factoextra",
+  "flextable",
+  "forcats",
+  "ggpp",
+  "ggplot2",
+  "ggrain",
+  "gtsummary",
+  "Hmisc",
+  "hms",
+  "janitor",
+  "npmv",
+  "officer",
+  "patchwork",
+  "purrr",
+  "rankFD",
+  "readr",
+  "scales",
+  "skimr",
+  "targets",
+  "tarchetypes",
+  "tibble",
+  "tidyr"
+)
+groundhog.library(pkgs_cran, "2025-04-01", tolerate.R.version='4.4.1')
 
 # Set target options ----
-tar_option_set(
-  packages = c(
-    "activAnalyzer",
-    "activAnalyzer.batch",
-    "capl",
-    "correlation",
-    "dplyr",
-    "factoextra",
-    "flextable",
-    "forcats",
-    "ggplot2",
-    "ggpp",
-    "ggrain",
-    "gtsummary",
-    "hms",
-    "npmv",
-    "officer",
-    "patchwork",
-    "purrr",
-    "quarto",
-    "rankFD",
-    "readr",
-    "scales",
-    "skimr",
-    "tidyr"
-    )
-)
-
 tar_source()
 
 # Define pipeline ----
@@ -445,7 +446,7 @@ list(
     command = pa_data$all_metrics |>
       count(valid_days) |>
       mutate(
-        prop = format(janitor::round_half_up(n / sum(n) * 100, digits = 1), nsmall = 1),
+        prop = format(round_half_up(n / sum(n) * 100, digits = 1), nsmall = 1),
         n = as.character(n)
       ) |>
       rename(
@@ -476,7 +477,7 @@ list(
       pa_data$all_metrics |> 
         mutate(if_4_valid_days = ifelse(valid_days >= 4, "yes", "no")) |> 
         count(if_4_valid_days) |> 
-        mutate(prop = format(janitor::round_half_up(n / sum(n) * 100, digits = 1), nsmall = 1))
+        mutate(prop = format(round_half_up(n / sum(n) * 100, digits = 1), nsmall = 1))
       )[2, 3]
   ),
 
@@ -1118,11 +1119,11 @@ list(
       ) |>
       count(score, interpretation, .drop = FALSE) |>
       group_by(score) |>
-      mutate(prop = janitor::round_half_up(n / sum(n) * 100)) |>
+      mutate(prop = round_half_up(n / sum(n) * 100)) |>
       ggplot(aes(x = interpretation, y = prop)) +
       geom_bar(stat = "identity", aes(fill = interpretation)) +
       geom_text(aes(label = paste0(format(prop, nsmall = 1), "%")), size = 3, vjust = -0.3) +
-      scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+      scale_y_continuous(labels = percent_format(scale = 1, style_positive = "none")) +
       coord_cartesian(ylim = c(0, 100)) +
       labs(x = "", y = "%", fill = "Interpretation") +
       facet_wrap(~ score) +
@@ -1682,7 +1683,7 @@ list(
       ) |> 
       add_overall()  |>
       modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3), mean ± SD, or count (%) of participants who obtained a score of 1/1.") |> 
-      gtsummary::modify_header(list(
+      modify_header(list(
         label = c("**Score**"), 
         stat_0 = "**All participants**  \nN = {N}",
         stat_1 = "**Girls**  \nN = {n}",
@@ -1741,7 +1742,7 @@ list(
         size = 2,
         vjust = -0.3
       ) +
-      scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+      scale_y_continuous(labels = percent_format(scale = 1)) +
       scale_fill_manual(values = c("hotpink", "royalblue2"),
                         labels = c("Girls", "Boys")) +
       coord_cartesian(ylim = c(0, 100)) +
@@ -1807,11 +1808,11 @@ list(
           rain.side = "l",
           boxplot.args = list(color = "black"),
           boxplot.args.pos = list(
-            position = ggpp::position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
+            position = position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
           ),
           point.args = list(alpha = 0.3),
           point.args.pos = list(
-            position = ggpp::position_dodgenudge(x = 0.3, width = 0.2)),
+            position = position_dodgenudge(x = 0.3, width = 0.2)),
           violin.args = list(alpha = 0.3),
         ) +
         scale_color_manual(values = c("hotpink", "royalblue")) +
@@ -1850,13 +1851,13 @@ list(
     tar_target(
       name = domain_global_multicomp_sex_rel_eff,
       command = capl_res |> 
-        dplyr::select(gender, pc_score, db_score, mc_score, ku_score) |> 
-        tidyr::pivot_longer(
+        select(gender, pc_score, db_score, mc_score, ku_score) |> 
+        pivot_longer(
           cols = c(pc_score, db_score, mc_score, ku_score), 
           names_to = "Score",
           values_to = "val"
         ) |> 
-        dplyr::mutate(Score = factor(
+        mutate(Score = factor(
           Score,
           levels = c("pc_score", "db_score", "mc_score", "ku_score"),
           labels = c(
@@ -1866,18 +1867,18 @@ list(
             "Knowledge and understanding (/10)"
           )
         )) |> 
-        tidyr::drop_na() |> 
-        dplyr::group_by(gender, Score) |>
-        dplyr::summarise(n = dplyr::n()) |> 
-        tidyr::pivot_wider(id_cols = "Score", names_from = gender, values_from = n) |> 
-        dplyr::mutate(`N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(girl, "  \n(", janitor::round_half_up(girl/(2*(girl + boy)), 2), "/", janitor::round_half_up(1 - girl/(2*(girl + boy)), 2), ")")) |> 
-        dplyr::mutate(`N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(boy, "  \n(", janitor::round_half_up(boy/(2*(girl + boy)), 2), "/", janitor::round_half_up(1 - boy/(2*(girl + boy)), 2), ")")) |> 
-        dplyr::left_join(
+        drop_na() |> 
+        group_by(gender, Score) |>
+        summarise(n = n()) |> 
+        pivot_wider(id_cols = "Score", names_from = gender, values_from = n) |> 
+        mutate(`N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(girl, "  \n(", round_half_up(girl/(2*(girl + boy)), 2), "/", round_half_up(1 - girl/(2*(girl + boy)), 2), ")")) |> 
+        mutate(`N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(boy, "  \n(", round_half_up(boy/(2*(girl + boy)), 2), "/", round_half_up(1 - boy/(2*(girl + boy)), 2), ")")) |> 
+        left_join(
           domain_global_multicomp_sex$twogroupreleffects |> 
             t() |> 
             as.data.frame() |> 
-            tibble::rownames_to_column(var = "Score") |> 
-            dplyr::mutate(
+            rownames_to_column(var = "Score") |> 
+            mutate(
               Score = as.factor(Score),
               Score = factor(
                 Score,
@@ -1889,11 +1890,11 @@ list(
                   "Knowledge and understanding (/10)"
                 )
               ), 
-              dplyr::across(c(girl, boy), ~janitor::round_half_up(.x, digits = 2))
+              across(c(girl, boy), ~round_half_up(.x, digits = 2))
             ) |>  
-            dplyr::rename("Rel. Eff. Girls" = girl, "Rel. Eff. Boys" = boy)
+            rename("Rel. Eff. Girls" = girl, "Rel. Eff. Boys" = boy)
         ) |> 
-        dplyr::select(-c(girl, boy)) 
+        select(-c(girl, boy)) 
     ),
   
     ### Test local between-sex differences for physical literacy domain scores  ----
@@ -2007,11 +2008,11 @@ list(
           rain.side = "l",
           boxplot.args = list(color = "black"),
           boxplot.args.pos = list(
-            position = ggpp::position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
+            position = position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
           ),
           point.args = list(alpha = 0.3),
           point.args.pos = list(
-            position = ggpp::position_dodgenudge(x = 0.3, width = 0.2)),
+            position = position_dodgenudge(x = 0.3, width = 0.2)),
           violin.args = list(alpha = 0.3),
         ) +
         scale_color_manual(values = c("hotpink", "royalblue")) +
@@ -2052,7 +2053,7 @@ list(
     tar_target(
       name = item_global_multicomp_sex_rel_eff,
       command =  capl_res |> 
-        dplyr::select(gender, 
+        select(gender, 
                       pacer_score, 
                       camsa_score, 
                       plank_score,
@@ -2068,7 +2069,7 @@ list(
                       ms_means_score, 
                       sports_skill_score
         ) |> 
-        tidyr::pivot_longer(
+        pivot_longer(
           cols = c(pacer_score, 
                    camsa_score, 
                    plank_score,
@@ -2086,7 +2087,7 @@ list(
           names_to = "Score",
           values_to = "val"
         ) |> 
-        dplyr::mutate(Score = factor(
+        mutate(Score = factor(
           Score, 
           levels = c(
             "pacer_score", 
@@ -2121,18 +2122,18 @@ list(
             "Improve sport skill (/1)"
           )
         )) |> 
-        tidyr::drop_na() |> 
-        dplyr::group_by(gender, Score) |>
-        dplyr::summarise(n = dplyr::n()) |> 
-        tidyr::pivot_wider(id_cols = "Score", names_from = gender, values_from = n) |> 
-        dplyr::mutate(`N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(girl, "  \n(", janitor::round_half_up(girl/(2*(girl + boy)), 2), "/", janitor::round_half_up(1 - girl/(2*(girl + boy)), 2), ")")) |> 
-        dplyr::mutate(`N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(boy, "  \n(", janitor::round_half_up(boy/(2*(girl + boy)), 2), "/", janitor::round_half_up(1 - boy/(2*(girl + boy)), 2), ")")) |> 
-        dplyr::left_join(
+        drop_na() |> 
+        group_by(gender, Score) |>
+        summarise(n = n()) |> 
+        pivot_wider(id_cols = "Score", names_from = gender, values_from = n) |> 
+        mutate(`N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(girl, "  \n(", round_half_up(girl/(2*(girl + boy)), 2), "/", round_half_up(1 - girl/(2*(girl + boy)), 2), ")")) |> 
+        mutate(`N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(boy, "  \n(", round_half_up(boy/(2*(girl + boy)), 2), "/", round_half_up(1 - boy/(2*(girl + boy)), 2), ")")) |> 
+        left_join(
           item_global_multicomp_sex$twogroupreleffects |> 
             t() |> 
             as.data.frame() |> 
-            tibble::rownames_to_column(var = "Score") |> 
-            dplyr::mutate(
+            rownames_to_column(var = "Score") |> 
+            mutate(
               Score = factor(
                 Score,
                 levels = c(
@@ -2168,12 +2169,12 @@ list(
                   "Improve sport skill (/1)"
                 )
               ),
-              dplyr::across(c(girl, boy), ~janitor::round_half_up(.x, digits = 2))
+              across(c(girl, boy), ~round_half_up(.x, digits = 2))
             ) |> 
-            dplyr::arrange(Score) |>  
-            dplyr::rename("Rel. Eff. Girls" = girl, "Rel. Eff. Boys" = boy)
+            arrange(Score) |>  
+            rename("Rel. Eff. Girls" = girl, "Rel. Eff. Boys" = boy)
         ) |> 
-        dplyr::select(-c(girl, boy))
+        select(-c(girl, boy))
     ),
     
     ### Test local between-sex differences for physical literacy item scores ----
@@ -2389,8 +2390,8 @@ tar_target(
           min = min(Value)
         ) |> 
         mutate(
-          mean_sd_text = paste0(trimws(format(janitor::round_half_up(mean, 2), nsmall = 2)), " ± ", trimws(format(janitor::round_half_up(sd, 2), nsmall = 2))),
-          med_quant_text = paste0(trimws(format(janitor::round_half_up(med, 2), nsmall = 2)), " (", trimws(format(janitor::round_half_up(q1, 2), nsmall = 2)), "-", trimws(format(janitor::round_half_up(q3, 2), nsmall = 2)), ")")
+          mean_sd_text = paste0(trimws(format(round_half_up(mean, 2), nsmall = 2)), " ± ", trimws(format(round_half_up(sd, 2), nsmall = 2))),
+          med_quant_text = paste0(trimws(format(round_half_up(med, 2), nsmall = 2)), " (", trimws(format(round_half_up(q1, 2), nsmall = 2)), "-", trimws(format(round_half_up(q3, 2), nsmall = 2)), ")")
           
         )
       
@@ -2519,15 +2520,15 @@ tar_target(
         rain.side = "l",
         boxplot.args = list(color = "black"),
         boxplot.args.pos = list(
-          position = ggpp::position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
+          position = position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
         ),
         point.args = list(alpha = 0.3),
         point.args.pos = list(
-          position = ggpp::position_dodgenudge(x = 0.3, width = 0.2)),
+          position = position_dodgenudge(x = 0.3, width = 0.2)),
         violin.args = list(alpha = 0.3),
       ) +
-      scale_color_manual(values = scales::hue_pal()(5)[2:5]) +
-      scale_fill_manual(values = scales::hue_pal()(5)[2:5]) +
+      scale_color_manual(values = hue_pal()(5)[2:5]) +
+      scale_fill_manual(values = hue_pal()(5)[2:5]) +
       labs(x = NULL, y = "Value", color = "CAPL-2 profile", fill = "CAPL-2 profile") +
       facet_wrap(~ Metric, scales = "free", ncol = 3) +
       theme_bw() +
@@ -2570,7 +2571,7 @@ tar_target(
       modify_footnote(c(stat_0, stat_1, stat_2, stat_3, stat_4) ~ "Numbers are medians (Q1 - Q3) and means ± SD.
       SED = sedentary, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except usual SED bout duration that was based on the entire week of measurement."
                       ) |> 
-      gtsummary::modify_header(list(
+      modify_header(list(
         stat_0 = "**All participants**  \nN = {N}"
       )
       )
@@ -2606,7 +2607,7 @@ tar_target(
   tar_target(
     name = metrics_global_multicomp_profile_rel_eff,
     command = capl_res_4_valid_days |>
-      dplyr::select(capl_interpretation,
+      select(capl_interpretation,
                     percent_SED,
                     percent_MVPA,
                     total_steps,
@@ -2614,7 +2615,7 @@ tar_target(
                     ig,
                     mean_breaks,
                     UBD) |> 
-      tidyr::pivot_longer(
+      pivot_longer(
         cols = c(percent_SED,
                  percent_MVPA,
                  total_steps,
@@ -2625,7 +2626,7 @@ tar_target(
         names_to = "Metric",
         values_to = "val"
       ) |> 
-      dplyr::mutate(Metric = factor(
+      mutate(Metric = factor(
         Metric, 
         levels = c(
           "percent_SED",
@@ -2646,22 +2647,22 @@ tar_target(
           "Usual SED bout duration (min)"
         )
       )) |> 
-      tidyr::drop_na() |> 
-      dplyr::group_by(capl_interpretation, Metric) |>
-      dplyr::summarise(n = dplyr::n()) |> 
-      tidyr::pivot_wider(id_cols = "Metric", names_from = capl_interpretation, values_from = n) |> 
-      dplyr::mutate("N Beginning \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Beginning , "  \n(", janitor::round_half_up(Beginning /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", janitor::round_half_up(1 - Beginning/(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
-      dplyr::mutate("N Progressing  \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Progressing  , "  \n(", janitor::round_half_up(Progressing  /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", janitor::round_half_up(1 - Progressing /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
-      dplyr::mutate("N Achieving    \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Achieving   , "  \n(", janitor::round_half_up(Achieving   /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", janitor::round_half_up(1 - Achieving  /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
-      dplyr::mutate("N Excelling  \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Excelling  , "  \n(", janitor::round_half_up(Excelling  /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", janitor::round_half_up(1 - Excelling /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
-      dplyr::left_join(
+      drop_na() |> 
+      group_by(capl_interpretation, Metric) |>
+      summarise(n = n()) |> 
+      pivot_wider(id_cols = "Metric", names_from = capl_interpretation, values_from = n) |> 
+      mutate("N Beginning \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Beginning , "  \n(", round_half_up(Beginning /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Beginning/(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
+      mutate("N Progressing  \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Progressing  , "  \n(", round_half_up(Progressing  /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Progressing /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
+      mutate("N Achieving    \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Achieving   , "  \n(", round_half_up(Achieving   /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Achieving  /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
+      mutate("N Excelling  \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Excelling  , "  \n(", round_half_up(Excelling  /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Excelling /(2*(Beginning  + Progressing + Achieving + Excelling)), 2), ")")) |> 
+      left_join(
         metrics_global_multicomp_profile$releffects |> 
           t() |> 
           as.data.frame() |> 
-          tibble::rownames_to_column(var = "Metric") |> 
-          dplyr::mutate(
+          rownames_to_column(var = "Metric") |> 
+          mutate(
             Metric = as.factor(Metric),
-            Metric = forcats::fct_recode(Metric,
+            Metric = fct_recode(Metric,
                                          "% Wear time SED" = "percent_SED",
                                          "% Wear time MVPA" = "percent_MVPA",
                                          "Step count" = "total_steps",
@@ -2670,17 +2671,17 @@ tar_target(
                                          "Number of SED breaks" = "mean_breaks",
                                          "Usual SED bout duration (min)" = "UBD"
             ),
-            dplyr::across(c(Beginning:Excelling), ~janitor::round_half_up(.x, digits = 2))
+            across(c(Beginning:Excelling), ~round_half_up(.x, digits = 2))
           ) |> 
-          dplyr::arrange(Metric) |>  
-          dplyr::rename(
+          arrange(Metric) |>  
+          rename(
             "Rel. Eff. Beginning" = Beginning, 
             "Rel. Eff. Progressing" = Progressing,
             "Rel. Eff. Achieving" = Achieving,
             "Rel. Eff. Excelling" = Excelling
           ) 
       ) |> 
-      dplyr::select(-c(Beginning, Progressing, Achieving, Excelling))
+      select(-c(Beginning, Progressing, Achieving, Excelling))
   ),
 
   #### Test for local differences of movement behaviours between PL profiles ----
@@ -2754,7 +2755,7 @@ tar_target(
       ### Build table
       general_table_for_capl2_results <-
         desc_stats_capl_by_sex |>
-        gtsummary::modify_header(
+        modify_header(
           list(
             label = "Score",
             stat_0 = "All participants  \nN = {N}",
@@ -2762,20 +2763,20 @@ tar_target(
             stat_2 = "Boys  \nN = {n}"
           )
         ) |>
-        tibble::as_tibble() |>
-        dplyr::left_join(
+        as_tibble() |>
+        left_join(
           domain_global_multicomp_sex_rel_eff |>
-            dplyr::bind_rows(item_global_multicomp_sex_rel_eff) |>
-            dplyr::bind_rows(
-              tibble::tibble(
+            bind_rows(item_global_multicomp_sex_rel_eff) |>
+            bind_rows(
+              tibble(
                 Score = as.factor("Physical literacy (/100)"),
                 `N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_tab_girls, "  \n(0.00/1.00)"),
                 `N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_tab_boys, "  \n(0.00/1.00)"),
-                `Rel. Eff. Girls` = 1 - janitor::round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2),
-                `Rel. Eff. Boys` = janitor::round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2)
+                `Rel. Eff. Girls` = 1 - round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2),
+                `Rel. Eff. Boys` = round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2)
               )
             ) |>
-            dplyr::mutate(Score = factor(
+            mutate(Score = factor(
               Score,
               levels = c(
                 "Physical competence (/30)",
@@ -2840,7 +2841,7 @@ tar_target(
       ### Build table
       general_table_for_pa_metrics <-
         tbl_retained_metrics |>
-        gtsummary::modify_header(
+        modify_header(
           list(
             label = "Metric",
             stat_0 = "All participants  \nN = {N}",
@@ -2850,8 +2851,8 @@ tar_target(
             stat_4 =  "Excelling  \nN = {n}"
           )
         ) |>
-        tibble::as_tibble() |>
-        dplyr::left_join(metrics_global_multicomp_profile_rel_eff) |>
+        as_tibble() |>
+        left_join(metrics_global_multicomp_profile_rel_eff) |>
         flextable() |>
         bold(i = 1, part = "header") |>
         bg( ~ `Rel. Eff. Beginning` > 0.5, 11, bg = "grey90") |>
@@ -3039,7 +3040,7 @@ tar_target(
     name = capl_res_csv,
     format = "file",
     command = {
-      readr::write_csv2(capl_res, "out/capl_res.csv")
+      write_csv2(capl_res, "out/capl_res.csv")
       "out/capl_res.csv"
     }
   ),
@@ -3049,7 +3050,7 @@ tar_target(
     name = capl_res_4_valid_days_csv,
     format = "file",
     command ={
-      readr::write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days.csv")
+      write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days.csv")
       "out/capl_res_4_valid_days.csv"
     }
   ),
