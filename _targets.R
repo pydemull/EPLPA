@@ -23,6 +23,7 @@ pkgs_cran <- c(
   "purrr",
   "rankFD",
   "readr",
+  "report",
   "scales",
   "skimr",
   "targets",
