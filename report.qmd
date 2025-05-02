@@ -56,7 +56,6 @@ library(ggplot2)
 library(report)
 library(targets)
 
-
 # Targets
 tar_load(tab_pa_metrics_config)
 tar_load(tab_percents_num_valid_days)
