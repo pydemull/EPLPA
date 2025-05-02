@@ -57,8 +57,9 @@ please follow the steps as described below:
 - Step 3: Double-click on the `EPLPA.Rproj` file from the downloaded and
   unzipped repository to open the project in RStudio.
 - Step 4: Configure RStudio to use the correct R version. To do this, go
-  in RStudio to Tools \> Global Options… \> R Session \> Change… \>
-  Choose a specific version of R \> Select the version 4.4.1.
+  in RStudio to Tools \> Global Options… \> R Sessions \> Change… \>
+  Choose a specific version of R \> Select the version 4.4.1. Close
+  RStudio and restart as described in Step 3.
 - Step 5: Install the project’s package dependencies by running the
   following command lines in the Console:
 
@@ -106,7 +107,7 @@ pkgs_cran <- c(
 groundhog.library(pkgs_cran, "2025-04-01", tolerate.R.version='4.4.1')
 ```
 
-- Step 6: Restart R.
+- Step 6: In RStudio, go to the ‘Session’ tab and click on ‘Restart R’.
 
 - Step 7: Run the analytical pipeline using the following command line
   in the Console:
@@ -120,7 +121,7 @@ process. It will also generate the materials that are intented to be
 used for a scientific publication. Because the pipeline will process 98
 accelerometer data files with 15-s epochs and will also generate high
 resolution figures related to each accelerometer data file, running the
-pipeline will take a lot of time, likely more than an hour and a half.
+pipeline will take a lot of time, likely more than an hour.
 
 While the pipeline is running, the list of the objects that are created
 is shown in the Console. Once the analytical pipeline has finished, you
