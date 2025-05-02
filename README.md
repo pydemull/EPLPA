@@ -74,6 +74,7 @@ pkgs <- c(
     "factoextra",
     "flextable",
     "forcats",
+    "ggpp",
     "ggplot2",
     "ggrain",
     "gtsummary",
@@ -87,6 +88,8 @@ pkgs <- c(
     "readr",
     "scales",
     "skimr",
+    "targets",
+    "tarchetypes",
     "tidyr"
     )
 groundhog.library(pkgs, "2025-04-01", tolerate.R.version='4.4.1')
