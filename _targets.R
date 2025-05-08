@@ -1,8 +1,11 @@
 
+# Set the day for package versions ----
+groundhog.day <- "2025-03-21"
+
 # Load packages ----
 library("groundhog")
-groundhog.library("pydemull/activAnalyzer", "2025-04-01", tolerate.R.version='4.4.1')
-groundhog.library("pydemull/activAnalyzer.batch", "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library("pydemull/activAnalyzer", groundhog.day, tolerate.R.version='4.4.1')
+groundhog.library("pydemull/activAnalyzer.batch", groundhog.day, tolerate.R.version='4.4.1')
 pkgs_cran <- c(
   "capl",
   "correlation",
@@ -21,6 +24,7 @@ pkgs_cran <- c(
   "officer",
   "patchwork",
   "purrr",
+  "quarto",
   "rankFD",
   "readr",
   "report",
@@ -31,7 +35,7 @@ pkgs_cran <- c(
   "tibble",
   "tidyr"
 )
-groundhog.library(pkgs_cran, "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library(pkgs_cran, groundhog.day, tolerate.R.version='4.4.1')
 
 # Set target options ----
 tar_source()

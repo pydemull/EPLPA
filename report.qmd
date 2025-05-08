@@ -50,13 +50,16 @@ editor: source
 ```{r load_packages_and_targets}
 #| echo: false
 
-# Packages
+# Set the day for package versions ----
+groundhog.day <- "2025-03-21"
+
+# Load packages
 library(groundhog)
-groundhog.library("flextable", "2025-04-01", tolerate.R.version='4.4.1')
-groundhog.library("ggplot2", "2025-04-01", tolerate.R.version='4.4.1')
-groundhog.library("report", "2025-04-01", tolerate.R.version='4.4.1')
-groundhog.library("scales", "2025-04-01", tolerate.R.version='4.4.1')
-groundhog.library("targets", "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library("flextable", groundhog.day, tolerate.R.version='4.4.1')
+groundhog.library("ggplot2", groundhog.day, tolerate.R.version='4.4.1')
+groundhog.library("report", groundhog.day, tolerate.R.version='4.4.1')
+groundhog.library("scales", groundhog.day, tolerate.R.version='4.4.1')
+groundhog.library("targets", groundhog.day, tolerate.R.version='4.4.1')
 
 # Targets
 tar_load(tab_pa_metrics_config)
@@ -609,8 +612,8 @@ metrics_local_multicomp_profile_graph
 #| message: false
 
 library("groundhog")
-groundhog.library("pydemull/activAnalyzer", "2025-04-01", tolerate.R.version='4.4.1')
-groundhog.library("pydemull/activAnalyzer.batch", "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library("pydemull/activAnalyzer", groundhog.day, tolerate.R.version='4.4.1')
+groundhog.library("pydemull/activAnalyzer.batch", groundhog.day, tolerate.R.version='4.4.1')
 pkgs_cran <- c(
   "capl",
   "correlation",
@@ -638,7 +641,7 @@ pkgs_cran <- c(
   "tibble",
   "tidyr"
 )
-groundhog.library(pkgs_cran, "2025-04-01", tolerate.R.version='4.4.1')
+groundhog.library(pkgs_cran, groundhog.day, tolerate.R.version='4.4.1')
 ```
 
 ```{r packages_list}
