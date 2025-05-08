@@ -60,21 +60,45 @@ please follow the steps as described below:
   in RStudio to Tools \> Global Options… \> R Sessions \> Change… \>
   Choose a specific version of R \> Select the version 4.4.1. Close
   RStudio and restart as described in Step 3.
-- Step 5: Install the project’s package dependencies by running the
-  following command lines in the Console:
+- Step 5: Install the project’s package dependencies by reading the
+  command lines shown below and running them in the Console. Please be
+  careful about all the comments and DO NOT run all the command lines at
+  a time. Instead, for each command line, run the line, answer when
+  required to the questions asked in the Console, and then wait for the
+  end of the actions currently performed.
 
 ``` r
+# --------------------------------------------------------------
 # Install {groundhog}
+# --------------------------------------------------------------
 install.packages("groundhog")
 
-# Load {groundhog}
+# --------------------------------------------------------------
+# Install {activAnalyzer} GitHub R package
+# --------------------------------------------------------------
 library("groundhog")
+groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.4.1')
 
-# Install GitHub R packages
-groundhog.library("pydemull/activAnalyzer", "2025-04-01", tolerate.R.version='4.4.1')
-groundhog.library("pydemull/activAnalyzer.batch", "2025-04-01", tolerate.R.version='4.4.1')
+# --------------------------------------------------------------
+# Restart R
+# --------------------------------------------------------------
+## In RStudio, go to the 'Session' tab and click on 'Restart R'.
 
-# Set the CRAN R packages dependencies
+# --------------------------------------------------------------
+# Install {activAnalyzer.batch} GitHub R package
+# --------------------------------------------------------------
+library("groundhog")
+groundhog.library("pydemull/activAnalyzer.batch", "2025-03-21", tolerate.R.version='4.4.1')
+
+# --------------------------------------------------------------
+# Restart R
+# --------------------------------------------------------------
+## In RStudio, go to the 'Session' tab and click on 'Restart R'.
+
+# --------------------------------------------------------------
+# Install CRAN  R package dependencies
+# --------------------------------------------------------------
+## Set the CRAN R package dependencies
 pkgs_cran <- c(
   "capl",
   "correlation",
@@ -93,6 +117,7 @@ pkgs_cran <- c(
   "officer",
   "patchwork",
   "purrr",
+  "quarto",
   "rankFD",
   "readr",
   "report",
@@ -104,17 +129,23 @@ pkgs_cran <- c(
   "tidyr"
 )
 
-# Install R CRAN package dependencies
-groundhog.library(pkgs_cran, "2025-04-01", tolerate.R.version='4.4.1')
+## Install packages
+library("groundhog")
+groundhog.library(pkgs_cran, "2025-03-21", tolerate.R.version='4.4.1')
+
+# --------------------------------------------------------------
+# Restart R
+# --------------------------------------------------------------
+## In RStudio, go to the 'Session' tab and click on 'Restart R'.
 ```
 
-- Step 6: In RStudio, go to the ‘Session’ tab and click on ‘Restart R’.
-
-- Step 7: Run the analytical pipeline using the following command line
+- Step 6: Run the analytical pipeline using the following command line
   in the Console:
 
 ``` r
-targets::tar_make()
+library("groundhog")
+groundhog.library("targets", "2025-03-21", tolerate.R.version='4.4.1')
+tar_make()
 ```
 
 This last step will produce all the objects related to the analytical
@@ -270,8 +301,8 @@ regarding physical literacy scores.
 
 This dataset contains the variables used to make comparisons of movement
 behaviour metrics across the different physical literacy profiles. Only
-the participants who had 4 valid days or more are present in the
-dataset.
+the participants who had 4 valid days or more of accelerometer
+measurement are present in the dataset.
 
 | Variable                   | Definition                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 |:---------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
