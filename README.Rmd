@@ -53,6 +53,43 @@ install.packages("groundhog")
 library("groundhog")
 groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.4.1')
 
+# During this task, you could have some package installation problems for unclear 
+# reasons. During some trials for running the pipeline on other machines than the 
+# one that was used to develop the code and get the results of the project, we 
+# encountered two problems that seem commonly faced by R users:
+
+# Problem n°1 - The task fails at the end with an error message that looks like this: 
+# Error: package or namespace load failed for ‘activAnalyzer’:
+# .onLoad failed in loadNamespace () for 'rlang', details:
+#  call: utils::packageVersion(pkg)
+#  error: there is no package called ‘cli’
+#
+# This problem means that the installation of {cli} failed. To manage this problem, 
+# follow the steps below:
+
+# STEP 1:
+# Restart R, and then run the command lines below:
+# library("groundhog")
+# groundhog.library("cli", "2025-03-21", tolerate.R.version='4.4.1')
+# Repeat STEP 1 for each package that could not be found.
+
+# STEP 2:
+# Restart R, and then run the command lines below:
+# library("groundhog")
+# groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.4.1')
+
+# Problem n°2 - The package installation may fail because you are not allowed to replace
+# the current version of a package dependency. In the error message, it could be 
+# indicated the presence of a '00LOCK' folder or file that prevents the modification 
+# of the package. This can happen when something was wrong during a previous 
+# installation attempt regarding that package. To resolve this issues, following 
+# the step below could help:
+
+# Restart R, and then run the command lines below:
+# install.packages("pacman")
+# pacman::p_unlock()
+# groundhog.library("PACKAGE_NAME", "2025-03-21", tolerate.R.version='4.4.1')
+
 # --------------------------------------------------------------
 # Restart R
 # --------------------------------------------------------------
@@ -63,6 +100,10 @@ groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.
 # --------------------------------------------------------------
 library("groundhog")
 groundhog.library("pydemull/activAnalyzer.batch", "2025-03-21", tolerate.R.version='4.4.1')
+
+# During this task, you could have some package installation problems for unclear 
+# reasons. To try to resolve these problems, please process as suggested for the 
+# {activAnalyzer} package.
 
 # --------------------------------------------------------------
 # Restart R
