@@ -82,13 +82,13 @@ groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.
 # the current version of a package dependency. In the error message, it could be 
 # indicated the presence of a '00LOCK' folder or file that prevents the modification 
 # of the package. This can happen when something was wrong during a previous 
-# installation attempt regarding that package. To resolve this issues, following 
+# installation attempt regarding that package. To resolve this issue, following 
 # the step below could help:
 
 # Restart R, and then run the command lines below:
 # install.packages("pacman")
 # pacman::p_unlock()
-# groundhog.library("PACKAGE_NAME", "2025-03-21", tolerate.R.version='4.4.1')
+# groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.4.1')
 
 # --------------------------------------------------------------
 # Restart R
@@ -98,6 +98,20 @@ groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.
 # --------------------------------------------------------------
 # Install {activAnalyzer.batch} GitHub R package
 # --------------------------------------------------------------
+
+# Unfortunately, it seems that the git commit corresponding to the package version 
+# to be installed is not associated to a git username and email address. To 
+# install the needed package version, you have to set here a git user name and a git 
+# email address. If you have already Git installed on your machine and you have already 
+# a git user name and a git email address, DO NOT run the next command line below and 
+# go to the next command line. If you don't have a git user name and email address, set 
+# dummy information by running the command line right below before running the subsequent
+# command line. You will can update these settings when you will use Git in the future.
+
+# WARNING: Be sure to have read the text just above before running the line right
+# below.
+git2r::config(global = TRUE, user.name = "default", user.email = "default")
+
 library("groundhog")
 groundhog.library("pydemull/activAnalyzer.batch", "2025-03-21", tolerate.R.version='4.4.1')
 
@@ -154,7 +168,7 @@ groundhog.library(pkgs_cran, "2025-03-21", tolerate.R.version='4.4.1')
 ## In RStudio, go to the 'Session' tab and click on 'Restart R'.
 ```
 
-* Step 6: Run the analytical pipeline using the following command line in the Console:
+* Step 6: Run the analytical pipeline using the following command lines in the Console:
 
 ```{r, eval = FALSE}
 library("groundhog")
@@ -162,7 +176,7 @@ groundhog.library("targets", "2025-03-21", tolerate.R.version='4.4.1')
 tar_make()
 ```
 
-This last step will produce all the objects related to the analytical process. It will also generate the materials that are intented to be used for a scientific publication. Because the pipeline will process 98 accelerometer data files with 15-s epochs and will also generate high resolution figures related to each accelerometer data file, running the pipeline will take a lot of time, likely more than an hour.
+This last step will produce all the objects related to the analytical process. It will also generate the materials that are intended to be used for a scientific publication. Because the pipeline will process 98 accelerometer data files with 15-s epochs and will also generate high resolution figures related to each accelerometer data file, running the pipeline will take a lot of time, likely more than an hour.
 
 While the pipeline is running, the list of the objects that are created is shown in the Console. Once the analytical pipeline has finished, you can read any created object by running `targets::tar_read(OBJECT_NAME)` in the Console.  You can also load any object in the global environment by running `targets::tar_load(OBJECT_NAME)` in the Console and you can load all the created objects in one go by running `targets::tar_load_everything()` in the Console. All the exported materials will appear in the `out/` directory placed at the root of the project directory.
 
