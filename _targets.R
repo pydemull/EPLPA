@@ -23,6 +23,7 @@ pkgs_cran <- c(
   "npmv",
   "officer",
   "patchwork",
+  "performance",
   "purrr",
   "quarto",
   "rankFD",
