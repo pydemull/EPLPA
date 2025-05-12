@@ -7,6 +7,7 @@ library("groundhog")
 groundhog.library("pydemull/activAnalyzer", groundhog.day, tolerate.R.version='4.4.1')
 groundhog.library("pydemull/activAnalyzer.batch", groundhog.day, tolerate.R.version='4.4.1')
 pkgs_cran <- c(
+  "bigutilsr",
   "capl",
   "correlation",
   "dplyr",

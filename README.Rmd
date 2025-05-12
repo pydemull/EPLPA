@@ -129,6 +129,7 @@ groundhog.library("pydemull/activAnalyzer.batch", "2025-03-21", tolerate.R.versi
 # --------------------------------------------------------------
 ## Set the CRAN R package dependencies
 pkgs_cran <- c(
+  "bigutilsr",
   "capl",
   "correlation",
   "dplyr",
