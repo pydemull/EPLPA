@@ -177,6 +177,7 @@ pkgs_cran <- c(
   "readr",
   "report",
   "scales",
+  "sessioninfo",
   "skimr",
   "targets",
   "tarchetypes",
