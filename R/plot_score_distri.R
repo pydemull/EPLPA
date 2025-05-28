@@ -8,33 +8,34 @@ plot_score_distri <-
            text_x = 0,
            text_y = 0.45,
            breaks_x = seq(0, 10, 2),
-           limits_x = c(0, 10)
-           ) {
-    
+           limits_x = c(0, 10)) {
     type <- match.arg(type)
     by_sex <- match.arg(by_sex)
- 
-  # WHOLE GROUP
-    
+
+    # WHOLE GROUP
+
     if (by_sex == "no") {
       if (type == "disc") {
-        
         # Build plot for discrete variable
         g <-
-          ggplot(data = data1 |> filter(Item == item) |> mutate(Score = as.factor(Score)), 
-                 aes(x = Score)) +
+          ggplot(
+            data = data1 |> filter(Item == item) |> mutate(Score = as.factor(Score)),
+            aes(x = Score)
+          ) +
           geom_bar(fill = color, color = "black") +
-          geom_text(data = data2 |>  filter(Item == item),
-                    aes(
-                      x = 0.5,
-                      y = length(unique(data1$id)) * 5.9 / 7,
-                      hjust = 0.2,
-                      label = paste0("N=", n)
-                    ),  color = color) +
-          geom_text(stat='count', aes(y = after_stat(count / 2), label = after_stat(count)), color = "white") +
+          geom_text(
+            data = data2 |> filter(Item == item),
+            aes(
+              x = 0.5,
+              y = length(unique(data1$id)) * 5.9 / 7,
+              hjust = 0.2,
+              label = paste0("N=", n)
+            ), color = color
+          ) +
+          geom_text(stat = "count", aes(y = after_stat(count / 2), label = after_stat(count)), color = "white") +
           coord_cartesian(ylim = c(0, length(unique(data1$id)))) +
           theme_bw() +
-          facet_wrap( ~ Item, scales = "free")  +
+          facet_wrap(~Item, scales = "free") +
           labs(y = NULL) +
           theme(
             axis.text = element_text(color = color),
@@ -57,27 +58,29 @@ plot_score_distri <-
               )
             )
           )
-        
-      } 
-      
+      }
+
       if (type == "cont") {
-        
         # Build plot for continuous variable
         g <- ggplot(data = data1 |> filter(Item == item), aes(x = 0, y = Score)) +
-          geom_rain(fill = color,
-                    point.args = rlang::list2(
-                      alpha = 0.3,
-                      color = color,
-                      size = 2
-                    )) +
-          geom_text(data = data2 |>  filter(Item == item),
-                    aes(
-                      x = text_y,
-                      y = text_x,
-                      hjust = 0.2,
-                      label = paste0("N=", n)
-                    ), color = color) +
-          facet_wrap( ~ Item, scales = "free")  +
+          geom_rain(
+            fill = color,
+            point.args = rlang::list2(
+              alpha = 0.3,
+              color = color,
+              size = 2
+            )
+          ) +
+          geom_text(
+            data = data2 |> filter(Item == item),
+            aes(
+              x = text_y,
+              y = text_x,
+              hjust = 0.2,
+              label = paste0("N=", n)
+            ), color = color
+          ) +
+          facet_wrap(~Item, scales = "free") +
           scale_y_continuous(breaks = breaks_x) +
           coord_flip(xlim = c(-0.1, 0.55), ylim = limits_x) +
           labs(x = NULL) +
@@ -106,38 +109,47 @@ plot_score_distri <-
           )
       }
     }
-       
-  # BY SEX
-    
+
+    # BY SEX
+
     if (by_sex == "yes") {
       if (type == "disc") {
-        
         # Build plot for discrete variable
         g <-
-          ggplot(data = data1 |> filter(Item == item) |> mutate(Score = as.factor(Score)), 
-                 aes(x = Score)) +
+          ggplot(
+            data = data1 |> filter(Item == item) |> mutate(Score = as.factor(Score)),
+            aes(x = Score)
+          ) +
           geom_bar(aes(fill = gender), position = "dodge", color = "black") +
-          geom_text(data = data2 |>  filter(Item == item & gender == "girl"),
-                    aes(
-                      x = 0.5,
-                      y = length(unique(data1$id)) / 2 * 6.6 / 7,
-                      hjust = 0.2,
-                      label = paste0("N=", n)
-                    ), color = "hotpink", fontface = "bold") +
-          geom_text(data = data2 |>  filter(Item == item & gender == "boy"),
-                    aes(
-                      x = 0.5,
-                      y = length(unique(data1$id)) / 2 * 5.6 / 7,
-                      hjust = 0.2,
-                      label = paste0("N=", n)
-                    ), color = "royalblue2", fontface = "bold") +
-          geom_text(stat='count', aes(y = after_stat(count / 2), label = after_stat(count),
-                                      group = gender), 
-                    color = "white", position = position_dodge(width = .9)) +
+          geom_text(
+            data = data2 |> filter(Item == item & gender == "girl"),
+            aes(
+              x = 0.5,
+              y = length(unique(data1$id)) / 2 * 6.6 / 7,
+              hjust = 0.2,
+              label = paste0("N=", n)
+            ), color = "hotpink", fontface = "bold"
+          ) +
+          geom_text(
+            data = data2 |> filter(Item == item & gender == "boy"),
+            aes(
+              x = 0.5,
+              y = length(unique(data1$id)) / 2 * 5.6 / 7,
+              hjust = 0.2,
+              label = paste0("N=", n)
+            ), color = "royalblue2", fontface = "bold"
+          ) +
+          geom_text(
+            stat = "count", aes(
+              y = after_stat(count / 2), label = after_stat(count),
+              group = gender
+            ),
+            color = "white", position = position_dodge(width = .9)
+          ) +
           scale_fill_manual(values = c("hotpink", "royalblue2"), labels = c("Girls", "Boys")) +
-          coord_cartesian(ylim = c(0, length(unique(data1$id)) /2)) +
+          coord_cartesian(ylim = c(0, length(unique(data1$id)) / 2)) +
           theme_bw() +
-          facet_wrap( ~ Item, scales = "free")  +
+          facet_wrap(~Item, scales = "free") +
           labs(y = NULL, fill = "Sex") +
           theme(
             axis.text = element_text(color = color),
@@ -160,11 +172,9 @@ plot_score_distri <-
               )
             )
           )
-        
-      } 
-      
+      }
+
       if (type == "cont") {
-        
         # Build plot for continuous variable
         g <-
           ggplot(data = data1 |> filter(Item == item), aes(
@@ -175,7 +185,7 @@ plot_score_distri <-
           )) +
           geom_rain(
             alpha = .5,
-            rain.side = 'r',
+            rain.side = "r",
             boxplot.args = list(
               color = "black",
               outlier.shape = NA,
@@ -189,27 +199,32 @@ plot_score_distri <-
             )
           ) +
           geom_point(aes(x = 0.998),
-                     alpha = 0.5,
-                     position = position_jitterdodge(
-                       jitter.width = 0.05,
-                       dodge.width = 0.08,
-                       seed = 123
-                     )) +
-          geom_text(data = data2 |>  filter(Item == item & gender == "girl"),
-                    aes(
-                      x = text_y,
-                      y = text_x,
-                      hjust = 0.2,
-                      label = paste0("N=", n)
-                    ), color = "hotpink", fontface = "bold") +
-          geom_text(data = data2 |>  filter(Item == item & gender == "boy"),
-                    aes(
-                      x = text_y - 0.09,
-                      y = text_x,
-                      hjust = 0.2,
-                      label = paste0("N=", n)
-                    ), color = "royalblue2", fontface = "bold") +
-          facet_wrap( ~ Item, scales = "free")  +
+            alpha = 0.5,
+            position = position_jitterdodge(
+              jitter.width = 0.05,
+              dodge.width = 0.08,
+              seed = 123
+            )
+          ) +
+          geom_text(
+            data = data2 |> filter(Item == item & gender == "girl"),
+            aes(
+              x = text_y,
+              y = text_x,
+              hjust = 0.2,
+              label = paste0("N=", n)
+            ), color = "hotpink", fontface = "bold"
+          ) +
+          geom_text(
+            data = data2 |> filter(Item == item & gender == "boy"),
+            aes(
+              x = text_y - 0.09,
+              y = text_x,
+              hjust = 0.2,
+              label = paste0("N=", n)
+            ), color = "royalblue2", fontface = "bold"
+          ) +
+          facet_wrap(~Item, scales = "free") +
           scale_y_continuous(breaks = breaks_x) +
           scale_fill_manual(values = c("hotpink", "royalblue2"), labels = c("Girls", "Boys")) +
           scale_color_manual(values = c("hotpink", "royalblue2"), labels = c("Girls", "Boys")) +
@@ -242,7 +257,7 @@ plot_score_distri <-
           )
       }
     }
-    
-    
+
+
     return(g)
   }
