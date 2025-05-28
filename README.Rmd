@@ -48,6 +48,23 @@ To run the pipeline and then reproduce the results of the project, please follow
 install.packages("groundhog")
 
 # --------------------------------------------------------------
+# Set Git infos
+# --------------------------------------------------------------
+# Unfortunately, for unclear reasons, it seems that {groundhog} 
+# needs to set a Git user name and email address for installing GitHub
+# (not CRAN) packages. If you have already Git installed on your 
+# machine and you have already a Git user name and a Git email 
+# address, DO NOT run the next command line below and go to the 
+# next command line. If you don't have a Git user name and email 
+# address, set dummy information by running the command line right 
+# below before running the subsequent command line. You will can 
+# update these settings when you will use Git in the future.
+
+# WARNING: Be sure to have read the text just above before running the line right
+# below.
+git2r::config(global = TRUE, user.name = "default", user.email = "default")
+
+# --------------------------------------------------------------
 # Install {activAnalyzer} GitHub R package
 # --------------------------------------------------------------
 library("groundhog")
@@ -98,20 +115,6 @@ groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.
 # --------------------------------------------------------------
 # Install {activAnalyzer.batch} GitHub R package
 # --------------------------------------------------------------
-
-# Unfortunately, it seems that the git commit corresponding to the package version 
-# to be installed is not associated to a git username and email address. To 
-# install the needed package version, you have to set here a git user name and a git 
-# email address. If you have already Git installed on your machine and you have already 
-# a git user name and a git email address, DO NOT run the next command line below and 
-# go to the next command line. If you don't have a git user name and email address, set 
-# dummy information by running the command line right below before running the subsequent
-# command line. You will can update these settings when you will use Git in the future.
-
-# WARNING: Be sure to have read the text just above before running the line right
-# below.
-git2r::config(global = TRUE, user.name = "default", user.email = "default")
-
 library("groundhog")
 groundhog.library("pydemull/activAnalyzer.batch", "2025-03-21", tolerate.R.version='4.4.1')
 
