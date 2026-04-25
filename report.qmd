@@ -344,7 +344,7 @@ performance::check_outliers(
     fill_in_the_blanks_score
     ) |> 
     tidyr::drop_na(), 
-  method = "mahalanobis_robust") # too many variables to use MCD method; alternative method chosen based on DOI: 10.3758/s13428-024-02356-w
+  method = "mahalanobis_robust") # too many variables given the sample size to use MCD method; alternative method chosen based on DOI: 10.3758/s13428-024-02356-w
 ```
 
 #### R output for global comparison
@@ -431,71 +431,15 @@ skimr::skim(capl_res_4_valid_days)
 
 ### Distributions of the movement behaviour metrics
 
-This section shows the distributions of the movement behaviour metrics that were deemed of potential interest for exploratory analysis. These metrics were directly available from the {activAnalyzer} R package. Some metrics have been removed from the initial list of the available metrics. MPA and VPA minutes and related percentages of wear time have been removed because there was no tresholds, in the study we used to get the MPA cutpoint, to make a distinction between MPA and VPA in children. Total kilocalories, physical activity level, and MVPA MET-hours have been removed because they were not based on children-specific equations (no appropriate equations were available in the {activAnalyzer} package) and there was also no consideration for these metrics that are usually poorly estimated. The retained metrics represent different movement behaviour concepts: activity volume, step accumulation, intensity distribution, and sedentary time accumulation pattern. Details about what the metrics mean are available in the manual of the {activAnalyzer} package. Of note, in the figure below, the list of the metrics that goes from `Wear time (min)` to `Number of breaks` represent daily means while the remaining metrics were computed considering the whole set of valid days of measurement.
+This section shows the distributions of the movement behaviour metrics that were deemed of potential interest for exploratory analysis. These metrics were directly available from the {activAnalyzer} R package. Of note, in the figure below, the list of the metrics that goes from `Wear time (min)` to `M 60 min` represent daily means while the remaining metrics were computed considering the whole set of valid days of measurement.
 
 ```{r p_distri_all_metrics}
 #| out-width: '100%'
-#| fig-width: 15
-#| fig-height: 17
+#| fig-width: 13
+#| fig-height: 12
 
 p_distri_all_metrics
 ```
-
-### Vizualisation of the (un)correlated movement behaviour variables based on Principal Component Analysis
-
-As there were a lot of variables available to characterize movement behaviours, we conducted a principal component analysis (PCA) to evaluate to what extent the initial set of variables could be reduced. The rationale for variable selection was to have at least one variable for each of the movement behaviour concepts presented above while keeping the variables that were not perfectly or not too strongly correlated (strongly correlated variables could be observed on a PCA biplot with arrows that would point to the same direction or to opposite directions). For the variables related to activity volume, only the vector magnitude counts/min, the percentages of wear time spent sedentary or in light/moderate-to-vigorous physical activity, the step count and the MVPA / SED ratio were considered during PCA.
-
-```{r p_biplot_metrics}
-p_biplot_metrics
-```
-
-:::{.callout-note}
-Based on the PCA biplot, we kept for further analysis: 
-
-* For activity volume metrics: 
-  + `vm_per_min`
-  + `percent_SED`
-  + `percent_LPA`
-  + `percent_MVPA`
-  + `total_steps`
-
-* For step accumulation metrics:
-    + `max_steps_60min`
-    + `peak_steps_60min`
-
-* For intensity distribution metrics:
-  + `ig`
-
-* For sedentary behaviour accumulation metrics:
-  + `mean_breaks`
-  + `UBD`
-  + `gini`
-:::
-
-### Checking of the correlations between the retained variables
-
-```{r check_cor_metrics}
-check_cor_metrics
-```
-
-:::{.callout-note}
-Based on the correlation results, we finally removed `vm_per_min`, `percent_LPA`, `peak_steps_60min` and `gini` to keep variables with lower correlations. The final list of the retained metrics is the following: 
-
-* For activity volume metrics: 
-  + `percent_SED`
-  + `percent_MVPA`
-  + `total_steps`
-
-* For step accumulation metrics:
-    + `max_steps_60min`
-
-* For intensity distribution metrics:
-  + `ig`
-
-* For sedentary behaviour accumulation metrics:
-  + `mean_breaks`
-  + `UBD`
-:::
 
 ### Checking for multivariate outliers
 
@@ -503,7 +447,7 @@ Based on the correlation results, we finally removed `vm_per_min`, `percent_LPA`
 performance::check_outliers(
   capl_res_4_valid_days |>
     dplyr::select(tidyselect::any_of(selected_metrics$raw_names)),
-  method = "mahalanobis_robust") # too many variables to use MCD method; alternative method chosen based on DOI: 10.3758/s13428-024-02356-w
+  method = "mahalanobis_robust") # too many variables given the sample size to use MCD method; alternative method chosen based on DOI: 10.3758/s13428-024-02356-w
 ```
 
 ### Nonparametric multivariate analysis
@@ -513,9 +457,15 @@ performance::check_outliers(
 ```{r p_distri_all_metrics_by_profile}
 #| out-width: '100%'
 #| fig-width: 10
-#| fig-height: 10
+#| fig-height: 5
 
-p_distri_all_metrics_by_profile
+p_distri_all_metrics_by_profile & theme(
+        strip.text.x = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12)
+      )
 ```
 
 #### Tabular view
@@ -524,7 +474,6 @@ p_distri_all_metrics_by_profile
 tbl_retained_metrics |>
   gtsummary::as_flex_table()
 ```
-
 
 #### Checking sex distribution across physical literacy profiles
 
@@ -564,14 +513,14 @@ The global analysis, based on the ANOVA type test p-value, suggests that the phy
 metrics_global_multicomp_profile_rel_eff |>
   flextable() |>
   bold(i = 1, part = "header") |>
-  bold( ~ `Rel. Eff. Beginning` > 0.5, 6) |>
-  bold( ~ `Rel. Eff. Progressing` > 0.5, 7) |>
-  bold( ~ `Rel. Eff. Achieving` > 0.5, 8) |>
-  bold( ~ `Rel. Eff. Excelling` > 0.5, 9) |>
-  bg( ~ `Rel. Eff. Beginning` > 0.5, 6, bg = "grey90") |>
-  bg( ~ `Rel. Eff. Progressing` > 0.5, 7, bg = "grey90") |>
-  bg( ~ `Rel. Eff. Achieving` > 0.5, 8, bg = "grey90") |>
-  bg( ~ `Rel. Eff. Excelling` > 0.5, 9, bg = "grey90") |>
+  bold( ~ `Rel. Eff. Beg.` > 0.5, 6) |>
+  bold( ~ `Rel. Eff. Prog.` > 0.5, 7) |>
+  bold( ~ `Rel. Eff. Achi.` > 0.5, 8) |>
+  bold( ~ `Rel. Eff. Excel.` > 0.5, 9) |>
+  bg( ~ `Rel. Eff. Beg.` > 0.5, 6, bg = "grey90") |>
+  bg( ~ `Rel. Eff. Prog.` > 0.5, 7, bg = "grey90") |>
+  bg( ~ `Rel. Eff. Achi.` > 0.5, 8, bg = "grey90") |>
+  bg( ~ `Rel. Eff. Excel.` > 0.5, 9, bg = "grey90") |>
   width(j = 1, width = 2.5) |>
   width(j = 2:9, width = 1.3) |>
   valign(
@@ -600,7 +549,7 @@ cat(metrics_local_multicomp_profile, sep = "\n")
 ```{r metrics_local_multicomp_profile_graph}
 #| out-width: '100%'
 #| fig-width: 15
-#| fig-height: 15
+#| fig-height: 7
 metrics_local_multicomp_profile_graph
 ```
 
