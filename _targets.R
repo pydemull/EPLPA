@@ -1079,7 +1079,7 @@ list(
         ),
         missing = "no",
         statistic = list(
-          all_continuous() ~ "{median} ({p25} - {p75})  \n{mean} ± {sd}"
+          all_continuous() ~ "{median} ({p25} – {p75})"
         ),
         type = list(
           self_report_pa_score = "continuous",
@@ -1094,7 +1094,7 @@ list(
           stat_0 = "**Statistics**"
         )
       ) |>
-      modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3), mean ± SD, or count (%) of participants who obtained a score of 1/1.") |>
+      modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3) or count (%) of participants who obtained a score of 1/1.") |>
       add_n()
   ),
 
@@ -1692,7 +1692,7 @@ list(
         ),
         missing = "no",
         statistic = list(
-          all_continuous() ~ "{median} ({p25} - {p75})"
+          all_continuous() ~ "{median} ({p25} – {p75})"
         ),
         type = list(
           pacer_score = "continuous",
@@ -1704,7 +1704,7 @@ list(
         digits = list(all_continuous() ~ 1)
       ) |>
       add_overall() |>
-      modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3), mean ± SD, or count (%) of participants who obtained a score of 1/1.") |>
+      modify_footnote(all_stat_cols() ~ "Median (Q1 - Q3) or count (%) of participants who obtained a score of 1/1.") |>
       modify_header(list(
         label = c("**Score**"),
         stat_0 = "**All participants**  \nN = {N}",
@@ -1896,8 +1896,8 @@ list(
       group_by(gender, Score) |>
       summarise(n = n()) |>
       pivot_wider(id_cols = "Score", names_from = gender, values_from = n) |>
-      mutate(`N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(girl, "  \n(", round_half_up(girl / (2 * (girl + boy)), 2), "/", round_half_up(1 - girl / (2 * (girl + boy)), 2), ")")) |>
-      mutate(`N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(boy, "  \n(", round_half_up(boy / (2 * (girl + boy)), 2), "/", round_half_up(1 - boy / (2 * (girl + boy)), 2), ")")) |>
+      mutate(`N Girls   \n(Min. / Max. TRE)` = paste0(girl, "  \n(", round_half_up(girl / (2 * (girl + boy)), 2), "/", round_half_up(1 - girl / (2 * (girl + boy)), 2), ")")) |>
+      mutate(`N Boys   \n(Min. / Max. TRE)` = paste0(boy, "  \n(", round_half_up(boy / (2 * (girl + boy)), 2), "/", round_half_up(1 - boy / (2 * (girl + boy)), 2), ")")) |>
       left_join(
         domain_global_multicomp_sex$twogroupreleffects |>
           t() |>
@@ -2158,8 +2158,8 @@ list(
       group_by(gender, Score) |>
       summarise(n = n()) |>
       pivot_wider(id_cols = "Score", names_from = gender, values_from = n) |>
-      mutate(`N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(girl, "  \n(", round_half_up(girl / (2 * (girl + boy)), 2), "/", round_half_up(1 - girl / (2 * (girl + boy)), 2), ")")) |>
-      mutate(`N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(boy, "  \n(", round_half_up(boy / (2 * (girl + boy)), 2), "/", round_half_up(1 - boy / (2 * (girl + boy)), 2), ")")) |>
+      mutate(`N Girls   \n(Min. / Max. TRE)` = paste0(girl, "  \n(", round_half_up(girl / (2 * (girl + boy)), 2), "/", round_half_up(1 - girl / (2 * (girl + boy)), 2), ")")) |>
+      mutate(`N Boys   \n(Min. / Max. TRE)` = paste0(boy, "  \n(", round_half_up(boy / (2 * (girl + boy)), 2), "/", round_half_up(1 - boy / (2 * (girl + boy)), 2), ")")) |>
       left_join(
         item_global_multicomp_sex$twogroupreleffects |>
           t() |>
@@ -2300,12 +2300,12 @@ list(
 
   ## Comparisons of the movement behaviour metrics ----
 
-  ### Get a data frame with both CAPL-2 data and movement behaviour metrics ----
+  ### Get a data frame with both CAPL-2 data and relevant movement behaviour metrics ----
   tar_target(
     name = capl_res_4_valid_days,
     command = pa_data$all_metrics |>
       filter(id %in% ids_with_4_valid_days) |>
-      select(-minutes_MPA, -minutes_VPA, -percent_MPA, -percent_VPA, -total_kcal, -pal, -mets_hours_mvpa) |> # remove irrelevant variables
+      select(id, valid_days, wear_time, ig, alpha) |> # select relevant variables
       left_join(
         capl_res |>
           mutate(id = as.numeric(as.character(id)))
@@ -2326,40 +2326,8 @@ list(
       rename(
         "Valid days" = "valid_days",
         "Wear time (min)" = "wear_time",
-        "VA total counts" = "total_counts_axis1",
-        "VM total counts" = "total_counts_vm",
-        "VA counts/min" = "axis1_per_min",
-        "VM counts/min" = "vm_per_min",
-        "SED time (min)" = "minutes_SED",
-        "LPA time (min)" = "minutes_LPA",
-        "MVPA time (min)" = "minutes_MVPA",
-        "% Wear time SED" = "percent_SED",
-        "% Wear time LPA" = "percent_LPA",
-        "% Wear time MVPA" = "percent_MVPA",
-        "Ratio MVPA / SED" = "ratio_mvpa_sed",
-        "Step count" = "total_steps",
-        "60-min max step accum." = "max_steps_60min",
-        "30-min max step accum." = "max_steps_30min",
-        "20-min max step accum." = "max_steps_20min",
-        "5-min max step accum." = "max_steps_5min",
-        "1-min max step accum." = "max_steps_1min",
-        "60-min peak step accum." = "peak_steps_60min",
-        "30-min peak step accum." = "peak_steps_30min",
-        "20-min peak step accum." = "peak_steps_20min",
-        "5-min peak step accum." = "peak_steps_5min",
-        "1-min peak step accum." = "peak_steps_1min",
         "Intensity gradient" = "ig",
-        "M 8 hrs" = "M1/3",
-        "M 120 min" = "M120",
-        "M 60 min" = "M60",
-        "M 30 min" = "M30",
-        "M 15 min" = "M15",
-        "M 5 min" = "M5",
-        "Number of SED breaks" = "mean_breaks",
-        "Power law exponent alpha" = "alpha",
-        "Median SED bout duration (min)" = "MBD",
-        "Usual SED bout duration (min)" = "UBD",
-        "Gini index" = "gini"
+        "Power-law exponent alpha" = "alpha"
       ) |>
       pivot_longer(
         cols = c(everything(), -id, -capl_interpretation),
@@ -2372,40 +2340,8 @@ list(
           Metric,
           "Valid days",
           "Wear time (min)",
-          "VA total counts",
-          "VM total counts",
-          "VA counts/min",
-          "VM counts/min",
-          "SED time (min)",
-          "LPA time (min)",
-          "MVPA time (min)",
-          "% Wear time SED",
-          "% Wear time LPA",
-          "% Wear time MVPA",
-          "Ratio MVPA / SED",
-          "Step count",
-          "60-min max step accum.",
-          "30-min max step accum.",
-          "20-min max step accum.",
-          "5-min max step accum.",
-          "1-min max step accum.",
-          "60-min peak step accum.",
-          "30-min peak step accum.",
-          "20-min peak step accum.",
-          "5-min peak step accum.",
-          "1-min peak step accum.",
           "Intensity gradient",
-          "M 8 hrs",
-          "M 120 min",
-          "M 60 min",
-          "M 30 min",
-          "M 15 min",
-          "M 5 min",
-          "Number of SED breaks",
-          "Power law exponent alpha",
-          "Median SED bout duration (min)",
-          "Usual SED bout duration (min)",
-          "Gini index"
+          "Power-law exponent alpha"
         )
       )
   ),
@@ -2431,7 +2367,7 @@ list(
           med_quant_text = paste0(trimws(format(round_half_up(med, 2), nsmall = 2)), " (", trimws(format(round_half_up(q1, 2), nsmall = 2)), "-", trimws(format(round_half_up(q3, 2), nsmall = 2)), ")")
         )
 
-      # Shown graphic
+      # Show graphic
       capl_res_4_valid_days_piv |>
         ggplot(aes(x = 0, y = Value)) +
         geom_rain(
@@ -2461,92 +2397,22 @@ list(
     }
   ),
 
-  ### Make a PCA biplot to identify (un)correlated variables ----
-  tar_target(
-    name = p_biplot_metrics,
-    command = {
-      #### Select relevant variables and get PCA results
-      res.pca <-
-        prcomp(
-          capl_res_4_valid_days |>
-            select(
-              vm_per_min,
-              percent_SED,
-              percent_LPA,
-              percent_MVPA,
-              ratio_mvpa_sed,
-              total_steps:gini
-            ),
-          center = TRUE,
-          scale = TRUE
-        )
-
-      #### Get PCA biplot
-      fviz_pca_var(
-        res.pca,
-        title = "PCA",
-        ggtheme = theme_classic(),
-        legend = "bottom",
-        repel = TRUE
-      )
-    }
-  ),
-
-  ### Set the metrics retained from PCA for further analysis ----
-  tar_target(
-    name = pca_selection,
-    command = c(
-      "vm_per_min",
-      "percent_SED",
-      "percent_LPA",
-      "percent_MVPA",
-      "total_steps",
-      "max_steps_60min",
-      "peak_steps_60min",
-      "ig",
-      "mean_breaks",
-      "UBD",
-      "gini"
-    )
-  ),
-
-  ### Check correlations (Spearman) between the retained variables
-  tar_target(
-    name = check_cor_metrics,
-    command = capl_res_4_valid_days |>
-      select(any_of(pca_selection)) |>
-      correlation(method = "spearman") |>
-      mutate(abs_rho = abs(rho)) |>
-      arrange(-abs_rho)
-  ),
-
-  ### Set the metrics retained from both PCA and correlation results for ----
-  ### further analysis ----
+  ### Set the list of metrics retained for further analysis ----
   tar_target(
     name = selected_metrics,
     command = list(
       raw_names = c(
-        "percent_SED",
-        "percent_MVPA",
-        "total_steps",
-        "max_steps_60min",
         "ig",
-        "mean_breaks",
-        "UBD"
+        "alpha"
       ),
       new_names = c(
-        "% Wear time SED",
-        "% Wear time MVPA",
-        "Step count",
-        "60-min max step accum.",
         "Intensity gradient",
-        "Number of SED breaks",
-        "Usual SED bout duration (min)"
+        "Power-law exponent alpha"
       )
     )
   ),
 
-  ### Get a plot showing the distributions of the metrics selected ----
+  ### Get a plot showing the distributions of the selected metrics ----
   tar_target(
     name = p_distri_all_metrics_by_profile,
     command = capl_res_4_valid_days_piv |>
@@ -2589,24 +2455,18 @@ list(
         include = selected_metrics$raw_names,
         by = capl_interpretation,
         label = list(
-          percent_SED = "% Wear time SED",
-          percent_MVPA = "% Wear time MVPA",
-          total_steps = "Step count",
-          max_steps_60min = "60-min max step accum.",
           ig = "Intensity gradient",
-          mean_breaks = "Number of SED breaks",
-          UBD = "Usual SED bout duration (min)"
+          alpha = "Power-law exponent alpha"
         ),
         missing = "no",
         statistic = list(
-          all_continuous() ~ "{median} \n({p25} - {p75})"
+          all_continuous() ~ "{median} \n({p25} – {p75})"
         ),
         digits = list(all_continuous() ~ 1)
       ) |>
       add_overall() |>
       modify_header(label ~ "**Metric**") |>
-      modify_footnote(c(stat_0, stat_1, stat_2, stat_3, stat_4) ~ "Numbers are medians (Q1 - Q3) and means ± SD.
-      SED = sedentary, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except usual SED bout duration that was based on the entire week of measurement.") |>
+      modify_footnote(c(stat_0, stat_1, stat_2, stat_3, stat_4) ~ "Numbers are medians (Q1 - Q3). Intensity gradient is a daily average and power-law exponent alpha was based on the entire week of measurement.") |>
       modify_header(list(
         stat_0 = "**All participants**  \nN = {N}"
       ))
@@ -2644,56 +2504,30 @@ list(
     command = capl_res_4_valid_days |>
       select(
         capl_interpretation,
-        percent_SED,
-        percent_MVPA,
-        total_steps,
-        max_steps_60min,
         ig,
-        mean_breaks,
-        UBD
+        alpha
       ) |>
       pivot_longer(
         cols = c(
-          percent_SED,
-          percent_MVPA,
-          total_steps,
-          max_steps_60min,
           ig,
-          mean_breaks,
-          UBD
+          alpha
         ),
         names_to = "Metric",
         values_to = "val"
       ) |>
       mutate(Metric = factor(
         Metric,
-        levels = c(
-          "percent_SED",
-          "percent_MVPA",
-          "total_steps",
-          "max_steps_60min",
-          "ig",
-          "mean_breaks",
-          "UBD"
-        ),
-        labels = c(
-          "% Wear time SED",
-          "% Wear time MVPA",
-          "Step count",
-          "60-min max step accum.",
-          "Intensity gradient",
-          "Number of SED breaks",
-          "Usual SED bout duration (min)"
-        )
+        levels = selected_metrics$raw_names,
+        labels = selected_metrics$new_names
       )) |>
       drop_na() |>
       group_by(capl_interpretation, Metric) |>
       summarise(n = n()) |>
       pivot_wider(id_cols = "Metric", names_from = capl_interpretation, values_from = n) |>
-      mutate("N Beginning \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Beginning, "  \n(", round_half_up(Beginning / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Beginning / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
-      mutate("N Progressing  \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Progressing, "  \n(", round_half_up(Progressing / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Progressing / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
-      mutate("N Achieving    \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Achieving, "  \n(", round_half_up(Achieving / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Achieving / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
-      mutate("N Excelling  \n(Min. / Max. Theo. Rel. Eff.)" = paste0(Excelling, "  \n(", round_half_up(Excelling / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Excelling / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      mutate("N Beg. \n(Min. / Max. TRE)" = paste0(Beginning, "  \n(", round_half_up(Beginning / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Beginning / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      mutate("N Prog.  \n(Min. / Max. TRE)" = paste0(Progressing, "  \n(", round_half_up(Progressing / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Progressing / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      mutate("N Achi.    \n(Min. / Max. TRE)" = paste0(Achieving, "  \n(", round_half_up(Achieving / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Achieving / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      mutate("N Excel.  \n(Min. / Max. TRE)" = paste0(Excelling, "  \n(", round_half_up(Excelling / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Excelling / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
       left_join(
         metrics_global_multicomp_profile$releffects |>
           t() |>
@@ -2702,22 +2536,17 @@ list(
           mutate(
             Metric = as.factor(Metric),
             Metric = fct_recode(Metric,
-              "% Wear time SED" = "percent_SED",
-              "% Wear time MVPA" = "percent_MVPA",
-              "Step count" = "total_steps",
-              "60-min max step accum." = "max_steps_60min",
               "Intensity gradient" = "ig",
-              "Number of SED breaks" = "mean_breaks",
-              "Usual SED bout duration (min)" = "UBD"
+              "Power-law exponent alpha" = "alpha"
             ),
             across(c(Beginning:Excelling), ~ round_half_up(.x, digits = 2))
           ) |>
           arrange(Metric) |>
           rename(
-            "Rel. Eff. Beginning" = Beginning,
-            "Rel. Eff. Progressing" = Progressing,
-            "Rel. Eff. Achieving" = Achieving,
-            "Rel. Eff. Excelling" = Excelling
+            "Rel. Eff. Beg." = Beginning,
+            "Rel. Eff. Prog." = Progressing,
+            "Rel. Eff. Achi." = Achieving,
+            "Rel. Eff. Excel." = Excelling
           )
       ) |>
       select(-c(Beginning, Progressing, Achieving, Excelling))
@@ -2744,13 +2573,8 @@ list(
     name = metrics_local_multicomp_profile_graph,
     command = get_multicomp_graph(
       scores = c(
-        "percent_SED",
-        "percent_MVPA",
-        "total_steps",
-        "max_steps_60min",
         "ig",
-        "mean_breaks",
-        "UBD"
+        "alpha"
       ),
       ssnonpartest_out = metrics_local_multicomp_profile,
       x_label = "Movement behaviour metrics",
@@ -2760,13 +2584,8 @@ list(
       scale_x_discrete(
         limits = rev,
         labels = c(
-          "Usual SED bout duration",
-          "Daily mean number of SED breaks ",
-          "Daily intensity gradient",
-          "Daily maximum 60-min step accumulation",
-          "Daily total step count",
-          "Daily percentage MVPA",
-          "Daily percentage SED"
+          "Power-law exponent alpha",
+          "Intensity gradient"
         )
       ) +
       theme(
@@ -2813,8 +2632,8 @@ list(
             bind_rows(
               tibble(
                 Score = as.factor("Physical literacy (/100)"),
-                `N Girls   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_tab_girls, "  \n(0.00/1.00)"),
-                `N Boys   \n(Min. / Max. Theo. Rel. Eff.)` = paste0(n_tab_boys, "  \n(0.00/1.00)"),
+                `N Girls   \n(Min. / Max. TRE)` = paste0(n_tab_girls, "  \n(0.00/1.00)"),
+                `N Boys   \n(Min. / Max. TRE)` = paste0(n_tab_boys, "  \n(0.00/1.00)"),
                 `Rel. Eff. Girls` = 1 - round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2),
                 `Rel. Eff. Boys` = round_half_up(capl_comp_sex$Analysis[1, 2], digits = 2)
               )
@@ -2849,19 +2668,20 @@ list(
         bold(i = c(1, 5, 8, 13, 19), j = 1:8) |>
         valign(valign = "top", part = "header") |>
         align(j = 2:8, align = "center", part = "all") |>
-        width(j = 1:6, width = c(2, 2, 2, 3, 2.5, 2.5)) |>
+        width(j = 1:6, width = c(1.7, 1.3, 1.3, 1.3, 1.8, 1.8)) |>
         bg(~ `Rel. Eff. Girls` > 0.5, 7, bg = "grey90") |>
         bg(~ `Rel. Eff. Boys` > 0.5, 8, bg = "grey90") |>
         add_footer_lines(
-          "Descriptive statistics are medians (Q1 - Q3), means ± SD or counts (%) of participants who obtained a score of 1/1. Min./ Max. Theo. Rel. Eff. = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from both groups (girls and boys) or from the other group for Physical literacy score only. Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and score based on the number of girls and boys available for the considered score. Grey cells highlight the highest relative effects among girls and boys."
+          "Descriptive statistics are medians (Q1 - Q3) or counts (%) of participants who obtained a score of 1/1. Beg. = Beginning; Prog. = Progressing; Achi. = Achieving; Excel. = Excelling; Min./ Max. TRE = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from both groups (girls and boys) or from the other group for Physical literacy score only. Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and score based on the number of girls and boys available for the considered score. Grey cells highlight the highest relative effects among girls and boys."
         )
 
       ### Set table export properties
       sect_properties <- prop_section(
         page_size = page_size(
           orient = "landscape",
-          width = 17,
-          height = 10
+          width = 29,
+          height = 21,
+          unit = "cm"
         ),
         type = "continuous",
         page_margins = page_mar()
@@ -2886,23 +2706,22 @@ list(
         modify_header(
           list(
             label = "Metric",
-            stat_0 = "All participants  \nN = {N}",
-            stat_1 = "Beginning  \nN = {n}",
-            stat_2 = "Progressing  \nN = {n}",
-            stat_3 = "Achieving  \nN = {n}",
-            stat_4 = "Excelling  \nN = {n}"
+            stat_0 = "All  \nN = {N}",
+            stat_1 = "Beg.  \nN = {n}",
+            stat_2 = "Prog.  \nN = {n}",
+            stat_3 = "Achi.  \nN = {n}",
+            stat_4 = "Excel.  \nN = {n}"
           )
         ) |>
         as_tibble() |>
         left_join(metrics_global_multicomp_profile_rel_eff) |>
         flextable() |>
         bold(i = 1, part = "header") |>
-        bg(~ `Rel. Eff. Beginning` > 0.5, 11, bg = "grey90") |>
-        bg(~ `Rel. Eff. Progressing` > 0.5, 12, bg = "grey90") |>
-        bg(~ `Rel. Eff. Achieving` > 0.5, 13, bg = "grey90") |>
-        bg(~ `Rel. Eff. Excelling` > 0.5, 14, bg = "grey90") |>
-        width(j = 1, width = 2.5) |>
-        width(j = 1:14, width = c(2, 2, 2, 2, 2, 2, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5, 1.5, 1.5)) |>
+        bg(~ `Rel. Eff. Beg.` > 0.5, 11, bg = "grey90") |>
+        bg(~ `Rel. Eff. Prog.` > 0.5, 12, bg = "grey90") |>
+        bg(~ `Rel. Eff. Achi.` > 0.5, 13, bg = "grey90") |>
+        bg(~ `Rel. Eff. Excel.` > 0.5, 14, bg = "grey90") |>
+        # width(j = 1:14, width = c(rep(1, 3) 14)) |>
         valign(
           i = 1,
           j = 1:9,
@@ -2911,15 +2730,16 @@ list(
         ) |>
         align(j = 2:14, part = "all", align = "center") |>
         add_footer_lines(
-          "Numbers are medians (Q1 - Q3) and means ± SD. SED = sedentary, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except usual SED bout duration that was based on the entire week of measurement. Min./ Max. Theo. Rel. Eff. = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells highlight the highest relative effects (>0.5) among the physical literacy profiles."
+          "Numbers are medians (Q1 - Q3). Intensity gradient is a daily average and power-law exponent alpha was based on the entire week of measurement. Min./ Max. TRE = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells highlight the highest relative effects (>0.5) among the physical literacy profiles."
         )
 
       ### Set table export properties
       sect_properties2 <- prop_section(
         page_size = page_size(
           orient = "landscape",
-          width = 24,
-          height = 10
+          width = 25,
+          height = 17,
+          unit = "cm"
         ),
         type = "continuous",
         page_margins = page_mar()
@@ -2970,11 +2790,12 @@ list(
       p_distri_all_metrics_by_profile & theme(
         strip.text.x = element_text(size = 12),
         legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
         axis.text = element_text(size = 12),
         axis.title = element_text(size = 12)
       ),
       scale = 2,
-      height = 7,
+      height = 3,
       width = 7,
       dpi = 300
     )
@@ -2987,9 +2808,9 @@ list(
     command = ggsave(
       "out/fig4.png",
       metrics_local_multicomp_profile_graph,
-      scale = 2,
-      height = 7,
-      width = 9,
+      scale = 1.7,
+      height = 4,
+      width = 5,
       dpi = 300
     )
   ),
@@ -3008,71 +2829,6 @@ list(
       dpi = 300,
       limitsize = FALSE
     )
-  ),
-
-  ## Export Supplemental data file 2 (table with all PA metrics) ----
-  tar_target(
-    name = sm2,
-    format = "file",
-    command = {
-      # Build table
-      table_for_ALL_pa_metrics <-
-        capl_res_4_valid_days |>
-        select(id, valid_days:gini) |>
-        tbl_summary(
-          include = c(-id),
-          label = list(
-            valid_days = "Valid days (n)",
-            wear_time = "Wear time (min)",
-            total_counts_axis1 = "Vertical axis total counts",
-            total_counts_vm = "Vector magnitude total counts",
-            axis1_per_min = "Vertical axis counts/min",
-            minutes_SED = "Minutes SED",
-            minutes_LPA = "Minutes LPA",
-            minutes_MVPA = "Minutes MVPA",
-            vm_per_min = "VM counts/min",
-            percent_SED = "% Wear time SED",
-            percent_LPA = "% Wear time LPA",
-            percent_MVPA = "% Wear time MVPA",
-            ratio_mvpa_sed = "MVPA / SED ratio",
-            total_steps = "Step count",
-            max_steps_60min = "60-min max step accum.",
-            max_steps_30min = "30-min max step accum.",
-            max_steps_20min = "20-min max step accum.",
-            max_steps_5min = "5-min max step accum.",
-            max_steps_1min = "1-min max step accum.",
-            peak_steps_60min = "60-min peak step accum.",
-            peak_steps_30min = "30-min peak step accum.",
-            peak_steps_20min = "20-min peak step accum.",
-            peak_steps_5min = "5-min peak step accum.",
-            peak_steps_1min = "1-min peak step accum.",
-            ig = "Intensity gradient",
-            `M1/3` = "M 8 hours",
-            M120 = "M 120 min",
-            M60 = "M 60 min",
-            M30 = "M 30 min",
-            M15 = "M 15 min",
-            M5 = "M 5 min",
-            mean_breaks = "Number of SED breaks",
-            alpha = "Power law exponent alpha",
-            MBD = "Median SED bout duration",
-            UBD = "Usual SED bout duration (min)",
-            gini = "Gini index"
-          ),
-          type = list(valid_days = "continuous", MBD = "continuous"),
-          missing = "no",
-          statistic = list(all_continuous() ~ "{median} ({p25} - {p75})  \n {mean} ± {sd}"),
-          digits = list(all_continuous() ~ 1)
-        ) |>
-        modify_header(label ~ "**Metric**") |>
-        modify_footnote(
-          c(stat_0) ~ "Numbers are medians (Q1 - Q3) and means ± SD.
-      SED = sedentary, LPA = light physical activity, MVPA = moderate-to-vigorous physical activity. All metrics are daily averages except power law exponent alpha, median and usual SED bout durations and Gini index that were based on the entire week of measurement."
-        ) |>
-        as_flex_table()
-
-      save_as_docx(table_for_ALL_pa_metrics, path = "out/sm2.docx")
-    }
   ),
 
   ## Export CAPL-2 database ----
