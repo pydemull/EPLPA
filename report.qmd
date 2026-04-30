@@ -1,9 +1,10 @@
 ---
-title: "Comparing physical literacy scores by sex and movement behaviours across physical literacy profiles in French elementary school students (10- to 11-years old): an exploratory study from the ‘EPLPA’ project"
+title: "Comparing physical literacy scores by sex and movement behaviour distributions across physical literacy profiles among elementary school students: an exploratory study"
 authors:
   - name: Henri Moncanis
     affiliation: 
-      - ref: ifepsa_etud
+      - ref: ifepsa_pro
+    email: hmoncanis@uco.fr
     corresponding: false
   - name: Pierre-Yves de Müllenheim
     orcid: 0000-0001-9157-7371
@@ -85,8 +86,6 @@ tar_load(item_local_multicomp_sex)
 tar_load(item_local_multicomp_sex_graph)
 tar_load(capl_res_4_valid_days)
 tar_load(p_distri_all_metrics)
-tar_load(p_biplot_metrics)
-tar_load(check_cor_metrics)
 tar_load(p_distri_all_metrics_by_profile)
 tar_load(selected_metrics)
 tar_load(tbl_retained_metrics)
@@ -94,6 +93,25 @@ tar_load(metrics_global_multicomp_profile)
 tar_load(metrics_global_multicomp_profile_rel_eff)
 tar_load(metrics_local_multicomp_profile)
 tar_load(metrics_local_multicomp_profile_graph)
+tar_load(capl_res_3_valid_days)
+tar_load(p_distri_all_metrics_3d)
+tar_load(p_distri_all_metrics_by_profile_3d)
+tar_load(selected_metrics_3d)
+tar_load(tbl_retained_metrics_3d)
+tar_load(metrics_global_multicomp_profile_3d)
+tar_load(metrics_global_multicomp_profile_rel_eff_3d)
+tar_load(metrics_local_multicomp_profile_3d)
+tar_load(metrics_local_multicomp_profile_graph_3d)
+tar_load(capl_res_2_valid_days)
+tar_load(p_distri_all_metrics_2d)
+tar_load(p_distri_all_metrics_by_profile_2d)
+tar_load(selected_metrics_2d)
+tar_load(tbl_retained_metrics_2d)
+tar_load(metrics_global_multicomp_profile_2d)
+tar_load(metrics_global_multicomp_profile_rel_eff_2d)
+tar_load(metrics_local_multicomp_profile_2d)
+tar_load(metrics_local_multicomp_profile_graph_2d)
+tar_load(pa_data)
 ```
 
 :::{.callout-note}
@@ -407,7 +425,7 @@ cat(item_local_multicomp_sex, sep = "\n")
 item_local_multicomp_sex_graph
 ```
 
-## Between-physical literacy profile comparisons of movement behaviours
+## Between-physical literacy profile comparisons of movement behaviours (4 valid days)
 
 This part includes the comparisons of the multivariate distributions of movement behaviour metrics between the physical literacy profiles. These analyses are based on data from participants having at least 4 valid days for the accelerometer-based measurement of movement behaviours and who had a valid CAPL-2 profile.
 
@@ -551,6 +569,325 @@ cat(metrics_local_multicomp_profile, sep = "\n")
 #| fig-width: 15
 #| fig-height: 7
 metrics_local_multicomp_profile_graph
+```
+
+### Checking correlations between relevant variables
+
+```{r check_correlations}
+capl_res_4_valid_days |> 
+  dplyr::left_join(pa_data$all_metrics |> dplyr::select(id, total_steps, minutes_SED)) |> 
+  dplyr::select(total_steps, minutes_SED, ig, alpha) |> 
+  correlation::correlation()
+```
+
+## Between-physical literacy profile comparisons of movement behaviours (3 valid days)
+
+This part includes the comparisons of the multivariate distributions of movement behaviour metrics between the physical literacy profiles. These analyses are based on data from participants having at least 3 valid days for the accelerometer-based measurement of movement behaviours and who had a valid CAPL-2 profile.
+
+### Data skimming
+
+#### Raw data
+
+Navigation in the raw data (CAPL-2 scores along with movement behaviour metrics) is possible through the interactive table shown below. 
+
+```{r capl_res_3_valid_days}
+rmarkdown::paged_table(capl_res_3_valid_days)
+```
+
+#### Variable summaries
+
+This section proposes an overview of the study dataset related to both the valid CAPL-2 profiles and the movement behaviour metrics in the participants with at least 3 valid days for the accelerometer-based measurement of movement behaviours. More precisely, the tables display information about the dataset structure as well as descriptive statistics for all the variables from the dataset. The interest of this section is mainly to verify that all the variables have been correctly formated and to have information about potential missing values.
+
+```{r skim_pa_data_all_metrics_3d}
+skimr::skim(capl_res_3_valid_days)
+```
+
+### Distributions of the movement behaviour metrics
+
+This section shows the distributions of the movement behaviour metrics that were deemed of potential interest for exploratory analysis. These metrics were directly available from the {activAnalyzer} R package. Of note, in the figure below, the list of the metrics that goes from `Wear time (min)` to `M 60 min` represent daily means while the remaining metrics were computed considering the whole set of valid days of measurement.
+
+```{r p_distri_all_metrics_3d}
+#| out-width: '100%'
+#| fig-width: 13
+#| fig-height: 12
+
+p_distri_all_metrics_3d
+```
+
+### Checking for multivariate outliers
+
+```{r check_outliers_pa_metrics_3d}
+performance::check_outliers(
+  capl_res_3_valid_days |>
+    dplyr::select(tidyselect::any_of(selected_metrics$raw_names)),
+  method = "mahalanobis_robust") # too many variables given the sample size to use MCD method; alternative method chosen based on DOI: 10.3758/s13428-024-02356-w
+```
+
+### Nonparametric multivariate analysis
+
+#### Graphical analysis
+
+```{r p_distri_all_metrics_by_profile_3d}
+#| out-width: '100%'
+#| fig-width: 10
+#| fig-height: 5
+
+p_distri_all_metrics_by_profile_3d & theme(
+        strip.text.x = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12)
+      )
+```
+
+#### Tabular view
+
+```{r tbl_retained_metrics_3d}
+tbl_retained_metrics_3d |>
+  gtsummary::as_flex_table()
+```
+
+#### Checking sex distribution across physical literacy profiles
+
+We checked sex distribution across the physical literacy profiles to get additionnal context to the results.
+
+```{r counts_sex_by_capl_profile_3d}
+tar_read(capl_res_3_valid_days) |> 
+  dplyr::count(capl_interpretation, gender) |>
+  tidyr::pivot_wider(names_from = gender, values_from = n)
+```
+
+```{r}
+table(capl_res_3_valid_days$gender)
+```
+
+:::{.callout-note}
+The distribution of girls and boys was quite unbalanced across the physical literacy profiles.
+:::
+
+#### R output for global comparison
+
+The comparisons of the multivariate distributions of movement behaviour metrics between physical literacy profiles have been performed using nonparametric analysis implemented in functions from the `{npmv}` package.
+
+##### Raw output
+
+```{r metrics_global_multicomp_profile_3d}
+metrics_global_multicomp_profile_3d
+```
+
+:::{.callout-note}
+The global analysis, based on the ANOVA type test p-value, suggests that the physical literacy profiles come from different multivariate distributions related to movement behaviour metrics. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a participant randomly sampled from a given physical literacy profile has a higher value than the one associated to a participant randomly sampled from all physical literacy profiles together.
+:::
+
+##### Formated output
+
+```{r metrics_global_multicomp_profile_rel_eff_3d}
+metrics_global_multicomp_profile_rel_eff_3d |>
+  flextable() |>
+  bold(i = 1, part = "header") |>
+  bold( ~ `Rel. Eff. Beg.` > 0.5, 6) |>
+  bold( ~ `Rel. Eff. Prog.` > 0.5, 7) |>
+  bold( ~ `Rel. Eff. Achi.` > 0.5, 8) |>
+  bold( ~ `Rel. Eff. Excel.` > 0.5, 9) |>
+  bg( ~ `Rel. Eff. Beg.` > 0.5, 6, bg = "grey90") |>
+  bg( ~ `Rel. Eff. Prog.` > 0.5, 7, bg = "grey90") |>
+  bg( ~ `Rel. Eff. Achi.` > 0.5, 8, bg = "grey90") |>
+  bg( ~ `Rel. Eff. Excel.` > 0.5, 9, bg = "grey90") |>
+  width(j = 1, width = 2.5) |>
+  width(j = 2:9, width = 1.3) |>
+  valign(
+    i = 1,
+    j = 1:9,
+    valign = "top",
+    part = "header"
+  ) |>
+  align(j = 6:9, part = "header", align = "center") |>
+  align(j = 6:9, part = "body", align = "center") |>
+  add_footer_lines(
+    "Min./ Max. Theo. Rel. Eff. = Minimum/maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells with bold values highlight the highest relative effects among the physical literacy profiles."
+  )
+```
+
+#### R output for local comparisons
+
+##### Raw output
+
+```{r metrics_local_multicomp_profile_3d}
+cat(metrics_local_multicomp_profile_3d, sep = "\n")
+```
+
+##### Graphical output (combinations of variables for which groups significantly differed)
+
+```{r metrics_local_multicomp_profile_graph_3d}
+#| out-width: '100%'
+#| fig-width: 15
+#| fig-height: 7
+metrics_local_multicomp_profile_graph_3d
+```
+
+### Checking correlations between relevant variables
+
+```{r check_correlations_3d}
+capl_res_3_valid_days |> 
+  dplyr::left_join(pa_data$all_metrics |> dplyr::select(id, total_steps, minutes_SED)) |> 
+  dplyr::select(total_steps, minutes_SED, ig, alpha) |> 
+  correlation::correlation()
+```
+
+## Between-physical literacy profile comparisons of movement behaviours (2 valid days)
+
+This part includes the comparisons of the multivariate distributions of movement behaviour metrics between the physical literacy profiles. These analyses are based on data from participants having at least 2 valid days for the accelerometer-based measurement of movement behaviours and who had a valid CAPL-2 profile.
+
+### Data skimming
+
+#### Raw data
+
+Navigation in the raw data (CAPL-2 scores along with movement behaviour metrics) is possible through the interactive table shown below. 
+
+```{r capl_res_2_valid_days}
+rmarkdown::paged_table(capl_res_2_valid_days)
+```
+
+#### Variable summaries
+
+This section proposes an overview of the study dataset related to both the valid CAPL-2 profiles and the movement behaviour metrics in the participants with at least 2 valid days for the accelerometer-based measurement of movement behaviours. More precisely, the tables display information about the dataset structure as well as descriptive statistics for all the variables from the dataset. The interest of this section is mainly to verify that all the variables have been correctly formated and to have information about potential missing values.
+
+```{r skim_pa_data_all_metrics_2d}
+skimr::skim(capl_res_2_valid_days)
+```
+
+### Distributions of the movement behaviour metrics
+
+This section shows the distributions of the movement behaviour metrics that were deemed of potential interest for exploratory analysis. These metrics were directly available from the {activAnalyzer} R package. Of note, in the figure below, the list of the metrics that goes from `Wear time (min)` to `M 60 min` represent daily means while the remaining metrics were computed considering the whole set of valid days of measurement.
+
+```{r p_distri_all_metrics_2d}
+#| out-width: '100%'
+#| fig-width: 13
+#| fig-height: 12
+
+p_distri_all_metrics_2d
+```
+
+### Checking for multivariate outliers
+
+```{r check_outliers_pa_metrics_2d}
+performance::check_outliers(
+  capl_res_2_valid_days |>
+    dplyr::select(tidyselect::any_of(selected_metrics$raw_names)),
+  method = "mahalanobis_robust") # too many variables given the sample size to use MCD method; alternative method chosen based on DOI: 10.3758/s13428-024-02356-w
+```
+
+### Nonparametric multivariate analysis
+
+#### Graphical analysis
+
+```{r p_distri_all_metrics_by_profile_2d}
+#| out-width: '100%'
+#| fig-width: 10
+#| fig-height: 5
+
+p_distri_all_metrics_by_profile_2d & theme(
+        strip.text.x = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12)
+      )
+```
+
+#### Tabular view
+
+```{r tbl_retained_metrics_2d}
+tbl_retained_metrics_2d |>
+  gtsummary::as_flex_table()
+```
+
+#### Checking sex distribution across physical literacy profiles
+
+We checked sex distribution across the physical literacy profiles to get additionnal context to the results.
+
+```{r counts_sex_by_capl_profile_2d}
+tar_read(capl_res_2_valid_days) |> 
+  dplyr::count(capl_interpretation, gender) |>
+  tidyr::pivot_wider(names_from = gender, values_from = n)
+```
+
+```{r}
+table(capl_res_2_valid_days$gender)
+```
+
+:::{.callout-note}
+The distribution of girls and boys was quite unbalanced across the physical literacy profiles.
+:::
+
+#### R output for global comparison
+
+The comparisons of the multivariate distributions of movement behaviour metrics between physical literacy profiles have been performed using nonparametric analysis implemented in functions from the `{npmv}` package.
+
+##### Raw output
+
+```{r metrics_global_multicomp_profile_2d}
+metrics_global_multicomp_profile_2d
+```
+
+:::{.callout-note}
+The global analysis, based on the ANOVA type test p-value, suggests that the physical literacy profiles come from different multivariate distributions related to movement behaviour metrics. The `$twogroupreleffects` section of the R output shows the probability, for a given  variable, that a participant randomly sampled from a given physical literacy profile has a higher value than the one associated to a participant randomly sampled from all physical literacy profiles together.
+:::
+
+##### Formated output
+
+```{r metrics_global_multicomp_profile_rel_eff_2d}
+metrics_global_multicomp_profile_rel_eff_2d |>
+  flextable() |>
+  bold(i = 1, part = "header") |>
+  bold( ~ `Rel. Eff. Beg.` > 0.5, 6) |>
+  bold( ~ `Rel. Eff. Prog.` > 0.5, 7) |>
+  bold( ~ `Rel. Eff. Achi.` > 0.5, 8) |>
+  bold( ~ `Rel. Eff. Excel.` > 0.5, 9) |>
+  bg( ~ `Rel. Eff. Beg.` > 0.5, 6, bg = "grey90") |>
+  bg( ~ `Rel. Eff. Prog.` > 0.5, 7, bg = "grey90") |>
+  bg( ~ `Rel. Eff. Achi.` > 0.5, 8, bg = "grey90") |>
+  bg( ~ `Rel. Eff. Excel.` > 0.5, 9, bg = "grey90") |>
+  width(j = 1, width = 2.5) |>
+  width(j = 2:9, width = 1.3) |>
+  valign(
+    i = 1,
+    j = 1:9,
+    valign = "top",
+    part = "header"
+  ) |>
+  align(j = 6:9, part = "header", align = "center") |>
+  align(j = 6:9, part = "body", align = "center") |>
+  add_footer_lines(
+    "Min./ Max. Theo. Rel. Eff. = Minimum/maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells with bold values highlight the highest relative effects among the physical literacy profiles."
+  )
+```
+
+#### R output for local comparisons
+
+##### Raw output
+
+```{r metrics_local_multicomp_profile_2d}
+cat(metrics_local_multicomp_profile_2d, sep = "\n")
+```
+
+##### Graphical output (combinations of variables for which groups significantly differed)
+
+```{r metrics_local_multicomp_profile_graph_2d}
+#| out-width: '100%'
+#| fig-width: 15
+#| fig-height: 7
+metrics_local_multicomp_profile_graph_2d
+```
+
+### Checking correlations between relevant variables
+
+```{r check_correlations_2d}
+capl_res_2_valid_days |> 
+  dplyr::left_join(pa_data$all_metrics |> dplyr::select(id, total_steps, minutes_SED)) |> 
+  dplyr::select(total_steps, minutes_SED, ig, alpha) |> 
+  correlation::correlation()
 ```
 
 ## References of the R packages used

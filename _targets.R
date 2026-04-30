@@ -2288,7 +2288,7 @@ list(
       facet_wrap(~num_items, ncol = 1, scales = "free_x")
   ),
 
-  # BETWEEN-PHYSICAL LITERACY PROFILE COMPARISONS OF MOVEMENT BEHAVIOURS ----
+  # BETWEEN-PHYSICAL LITERACY PROFILE COMPARISONS OF MOVEMENT BEHAVIOURS (4 valid days) ----
 
   ## Get IDs from participants with >= 4 valid days ----
   tar_target(
@@ -2601,6 +2601,633 @@ list(
       facet_wrap(~num_items, ncol = 1, scales = "free_x")
   ),
 
+  # BETWEEN-PHYSICAL LITERACY PROFILE COMPARISONS OF MOVEMENT BEHAVIOURS (3 valid days) ----
+
+  ## Get IDs from participants with >= 3 valid days ----
+  tar_target(
+    name = ids_with_3_valid_days,
+    command = pa_data$all_metrics |>
+      filter(valid_days >= 3) |>
+      pull(id)
+  ),
+
+  ## Comparisons of the movement behaviour metrics ----
+
+  ### Get a data frame with both CAPL-2 data and relevant movement behaviour metrics ----
+  tar_target(
+    name = capl_res_3_valid_days,
+    command = pa_data$all_metrics |>
+      filter(id %in% ids_with_3_valid_days) |>
+      select(id, valid_days, wear_time, ig, alpha) |> # select relevant variables
+      left_join(
+        capl_res |>
+          mutate(id = as.numeric(as.character(id)))
+      ) |>
+      # Remove participants with no CAPL-2 global interpretation
+      filter(capl_interpretation != "Non available") |>
+      mutate(capl_interpretation = factor(capl_interpretation,
+        levels =
+          c("Beginning", "Progressing", "Achieving", "Excelling")
+      ))
+  ),
+
+  ### Pivot data
+  tar_target(
+    name = capl_res_3_valid_days_piv,
+    command = capl_res_3_valid_days |>
+      select(-c(school, gender, age:capl_score, capl_status)) |>
+      rename(
+        "Valid days" = "valid_days",
+        "Wear time (min)" = "wear_time",
+        "Intensity gradient" = "ig",
+        "Power-law exponent alpha" = "alpha"
+      ) |>
+      pivot_longer(
+        cols = c(everything(), -id, -capl_interpretation),
+        names_to = "Metric",
+        values_to = "Value"
+      ) |>
+      mutate(
+        Metric = as.factor(Metric),
+        Metric = fct_relevel(
+          Metric,
+          "Valid days",
+          "Wear time (min)",
+          "Intensity gradient",
+          "Power-law exponent alpha"
+        )
+      )
+  ),
+
+  ### Get a plot with the distributions of all the movement behaviour metrics ----
+  tar_target(
+    name = p_distri_all_metrics_3d,
+    command = {
+      # Compute stats
+      capl_res_3_valid_days_piv_stats <-
+        capl_res_3_valid_days_piv |>
+        group_by(Metric) |>
+        summarise(
+          mean = mean(Value),
+          sd = sd(Value),
+          med = median(Value),
+          q1 = quantile(Value, probs = c(0.25)),
+          q3 = quantile(Value, probs = c(0.75)),
+          min = min(Value)
+        ) |>
+        mutate(
+          mean_sd_text = paste0(trimws(format(round_half_up(mean, 2), nsmall = 2)), " ± ", trimws(format(round_half_up(sd, 2), nsmall = 2))),
+          med_quant_text = paste0(trimws(format(round_half_up(med, 2), nsmall = 2)), " (", trimws(format(round_half_up(q1, 2), nsmall = 2)), "-", trimws(format(round_half_up(q3, 2), nsmall = 2)), ")")
+        )
+
+      # Show graphic
+      capl_res_3_valid_days_piv |>
+        ggplot(aes(x = 0, y = Value)) +
+        geom_rain(
+          fill = "grey90",
+          point.args = rlang::list2(
+            alpha = 0.3,
+            size = 2
+          )
+        ) +
+        geom_hline(data = capl_res_3_valid_days_piv_stats, aes(yintercept = mean, color = "Mean"), linetype = "dashed") +
+        geom_hline(data = capl_res_3_valid_days_piv_stats, aes(yintercept = med, color = "Median"), linetype = "dashed") +
+        scale_color_manual(values = c("blue", "red"), breaks = c("Mean", "Median")) +
+        facet_wrap(~Metric, scales = "free") +
+        coord_flip(xlim = c(-0.1, 0.55)) +
+        labs(x = NULL, color = NULL) +
+        theme_bw() +
+        theme(
+          legend.position = "bottom",
+          axis.text.x = element_text(color = "grey40", angle = 90, hjust = 1, vjust = 0.5),
+          axis.ticks.x = element_line(color = "grey40"),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          strip.background = element_rect(fill = "grey40", color = "grey40"),
+          strip.text = element_text(color = "white", face = "bold", size = 10),
+          panel.border = element_rect(color = "grey40")
+        )
+    }
+  ),
+
+  ### Set the list of metrics retained for further analysis ----
+  # tar_target(
+  #  name = selected_metrics,
+  #  command = list(
+  #    raw_names = c(
+  #      "ig",
+  #      "alpha"
+  #    ),
+  #    new_names = c(
+  #      "Intensity gradient",
+  #      "Power-law exponent alpha"
+  #    )
+  #  )
+  # ),
+
+  ### Get a plot showing the distributions of the selected metrics ----
+  tar_target(
+    name = p_distri_all_metrics_by_profile_3d,
+    command = capl_res_3_valid_days_piv |>
+      filter(Metric %in% selected_metrics$new_names) |>
+      ggplot(aes(x = "", y = Value, fill = capl_interpretation, color = capl_interpretation)) +
+      geom_rain(
+        rain.side = "l",
+        boxplot.args = list(color = "black"),
+        boxplot.args.pos = list(
+          position = position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
+        ),
+        point.args = list(alpha = 0.3),
+        point.args.pos = list(
+          position = position_dodgenudge(x = 0.3, width = 0.2)
+        ),
+        violin.args = list(alpha = 0.3),
+      ) +
+      scale_color_manual(values = hue_pal()(5)[2:5]) +
+      scale_fill_manual(values = hue_pal()(5)[2:5]) +
+      labs(x = NULL, y = "Value", color = "CAPL-2 profile", fill = "CAPL-2 profile") +
+      facet_wrap(~Metric, scales = "free", ncol = 3) +
+      theme_bw() +
+      theme(
+        legend.title = element_text(face = "bold"),
+        legend.position = "right",
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_line(color = "grey40"),
+        strip.background = element_rect(fill = "grey40", color = "grey40"),
+        strip.text = element_text(color = "white", face = "bold", size = 10),
+        panel.border = element_rect(color = "grey40")
+      )
+  ),
+
+  ### Build a table with summary statistics for the retained movement behaviour ----
+  ### metrics across the physical literacy profiles ----
+  tar_target(
+    name = tbl_retained_metrics_3d,
+    command = capl_res_3_valid_days |>
+      tbl_summary(
+        include = selected_metrics$raw_names,
+        by = capl_interpretation,
+        label = list(
+          ig = "Intensity gradient",
+          alpha = "Power-law exponent alpha"
+        ),
+        missing = "no",
+        statistic = list(
+          all_continuous() ~ "{median} \n({p25} – {p75})"
+        ),
+        digits = list(all_continuous() ~ 1)
+      ) |>
+      add_overall() |>
+      modify_header(label ~ "**Metric**") |>
+      modify_footnote(c(stat_0, stat_1, stat_2, stat_3, stat_4) ~ "Numbers are medians (Q1 - Q3). Intensity gradient is a daily average and power-law exponent alpha was based on the entire week of measurement.") |>
+      modify_header(list(
+        stat_0 = "**All participants**  \nN = {N}"
+      ))
+  ),
+
+  ### Multivariate comparisons for movement behaviour metrics ----
+  #### Set formula
+  # tar_target(
+  #  name = testing_formula_metrics,
+  #  command = {
+  #    vars_formula <- paste(selected_metrics$raw_names, collapse = " | ")
+  #    formula <- as.formula(paste0(vars_formula, "~ capl_interpretation"))
+  #    return(formula)
+  #  }
+  # ),
+
+  #### Test for a global difference of movement behaviours between PL profiles ----
+  ##### Raw output
+  tar_target(
+    name = metrics_global_multicomp_profile_3d,
+    command = {
+      set.seed(123)
+      nonpartest(
+        testing_formula_metrics,
+        data = capl_res_3_valid_days,
+        permreps = 1000,
+        plots = FALSE
+      )
+    }
+  ),
+
+  ##### Formated output
+  tar_target(
+    name = metrics_global_multicomp_profile_rel_eff_3d,
+    command = capl_res_3_valid_days |>
+      select(
+        capl_interpretation,
+        ig,
+        alpha
+      ) |>
+      pivot_longer(
+        cols = c(
+          ig,
+          alpha
+        ),
+        names_to = "Metric",
+        values_to = "val"
+      ) |>
+      mutate(Metric = factor(
+        Metric,
+        levels = selected_metrics$raw_names,
+        labels = selected_metrics$new_names
+      )) |>
+      drop_na() |>
+      group_by(capl_interpretation, Metric) |>
+      summarise(n = n()) |>
+      pivot_wider(id_cols = "Metric", names_from = capl_interpretation, values_from = n) |>
+      mutate("N Beg. \n(Min. / Max. TRE)" = paste0(Beginning, "  \n(", round_half_up(Beginning / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Beginning / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      mutate("N Prog.  \n(Min. / Max. TRE)" = paste0(Progressing, "  \n(", round_half_up(Progressing / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Progressing / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      mutate("N Achi.    \n(Min. / Max. TRE)" = paste0(Achieving, "  \n(", round_half_up(Achieving / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Achieving / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      mutate("N Excel.  \n(Min. / Max. TRE)" = paste0(Excelling, "  \n(", round_half_up(Excelling / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Excelling / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      left_join(
+        metrics_global_multicomp_profile_3d$releffects |>
+          t() |>
+          as.data.frame() |>
+          rownames_to_column(var = "Metric") |>
+          mutate(
+            Metric = as.factor(Metric),
+            Metric = fct_recode(Metric,
+              "Intensity gradient" = "ig",
+              "Power-law exponent alpha" = "alpha"
+            ),
+            across(c(Beginning:Excelling), ~ round_half_up(.x, digits = 2))
+          ) |>
+          arrange(Metric) |>
+          rename(
+            "Rel. Eff. Beg." = Beginning,
+            "Rel. Eff. Prog." = Progressing,
+            "Rel. Eff. Achi." = Achieving,
+            "Rel. Eff. Excel." = Excelling
+          )
+      ) |>
+      select(-c(Beginning, Progressing, Achieving, Excelling))
+  ),
+
+  #### Test for local differences of movement behaviours between PL profiles ----
+  tar_target(
+    name = metrics_local_multicomp_profile_3d,
+    command = {
+      set.seed(123)
+      capture.output(ssnonpartest(
+        testing_formula_metrics,
+        data = capl_res_3_valid_days,
+        test = c(1, 0, 0, 0),
+        alpha = 0.05,
+        factors.and.variables = TRUE
+      ))
+    }
+  ),
+
+  #### Get a graphic with all significant sets of item scores for
+  #### between-sex differences ----
+  tar_target(
+    name = metrics_local_multicomp_profile_graph_3d,
+    command = get_multicomp_graph(
+      scores = c(
+        "ig",
+        "alpha"
+      ),
+      ssnonpartest_out = metrics_local_multicomp_profile_3d,
+      x_label = "Movement behaviour metrics",
+      skip = 5
+    ) +
+      scale_fill_manual(values = c(rep(c("grey95", "white"), 3), "grey95")) +
+      scale_x_discrete(
+        limits = rev,
+        labels = c(
+          "Power-law exponent alpha",
+          "Intensity gradient"
+        )
+      ) +
+      theme(
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text = element_text(size = 20),
+        axis.title = element_text(size = 25),
+        strip.text = element_text(size = 15)
+      ) +
+      coord_flip(expand = FALSE) +
+      facet_wrap(~num_items, ncol = 1, scales = "free_x")
+  ),
+
+  # BETWEEN-PHYSICAL LITERACY PROFILE COMPARISONS OF MOVEMENT BEHAVIOURS (2 valid days) ----
+
+  ## Get IDs from participants with >= 2 valid days ----
+  tar_target(
+    name = ids_with_2_valid_days,
+    command = pa_data$all_metrics |>
+      filter(valid_days >= 2) |>
+      pull(id)
+  ),
+
+  ## Comparisons of the movement behaviour metrics ----
+
+  ### Get a data frame with both CAPL-2 data and relevant movement behaviour metrics ----
+  tar_target(
+    name = capl_res_2_valid_days,
+    command = pa_data$all_metrics |>
+      filter(id %in% ids_with_2_valid_days) |>
+      select(id, valid_days, wear_time, ig, alpha) |> # select relevant variables
+      left_join(
+        capl_res |>
+          mutate(id = as.numeric(as.character(id)))
+      ) |>
+      # Remove participants with no CAPL-2 global interpretation
+      filter(capl_interpretation != "Non available") |>
+      mutate(capl_interpretation = factor(capl_interpretation,
+        levels =
+          c("Beginning", "Progressing", "Achieving", "Excelling")
+      ))
+  ),
+
+  ### Pivot data
+  tar_target(
+    name = capl_res_2_valid_days_piv,
+    command = capl_res_2_valid_days |>
+      select(-c(school, gender, age:capl_score, capl_status)) |>
+      rename(
+        "Valid days" = "valid_days",
+        "Wear time (min)" = "wear_time",
+        "Intensity gradient" = "ig",
+        "Power-law exponent alpha" = "alpha"
+      ) |>
+      pivot_longer(
+        cols = c(everything(), -id, -capl_interpretation),
+        names_to = "Metric",
+        values_to = "Value"
+      ) |>
+      mutate(
+        Metric = as.factor(Metric),
+        Metric = fct_relevel(
+          Metric,
+          "Valid days",
+          "Wear time (min)",
+          "Intensity gradient",
+          "Power-law exponent alpha"
+        )
+      )
+  ),
+
+  ### Get a plot with the distributions of all the movement behaviour metrics ----
+  tar_target(
+    name = p_distri_all_metrics_2d,
+    command = {
+      # Compute stats
+      capl_res_2_valid_days_piv_stats <-
+        capl_res_2_valid_days_piv |>
+        group_by(Metric) |>
+        summarise(
+          mean = mean(Value),
+          sd = sd(Value),
+          med = median(Value),
+          q1 = quantile(Value, probs = c(0.25)),
+          q3 = quantile(Value, probs = c(0.75)),
+          min = min(Value)
+        ) |>
+        mutate(
+          mean_sd_text = paste0(trimws(format(round_half_up(mean, 2), nsmall = 2)), " ± ", trimws(format(round_half_up(sd, 2), nsmall = 2))),
+          med_quant_text = paste0(trimws(format(round_half_up(med, 2), nsmall = 2)), " (", trimws(format(round_half_up(q1, 2), nsmall = 2)), "-", trimws(format(round_half_up(q3, 2), nsmall = 2)), ")")
+        )
+
+      # Show graphic
+      capl_res_2_valid_days_piv |>
+        ggplot(aes(x = 0, y = Value)) +
+        geom_rain(
+          fill = "grey90",
+          point.args = rlang::list2(
+            alpha = 0.3,
+            size = 2
+          )
+        ) +
+        geom_hline(data = capl_res_2_valid_days_piv_stats, aes(yintercept = mean, color = "Mean"), linetype = "dashed") +
+        geom_hline(data = capl_res_2_valid_days_piv_stats, aes(yintercept = med, color = "Median"), linetype = "dashed") +
+        scale_color_manual(values = c("blue", "red"), breaks = c("Mean", "Median")) +
+        facet_wrap(~Metric, scales = "free") +
+        coord_flip(xlim = c(-0.1, 0.55)) +
+        labs(x = NULL, color = NULL) +
+        theme_bw() +
+        theme(
+          legend.position = "bottom",
+          axis.text.x = element_text(color = "grey40", angle = 90, hjust = 1, vjust = 0.5),
+          axis.ticks.x = element_line(color = "grey40"),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          strip.background = element_rect(fill = "grey40", color = "grey40"),
+          strip.text = element_text(color = "white", face = "bold", size = 10),
+          panel.border = element_rect(color = "grey40")
+        )
+    }
+  ),
+
+  ### Set the list of metrics retained for further analysis ----
+  # tar_target(
+  #  name = selected_metrics,
+  #  command = list(
+  #    raw_names = c(
+  #      "ig",
+  #      "alpha"
+  #    ),
+  #    new_names = c(
+  #      "Intensity gradient",
+  #      "Power-law exponent alpha"
+  #    )
+  #  )
+  # ),
+
+  ### Get a plot showing the distributions of the selected metrics ----
+  tar_target(
+    name = p_distri_all_metrics_by_profile_2d,
+    command = capl_res_2_valid_days_piv |>
+      filter(Metric %in% selected_metrics$new_names) |>
+      ggplot(aes(x = "", y = Value, fill = capl_interpretation, color = capl_interpretation)) +
+      geom_rain(
+        rain.side = "l",
+        boxplot.args = list(color = "black"),
+        boxplot.args.pos = list(
+          position = position_dodgenudge(x = -0.05, width = 0.3), width = 0.2
+        ),
+        point.args = list(alpha = 0.3),
+        point.args.pos = list(
+          position = position_dodgenudge(x = 0.3, width = 0.2)
+        ),
+        violin.args = list(alpha = 0.3),
+      ) +
+      scale_color_manual(values = hue_pal()(5)[2:5]) +
+      scale_fill_manual(values = hue_pal()(5)[2:5]) +
+      labs(x = NULL, y = "Value", color = "CAPL-2 profile", fill = "CAPL-2 profile") +
+      facet_wrap(~Metric, scales = "free", ncol = 3) +
+      theme_bw() +
+      theme(
+        legend.title = element_text(face = "bold"),
+        legend.position = "right",
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_line(color = "grey40"),
+        strip.background = element_rect(fill = "grey40", color = "grey40"),
+        strip.text = element_text(color = "white", face = "bold", size = 10),
+        panel.border = element_rect(color = "grey40")
+      )
+  ),
+
+  ### Build a table with summary statistics for the retained movement behaviour ----
+  ### metrics across the physical literacy profiles ----
+  tar_target(
+    name = tbl_retained_metrics_2d,
+    command = capl_res_2_valid_days |>
+      tbl_summary(
+        include = selected_metrics$raw_names,
+        by = capl_interpretation,
+        label = list(
+          ig = "Intensity gradient",
+          alpha = "Power-law exponent alpha"
+        ),
+        missing = "no",
+        statistic = list(
+          all_continuous() ~ "{median} \n({p25} – {p75})"
+        ),
+        digits = list(all_continuous() ~ 1)
+      ) |>
+      add_overall() |>
+      modify_header(label ~ "**Metric**") |>
+      modify_footnote(c(stat_0, stat_1, stat_2, stat_3, stat_4) ~ "Numbers are medians (Q1 - Q3). Intensity gradient is a daily average and power-law exponent alpha was based on the entire week of measurement.") |>
+      modify_header(list(
+        stat_0 = "**All participants**  \nN = {N}"
+      ))
+  ),
+
+  ### Multivariate comparisons for movement behaviour metrics ----
+  #### Set formula
+  # tar_target(
+  #  name = testing_formula_metrics,
+  #  command = {
+  #    vars_formula <- paste(selected_metrics$raw_names, collapse = " | ")
+  #    formula <- as.formula(paste0(vars_formula, "~ capl_interpretation"))
+  #    return(formula)
+  #  }
+  # ),
+
+  #### Test for a global difference of movement behaviours between PL profiles ----
+  ##### Raw output
+  tar_target(
+    name = metrics_global_multicomp_profile_2d,
+    command = {
+      set.seed(123)
+      nonpartest(
+        testing_formula_metrics,
+        data = capl_res_2_valid_days,
+        permreps = 1000,
+        plots = FALSE
+      )
+    }
+  ),
+
+  ##### Formated output
+  tar_target(
+    name = metrics_global_multicomp_profile_rel_eff_2d,
+    command = capl_res_2_valid_days |>
+      select(
+        capl_interpretation,
+        ig,
+        alpha
+      ) |>
+      pivot_longer(
+        cols = c(
+          ig,
+          alpha
+        ),
+        names_to = "Metric",
+        values_to = "val"
+      ) |>
+      mutate(Metric = factor(
+        Metric,
+        levels = selected_metrics$raw_names,
+        labels = selected_metrics$new_names
+      )) |>
+      drop_na() |>
+      group_by(capl_interpretation, Metric) |>
+      summarise(n = n()) |>
+      pivot_wider(id_cols = "Metric", names_from = capl_interpretation, values_from = n) |>
+      mutate("N Beg. \n(Min. / Max. TRE)" = paste0(Beginning, "  \n(", round_half_up(Beginning / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Beginning / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      mutate("N Prog.  \n(Min. / Max. TRE)" = paste0(Progressing, "  \n(", round_half_up(Progressing / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Progressing / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      mutate("N Achi.    \n(Min. / Max. TRE)" = paste0(Achieving, "  \n(", round_half_up(Achieving / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Achieving / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      mutate("N Excel.  \n(Min. / Max. TRE)" = paste0(Excelling, "  \n(", round_half_up(Excelling / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), "/", round_half_up(1 - Excelling / (2 * (Beginning + Progressing + Achieving + Excelling)), 2), ")")) |>
+      left_join(
+        metrics_global_multicomp_profile_2d$releffects |>
+          t() |>
+          as.data.frame() |>
+          rownames_to_column(var = "Metric") |>
+          mutate(
+            Metric = as.factor(Metric),
+            Metric = fct_recode(Metric,
+              "Intensity gradient" = "ig",
+              "Power-law exponent alpha" = "alpha"
+            ),
+            across(c(Beginning:Excelling), ~ round_half_up(.x, digits = 2))
+          ) |>
+          arrange(Metric) |>
+          rename(
+            "Rel. Eff. Beg." = Beginning,
+            "Rel. Eff. Prog." = Progressing,
+            "Rel. Eff. Achi." = Achieving,
+            "Rel. Eff. Excel." = Excelling
+          )
+      ) |>
+      select(-c(Beginning, Progressing, Achieving, Excelling))
+  ),
+
+  #### Test for local differences of movement behaviours between PL profiles ----
+  tar_target(
+    name = metrics_local_multicomp_profile_2d,
+    command = {
+      set.seed(123)
+      capture.output(ssnonpartest(
+        testing_formula_metrics,
+        data = capl_res_2_valid_days,
+        test = c(1, 0, 0, 0),
+        alpha = 0.05,
+        factors.and.variables = TRUE
+      ))
+    }
+  ),
+
+  #### Get a graphic with all significant sets of item scores for
+  #### between-sex differences ----
+  tar_target(
+    name = metrics_local_multicomp_profile_graph_2d,
+    command = get_multicomp_graph(
+      scores = c(
+        "ig",
+        "alpha"
+      ),
+      ssnonpartest_out = metrics_local_multicomp_profile_2d,
+      x_label = "Movement behaviour metrics",
+      skip = 5
+    ) +
+      scale_fill_manual(values = c(rep(c("grey95", "white"), 3), "grey95")) +
+      scale_x_discrete(
+        limits = rev,
+        labels = c(
+          "Power-law exponent alpha",
+          "Intensity gradient"
+        )
+      ) +
+      theme(
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text = element_text(size = 20),
+        axis.title = element_text(size = 25),
+        strip.text = element_text(size = 15)
+      ) +
+      coord_flip(expand = FALSE) +
+      facet_wrap(~num_items, ncol = 1, scales = "free_x")
+  ),
+
+
   ## Export Table 1 ----
   tar_target(
     name = table1,
@@ -2695,7 +3322,7 @@ list(
     }
   ),
 
-  ## Export Table 2 ----
+  ## Export Table 2 (4 valid days) ----
   tar_target(
     name = table2,
     format = "file",
@@ -2753,6 +3380,122 @@ list(
     }
   ),
 
+  ## Export Table 2 (3 valid days) ----
+  tar_target(
+    name = table2_3d,
+    format = "file",
+    command = {
+      ### Build table
+      general_table_for_pa_metrics_3d <-
+        tbl_retained_metrics_3d |>
+        modify_header(
+          list(
+            label = "Metric",
+            stat_0 = "All  \nN = {N}",
+            stat_1 = "Beg.  \nN = {n}",
+            stat_2 = "Prog.  \nN = {n}",
+            stat_3 = "Achi.  \nN = {n}",
+            stat_4 = "Excel.  \nN = {n}"
+          )
+        ) |>
+        as_tibble() |>
+        left_join(metrics_global_multicomp_profile_rel_eff_3d) |>
+        flextable() |>
+        bold(i = 1, part = "header") |>
+        bg(~ `Rel. Eff. Beg.` > 0.5, 11, bg = "grey90") |>
+        bg(~ `Rel. Eff. Prog.` > 0.5, 12, bg = "grey90") |>
+        bg(~ `Rel. Eff. Achi.` > 0.5, 13, bg = "grey90") |>
+        bg(~ `Rel. Eff. Excel.` > 0.5, 14, bg = "grey90") |>
+        # width(j = 1:14, width = c(rep(1, 3) 14)) |>
+        valign(
+          i = 1,
+          j = 1:9,
+          valign = "top",
+          part = "header"
+        ) |>
+        align(j = 2:14, part = "all", align = "center") |>
+        add_footer_lines(
+          "Numbers are medians (Q1 - Q3). Intensity gradient is a daily average and power-law exponent alpha was based on the entire week of measurement. Min./ Max. TRE = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells highlight the highest relative effects (>0.5) among the physical literacy profiles."
+        )
+
+      ### Set table export properties
+      sect_properties2 <- prop_section(
+        page_size = page_size(
+          orient = "landscape",
+          width = 25,
+          height = 17,
+          unit = "cm"
+        ),
+        type = "continuous",
+        page_margins = page_mar()
+      )
+
+      ### Export table
+      save_as_docx(general_table_for_pa_metrics_3d,
+        path = "out/Table2_3d.docx",
+        pr_section = sect_properties2
+      )
+    }
+  ),
+
+  ## Export Table 2 (2 valid days) ----
+  tar_target(
+    name = table2_2d,
+    format = "file",
+    command = {
+      ### Build table
+      general_table_for_pa_metrics_2d <-
+        tbl_retained_metrics_2d |>
+        modify_header(
+          list(
+            label = "Metric",
+            stat_0 = "All  \nN = {N}",
+            stat_1 = "Beg.  \nN = {n}",
+            stat_2 = "Prog.  \nN = {n}",
+            stat_3 = "Achi.  \nN = {n}",
+            stat_4 = "Excel.  \nN = {n}"
+          )
+        ) |>
+        as_tibble() |>
+        left_join(metrics_global_multicomp_profile_rel_eff_2d) |>
+        flextable() |>
+        bold(i = 1, part = "header") |>
+        bg(~ `Rel. Eff. Beg.` > 0.5, 11, bg = "grey90") |>
+        bg(~ `Rel. Eff. Prog.` > 0.5, 12, bg = "grey90") |>
+        bg(~ `Rel. Eff. Achi.` > 0.5, 13, bg = "grey90") |>
+        bg(~ `Rel. Eff. Excel.` > 0.5, 14, bg = "grey90") |>
+        # width(j = 1:14, width = c(rep(1, 3) 14)) |>
+        valign(
+          i = 1,
+          j = 1:9,
+          valign = "top",
+          part = "header"
+        ) |>
+        align(j = 2:14, part = "all", align = "center") |>
+        add_footer_lines(
+          "Numbers are medians (Q1 - Q3). Intensity gradient is a daily average and power-law exponent alpha was based on the entire week of measurement. Min./ Max. TRE = Minimum / maximum theoretical relative effect. A relative effect can be only between 0 and 1 and depicts the probability, for an individual randomly sampled from the considered group, to have a higher value than the one from an individual randomly sampled from all groups (all physical literacy profiles). Minimum and maximum theoretical relative effects are respectively the lowest and highest effect sizes than could be expected for a given group and metric based on the number of participants available for the considered metric. Grey cells highlight the highest relative effects (>0.5) among the physical literacy profiles."
+        )
+
+      ### Set table export properties
+      sect_properties2 <- prop_section(
+        page_size = page_size(
+          orient = "landscape",
+          width = 25,
+          height = 17,
+          unit = "cm"
+        ),
+        type = "continuous",
+        page_margins = page_mar()
+      )
+
+      ### Export table
+      save_as_docx(general_table_for_pa_metrics_2d,
+        path = "out/Table2_2d.docx",
+        pr_section = sect_properties2
+      )
+    }
+  ),
+
   ## Export Figure 1 ----
   tar_target(
     name = fig1,
@@ -2781,7 +3524,7 @@ list(
     )
   ),
 
-  ## Export Figure 3 ----
+  ## Export Figure 3 (4 valid days) ----
   tar_target(
     name = fig3,
     format = "file",
@@ -2801,6 +3544,47 @@ list(
     )
   ),
 
+  ## Export Figure 3 (3 valid days) ----
+  tar_target(
+    name = fig3_3d,
+    format = "file",
+    command = ggsave(
+      "out/fig3_3d.png",
+      p_distri_all_metrics_by_profile_3d & theme(
+        strip.text.x = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12)
+      ),
+      scale = 2,
+      height = 3,
+      width = 7,
+      dpi = 300
+    )
+  ),
+
+  ## Export Figure 3 (2 valid days) ----
+  tar_target(
+    name = fig3_2d,
+    format = "file",
+    command = ggsave(
+      "out/fig3_2d.png",
+      p_distri_all_metrics_by_profile_2d & theme(
+        strip.text.x = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12)
+      ),
+      scale = 2,
+      height = 3,
+      width = 7,
+      dpi = 300
+    )
+  ),
+
+
   ## Export Figure 4 ----
   tar_target(
     name = fig4,
@@ -2814,7 +3598,6 @@ list(
       dpi = 300
     )
   ),
-
 
   ## Export Supplemental data file 1 (significant CAPL-2 item score combinations) ----
   tar_target(
@@ -2841,13 +3624,33 @@ list(
     }
   ),
 
-  ## Export database with CAPL-2 and PL profiles with valid data ----
+  ## Export database with CAPL-2 and PL profiles with valid data (4 valid days) ----
   tar_target(
     name = capl_res_4_valid_days_csv,
     format = "file",
     command = {
       write_csv2(capl_res_4_valid_days, "out/capl_res_4_valid_days.csv")
       "out/capl_res_4_valid_days.csv"
+    }
+  ),
+
+  ## Export database with CAPL-2 and PL profiles with valid data (3 valid days) ----
+  tar_target(
+    name = capl_res_3_valid_days_csv,
+    format = "file",
+    command = {
+      write_csv2(capl_res_3_valid_days, "out/capl_res_3_valid_days.csv")
+      "out/capl_res_3_valid_days.csv"
+    }
+  ),
+
+  ## Export database with CAPL-2 and PL profiles with valid data (2 valid days) ----
+  tar_target(
+    name = capl_res_2_valid_days_csv,
+    format = "file",
+    command = {
+      write_csv2(capl_res_2_valid_days, "out/capl_res_2_valid_days.csv")
+      "out/capl_res_2_valid_days.csv"
     }
   ),
 
