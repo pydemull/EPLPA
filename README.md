@@ -71,7 +71,8 @@ please follow the steps as described below:
 # --------------------------------------------------------------
 # Install {groundhog}
 # --------------------------------------------------------------
-install.packages("groundhog")
+require(devtools)
+install_version("groundhog", version = "3.2.3", repos = "http://cran.us.r-project.org")
 
 # --------------------------------------------------------------
 # Set Git infos
@@ -370,40 +371,8 @@ measurement are present in the dataset.
 | id | Participant identification number. Numbers go from 1 to 171. Missing identification numbers correspond to children who did not want to participate to the study or who did not complete any field test or questionnaire. |
 | valid_days | Number of days with 10 hours or more of wear time. |
 | wear_time | Daily average of wear time. |
-| total_counts_axis1 | Daily average of total counts for the vertical axis. |
-| total_counts_vm | Daily average of total counts for the vector magnitude. |
-| axis1_per_min | Daily average of the mean of the counts per minute for the vertical axis. |
-| vm_per_min | Daily average of the mean of the counts per minute for the vector magnitude. |
-| minutes_SED | Daily average of total minutes spent in sedentary behaviour. |
-| minutes_LPA | Daily average of total minutes spent in light physical activity. |
-| minutes_MVPA | Daily average of total minutes spent in moderate-to-vigorous physical activity. |
-| percent_SED | Daily average of the proportion of wear time spent in sedentary behaviour. |
-| percent_LPA | Daily average of the proportion of wear time spent in light physical activity. |
-| percent_MVPA | Daily average of the proportion of wear time spent in moderate-to-vigorous physical activity. |
-| ratio_mvpa_sed | Daily average of the ratio between moderate-to-vigorous physical activity and sedentary times (minutes_MVPA / minutes_SED). |
-| total_steps | Daily average of total step count. |
-| max_steps_60min | Daily average of the best step accumulation per minute averaged over a window of 60 continuous minutes. |
-| max_steps_30min | Daily average of the best step accumulation per minute averaged over a window of 30 continuous minutes. |
-| max_steps_20min | Daily average of the best step accumulation per minute averaged over a window of 20 continuous minutes. |
-| max_steps_5min | Daily average of the best step accumulation per minute averaged over a window of 5 continuous minutes. |
-| max_steps_1min | Daily average of the best step accumulation per minute over a window of 1 minute. |
-| peak_steps_60min | Daily average of the step accumulation per minute averaged over the best 60 continuous or discontinuous minutes. |
-| peak_steps_30min | Daily average of the step accumulation per minute averaged over the best 30 continuous or discontinuous minutes. |
-| peak_steps_20min | Daily average of the step accumulation per minute averaged over the best 20 continuous or discontinuous minutes. |
-| peak_steps_5min | Daily average of the step accumulation per minute averaged over the best 5 continuous or discontinuous minutes. |
-| peak_steps_1min | Daily average of the step accumulation per minute over the best minute (same result as for max_steps_1min). |
 | ig | Daily average of the intensity gradient. |
-| M1/3 | Daily average of the count value (in counts/15s) at and above which the most active 8h are accumulated over the day |
-| M120 | Daily average of the count value (in counts/15s) at and above which the most active 120 minutes are accumulated over the day |
-| M60 | Daily average of the count value (in counts/15s) at and above which the most active 60 minutes are accumulated over the day |
-| M30 | Daily average of the count value (in counts/15s) at and above which the most active 30 minutes are accumulated over the day |
-| M15 | Daily average of the count value (in counts/15s) at and above which the most active 15 minutes are accumulated over the day |
-| M5 | Daily average of the count value (in counts/15s) at and above which the most active 5 minutes are accumulated over the day |
-| mean_breaks | Daily average of the number of transitions from a sedentary bout to a physical activity bout; this actually corresponds to the mean daily total number of sedentary bouts detected. |
 | alpha | Power-law exponent alpha. It provides information on the relative proportion of short and long sedentary bouts. The higher the alpha coefficient, the more the individual tends to accumulate sedentary time using relatively short bouts. Alpha is computed using all the sedentary bouts from the valid days of the measurement period using the formula provided by Chastin and Granat (2010; DOI: 10.1016/j.gaitpost.2009.09.002). |
-| MBD | Median sedentary bout duration. It is computed using all the sedentary bouts from the valid days of the measurement period. |
-| UBD | Usual bout duration. It refers to the bout duration under/above which 50% of sedentary time is accumulated. It is computed using all the sedentary bouts from the valid days of the measurement period. It is determined as described in Belletiere et al. (2021; doi: 10.1123/jmpb.2020-0036) supplementary files. |
-| gini | Gini index. It provides information on the equality with which bout durations contribute to total sedentary time. A value of 1 reveals perfect inequality, and a value of 0 reveals perfect equality. Gini index is computed using all the sedentary bouts from the valid days of the measurement period. Gini index is computed following the procedure described at the following link: <https://www.statology.org/gini-coefficientexcel/>. |
 | school | Name of the school where the participant was recruited. |
 | gender | Sex of the participant. We are aware that gender is different from sex. While we used sex information reported by the participant, the package used to analyse physical literacy scores required a column called ‘gender’ to indicate whether the participant was a boy or a girl. |
 | age | Participant age in years. |

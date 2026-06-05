@@ -684,7 +684,7 @@ list(
           Item = fct_relevel(Item, "step_score", "self_report_pa_score", "db_score"),
           Item = fct_recode(
             Item,
-            "Average Daily Sept Count (/25)" = "step_score",
+            "Average Daily Step Count (/25)" = "step_score",
             "Self-Rep. Num. of Days with MVPA (/5)" = "self_report_pa_score",
             "Daily Behaviour (/30)" = "db_score"
           )
@@ -702,7 +702,7 @@ list(
         plot_score_distri(
           data1 = db_scores,
           data2 = n_db_scores,
-          item = "Average Daily Sept Count (/25)",
+          item = "Average Daily Step Count (/25)",
           color = "#9C8E84",
           text_y = 0.47,
           breaks_x = seq(0, 25, 5),
@@ -1273,7 +1273,7 @@ list(
           Item = fct_relevel(Item, "step_score", "self_report_pa_score", "db_score"),
           Item = fct_recode(
             Item,
-            "Average Daily Sept Count (/25)" = "step_score",
+            "Average Daily Step Count (/25)" = "step_score",
             "Self-Rep. Num. of Days with MVPA (/5)" = "self_report_pa_score",
             "Daily Behaviour (/30)" = "db_score"
           )
@@ -1291,7 +1291,7 @@ list(
         plot_score_distri(
           data1 = db_scores_by_sex,
           data2 = n_db_scores_by_sex,
-          item = "Average Daily Sept Count (/25)",
+          item = "Average Daily Step Count (/25)",
           by_sex = "yes",
           color = "#9C8E84",
           text_y = 1.55,
