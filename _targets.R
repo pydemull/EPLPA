@@ -1,18 +1,22 @@
 # Set the day for package versions ----
-groundhog.day <- "2025-03-21"
+groundhog.day <- "2026-08-01"
 
 # Load packages ----
 library("groundhog")
-groundhog.library("pydemull/activAnalyzer", groundhog.day, tolerate.R.version = "4.4.1")
-groundhog.library("pydemull/activAnalyzer.batch", groundhog.day, tolerate.R.version = "4.4.1")
+
+groundhog.library("pydemull/activAnalyzer", groundhog.day, tolerate.R.version = "4.6.1")
+groundhog.library("pydemull/activAnalyzer.batch", groundhog.day, tolerate.R.version = "4.6.1")
+
 pkgs_cran <- c(
   "bigutilsr",
   "capl",
   "correlation",
   "dplyr",
+  "effectsize",
   "factoextra",
   "flextable",
   "forcats",
+  "GGIR",
   "ggplot2",
   "ggpp",
   "ggrain",
@@ -26,6 +30,7 @@ pkgs_cran <- c(
   "performance",
   "purrr",
   "quarto",
+  "questionr",
   "rankFD",
   "readr",
   "report",
@@ -37,14 +42,13 @@ pkgs_cran <- c(
   "tibble",
   "tidyr"
 )
-groundhog.library(pkgs_cran, groundhog.day, tolerate.R.version = "4.4.1")
+groundhog.library(pkgs_cran, groundhog.day, tolerate.R.version = "4.6.1")
 
 # Set target options ----
 tar_source()
 
 # Define pipeline ----
 list(
-
   # IMPORT & CLEAN DATA ----
   ## Set config file path (for accelerometer data analysis) ----
   tar_target(
@@ -111,6 +115,7 @@ list(
   ),
 
   ## Get movement behaviour metrics ----
+  ### Get steps from {activAnalyzer} package ----
   tar_target(
     name = pa_data,
     command = process_all_agd(
@@ -123,55 +128,57 @@ list(
     )
   ),
 
-  ## Export pa vizualization for controlling quality ----
-  tar_target(
-    name = export_pa_viz,
-    command = lapply(
-      (pa_data$data_with_intensity_marks |> mutate(id_copy = id) |> nest(.by = id_copy))$data,
-      \(x) {
-        id <- x$id[[1]]
-        g <- plot_data_with_intensity(
-          x,
-          valid_wear_time_start = "06:00:00",
-          valid_wear_time_end = "23:59:59"
-        )
-        if (id < 10) {
-          nb_zeros <- "00"
-        }
-        if (id %in% c(10:99)) {
-          nb_zeros <- "0"
-        }
-        if (id >= 100) {
-          nb_zeros <- ""
-        }
-        ggsave(paste0("./out/pa_viz/", nb_zeros, id, ".png"), units = "cm", height = 10, width = 15, scale = 2)
-      }
-    )
-  ),
+  ### Export pa vizualization for controlling quality ----
+  # tar_target(
+  #  name = export_pa_viz,
+  #  command = lapply(
+  #    (pa_data$data_with_intensity_marks |> mutate(id_copy = id) |> nest(.by = id_copy))$data,
+  #    \(x) {
+  #      id <- x$id[[1]]
+  #      g <- plot_data_with_intensity(
+  #        x,
+  #        valid_wear_time_start = "06:00:00",
+  #        valid_wear_time_end = "23:59:59"
+  #      )
+  #      if (id < 10) {
+  #        nb_zeros <- "00"
+  #      }
+  #      if (id %in% c(10:99)) {
+  #        nb_zeros <- "0"
+  #      }
+  #      if (id >= 100) {
+  #        nb_zeros <- ""
+  #      }
+  #      ggsave(paste0("./out/pa_viz/", nb_zeros, id, ".png"), units = "cm", height = 10, width = 15, scale = 2)
+  #    }
+  #  )
+  # ),
 
-  ## Export log-log plots (intensity gradients) ----
+  ### Get average acceleration and intensity gradient (IG) from {GGIR} package (raw data) ----
+  ### The IG results from this section will replace the IG values obtained
+  ### using the {activAnalyzer} package during the previous steps of the pipeline
+  #### Create directory to receive GGIR output
   tar_target(
-    name = export_p_log,
+    name = create_ggir_output_dir,
     command = {
-      list_id <- list.files("data/agd") |>
-        substr(1, 3) |>
-        as.numeric()
-
-      for (i in seq_along(list_id)) {
-        id <- list_id[i]
-        g <- pa_data$p_log[[i]]
-        if (id < 10) {
-          nb_zeros <- "00"
-        }
-        if (id %in% c(10:99)) {
-          nb_zeros <- "0"
-        }
-        if (id >= 100) {
-          nb_zeros <- ""
-        }
-        ggsave(paste0("./out/p_log/", nb_zeros, id, ".png"), g, units = "cm", height = 10, width = 15, scale = 2)
-      }
-    }
+      dir.create("data/ggir_output", recursive = TRUE, showWarnings = FALSE)
+      "data/ggir_output"
+    },
+    cue = tar_cue_force(!dir.exists("data/ggir_output"))
+  ),
+  tar_target(
+    name = run_ggir_analysis,
+    command = run_ggir(folders = "wave1")
+  ),
+  ## Build a data frame containing information by valid day from GGIR analysis (part 5) ----
+  tar_target(
+    name = file_name_ggir_part5,
+    command = "data/ggir_output/output_wave1/results/part5_daysummary_MM_L63.3M142.6V464.6_T5A5.csv",
+    format = "file",
+  ),
+  tar_target(
+    name = df_ggir,
+    command = read_csv2(file_name_ggir_part5)
   ),
 
   ## Import data ----
@@ -2303,26 +2310,28 @@ list(
   ### Get a data frame with both CAPL-2 data and relevant movement behaviour metrics ----
   tar_target(
     name = capl_res_4_valid_days,
-    command = pa_data$all_metrics |>
-      filter(id %in% ids_with_4_valid_days) |>
-      select(id, valid_days, wear_time, ig, alpha) |> # select relevant variables
-      left_join(
-        capl_res |>
-          mutate(id = as.numeric(as.character(id)))
-      ) |>
-      # Remove participants with no CAPL-2 global interpretation
-      filter(capl_interpretation != "Non available") |>
-      mutate(capl_interpretation = factor(capl_interpretation,
-        levels =
-          c("Beginning", "Progressing", "Achieving", "Excelling")
-      ))
+    command =
+      capl_res |>
+        mutate(id = as.numeric(as.character(id))) |>
+        filter(id %in% ids_with_4_valid_days) |>
+        left_join(pa_data$all_metrics |> select(id, valid_days, wear_time, alpha)) |>
+        left_join(df_ggir |> rename(id = ID, ig = ig_day_gradient) |> summarise(ig = mean(ig), .by = id)) |>
+        # Remove participants with no CAPL-2 global interpretation
+        filter(capl_interpretation != "Non available") |>
+        mutate(
+          capl_interpretation = factor(capl_interpretation,
+            levels =
+              c("Beginning", "Progressing", "Achieving", "Excelling")
+          ),
+          id = as.factor(id)
+        )
   ),
 
   ### Pivot data
   tar_target(
     name = capl_res_4_valid_days_piv,
     command = capl_res_4_valid_days |>
-      select(-c(school, gender, age:capl_score, capl_status)) |>
+      select(id, capl_interpretation, valid_days, wear_time, ig, alpha) |>
       rename(
         "Valid days" = "valid_days",
         "Wear time (min)" = "wear_time",
@@ -2616,26 +2625,28 @@ list(
   ### Get a data frame with both CAPL-2 data and relevant movement behaviour metrics ----
   tar_target(
     name = capl_res_3_valid_days,
-    command = pa_data$all_metrics |>
-      filter(id %in% ids_with_3_valid_days) |>
-      select(id, valid_days, wear_time, ig, alpha) |> # select relevant variables
-      left_join(
-        capl_res |>
-          mutate(id = as.numeric(as.character(id)))
-      ) |>
-      # Remove participants with no CAPL-2 global interpretation
-      filter(capl_interpretation != "Non available") |>
-      mutate(capl_interpretation = factor(capl_interpretation,
-        levels =
-          c("Beginning", "Progressing", "Achieving", "Excelling")
-      ))
+    command =
+      capl_res |>
+        mutate(id = as.numeric(as.character(id))) |>
+        filter(id %in% ids_with_3_valid_days) |>
+        left_join(pa_data$all_metrics |> select(id, valid_days, wear_time, alpha)) |>
+        left_join(df_ggir |> rename(id = ID, ig = ig_day_gradient) |> summarise(ig = mean(ig), .by = id)) |>
+        # Remove participants with no CAPL-2 global interpretation
+        filter(capl_interpretation != "Non available") |>
+        mutate(
+          capl_interpretation = factor(capl_interpretation,
+            levels =
+              c("Beginning", "Progressing", "Achieving", "Excelling")
+          ),
+          id = as.factor(id)
+        )
   ),
 
   ### Pivot data
   tar_target(
     name = capl_res_3_valid_days_piv,
     command = capl_res_3_valid_days |>
-      select(-c(school, gender, age:capl_score, capl_status)) |>
+      select(id, capl_interpretation, valid_days, wear_time, ig, alpha) |>
       rename(
         "Valid days" = "valid_days",
         "Wear time (min)" = "wear_time",
@@ -2929,26 +2940,28 @@ list(
   ### Get a data frame with both CAPL-2 data and relevant movement behaviour metrics ----
   tar_target(
     name = capl_res_2_valid_days,
-    command = pa_data$all_metrics |>
-      filter(id %in% ids_with_2_valid_days) |>
-      select(id, valid_days, wear_time, ig, alpha) |> # select relevant variables
-      left_join(
-        capl_res |>
-          mutate(id = as.numeric(as.character(id)))
-      ) |>
-      # Remove participants with no CAPL-2 global interpretation
-      filter(capl_interpretation != "Non available") |>
-      mutate(capl_interpretation = factor(capl_interpretation,
-        levels =
-          c("Beginning", "Progressing", "Achieving", "Excelling")
-      ))
+    command =
+      capl_res |>
+        mutate(id = as.numeric(as.character(id))) |>
+        filter(id %in% ids_with_2_valid_days) |>
+        left_join(pa_data$all_metrics |> select(id, valid_days, wear_time, alpha)) |>
+        left_join(df_ggir |> rename(id = ID, ig = ig_day_gradient) |> summarise(ig = mean(ig), .by = id)) |>
+        # Remove participants with no CAPL-2 global interpretation
+        filter(capl_interpretation != "Non available") |>
+        mutate(
+          capl_interpretation = factor(capl_interpretation,
+            levels =
+              c("Beginning", "Progressing", "Achieving", "Excelling")
+          ),
+          id = as.factor(id)
+        )
   ),
 
   ### Pivot data
   tar_target(
     name = capl_res_2_valid_days_piv,
     command = capl_res_2_valid_days |>
-      select(-c(school, gender, age:capl_score, capl_status)) |>
+      select(id, capl_interpretation, valid_days, wear_time, ig, alpha) |>
       rename(
         "Valid days" = "valid_days",
         "Wear time (min)" = "wear_time",

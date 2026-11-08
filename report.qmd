@@ -52,15 +52,18 @@ editor: source
 #| echo: false
 
 # Set the day for package versions ----
-groundhog.day <- "2025-03-21"
+groundhog.day <- "2026-08-01"
 
 # Load packages
 library(groundhog)
-groundhog.library("flextable", groundhog.day, tolerate.R.version='4.4.1')
-groundhog.library("ggplot2", groundhog.day, tolerate.R.version='4.4.1')
-groundhog.library("report", groundhog.day, tolerate.R.version='4.4.1')
-groundhog.library("scales", groundhog.day, tolerate.R.version='4.4.1')
-groundhog.library("targets", groundhog.day, tolerate.R.version='4.4.1')
+groundhog.library("effectsize", groundhog.day, tolerate.R.version='4.6.1')
+groundhog.library("flextable", groundhog.day, tolerate.R.version='4.6.1')
+groundhog.library("ggplot2", groundhog.day, tolerate.R.version='4.6.1')
+groundhog.library("gtsummary", groundhog.day, tolerate.R.version='4.6.1')
+groundhog.library("questionr", groundhog.day, tolerate.R.version='4.6.1')
+groundhog.library("report", groundhog.day, tolerate.R.version='4.6.1')
+groundhog.library("scales", groundhog.day, tolerate.R.version='4.6.1')
+groundhog.library("targets", groundhog.day, tolerate.R.version='4.6.1')
 
 # Targets
 tar_load(tab_pa_metrics_config)
@@ -96,7 +99,6 @@ tar_load(metrics_local_multicomp_profile_graph)
 tar_load(capl_res_3_valid_days)
 tar_load(p_distri_all_metrics_3d)
 tar_load(p_distri_all_metrics_by_profile_3d)
-tar_load(selected_metrics_3d)
 tar_load(tbl_retained_metrics_3d)
 tar_load(metrics_global_multicomp_profile_3d)
 tar_load(metrics_global_multicomp_profile_rel_eff_3d)
@@ -105,7 +107,6 @@ tar_load(metrics_local_multicomp_profile_graph_3d)
 tar_load(capl_res_2_valid_days)
 tar_load(p_distri_all_metrics_2d)
 tar_load(p_distri_all_metrics_by_profile_2d)
-tar_load(selected_metrics_2d)
 tar_load(tbl_retained_metrics_2d)
 tar_load(metrics_global_multicomp_profile_2d)
 tar_load(metrics_global_multicomp_profile_rel_eff_2d)
@@ -575,6 +576,7 @@ metrics_local_multicomp_profile_graph
 
 ```{r check_correlations}
 capl_res_4_valid_days |> 
+  dplyr::mutate(id = as.numeric(as.character(id))) |> 
   dplyr::left_join(pa_data$all_metrics |> dplyr::select(id, total_steps, minutes_SED)) |> 
   dplyr::select(total_steps, minutes_SED, ig, alpha) |> 
   correlation::correlation()
@@ -730,6 +732,7 @@ metrics_local_multicomp_profile_graph_3d
 
 ```{r check_correlations_3d}
 capl_res_3_valid_days |> 
+  dplyr::mutate(id = as.numeric(as.character(id))) |> 
   dplyr::left_join(pa_data$all_metrics |> dplyr::select(id, total_steps, minutes_SED)) |> 
   dplyr::select(total_steps, minutes_SED, ig, alpha) |> 
   correlation::correlation()
@@ -885,10 +888,67 @@ metrics_local_multicomp_profile_graph_2d
 
 ```{r check_correlations_2d}
 capl_res_2_valid_days |> 
+  dplyr::mutate(id = as.numeric(as.character(id))) |> 
   dplyr::left_join(pa_data$all_metrics |> dplyr::select(id, total_steps, minutes_SED)) |> 
   dplyr::select(total_steps, minutes_SED, ig, alpha) |> 
   correlation::correlation()
 ```
+
+## Additional analyses 1 : Comparisons of the characteristics of participants with complete and incomplete data
+
+### Sex analysis
+
+```{r sex_bias}
+# Add a new capl_status variable
+capl_res$capl_status_2 <- ifelse(capl_res$capl_status == "complete", "complete", "incomplete")
+
+# Proportions of girls ad boys in participants with complete and incomplete data
+tab_sex <- table(capl_res$gender, capl_res$capl_status_2)
+tab_sex
+cprop(tab_sex)
+riskratio(tab_sex)
+
+# Proportions of participants with complete and incomplete data in girls and boys
+tab_sex2 <- table(capl_res$capl_status_2, capl_res$gender)
+cprop(tab_sex2)
+```
+
+:::{.callout-note}
+There was no difference between the proportions of girls/boys in participants with complete and incomplete data.
+:::
+
+### School analysis
+
+```{r school_bias}
+# Proportions of schools of recruitment in participants with complete and incomplete data
+tab_school <- table(capl_res$school, capl_res$capl_status_2)
+tab_school
+cprop(tab_school)
+fisher.test(tab_school)
+
+# Proportions of participants with complete and incomplete data among the schools of recruitment
+tab_school2 <- table(capl_res$capl_status_2, capl_res$school)
+tab_school2
+cprop(tab_school2)
+```
+
+:::{.callout-note}
+The distribution of the schools of recruitment was different between participants with complete and incomplete data.
+:::
+
+## Additional analyses 2 : Could school of recruitment be a source of bias in sex comparisons?
+
+```{r sex_school_bias}
+capl_res |>  
+  tbl_strata(
+    strata = gender,  
+    .tbl_fun = ~.x |>  tbl_summary(by = capl_status_2, include = school)
+    )
+```
+
+:::{.callout-note}
+The distribution of participants with complete and incomplete data within schools of recruitment was roughly similar between girls and boys, suggesting an absence of school bias in the results related to the comparisons of girls and boys.
+:::
 
 ## References of the R packages used
 
@@ -898,15 +958,17 @@ capl_res_2_valid_days |>
 #| message: false
 
 library("groundhog")
-groundhog.library("pydemull/activAnalyzer", groundhog.day, tolerate.R.version='4.4.1')
-groundhog.library("pydemull/activAnalyzer.batch", groundhog.day, tolerate.R.version='4.4.1')
+groundhog.library("pydemull/activAnalyzer", groundhog.day, tolerate.R.version='4.6.1')
+groundhog.library("pydemull/activAnalyzer.batch", groundhog.day, tolerate.R.version='4.6.1')
 pkgs_cran <- c(
   "capl",
   "correlation",
   "dplyr",
+  "effectsize",
   "factoextra",
   "flextable",
   "forcats",
+  "GGIR",
   "ggpp",
   "ggplot2",
   "ggrain",
@@ -918,6 +980,7 @@ pkgs_cran <- c(
   "officer",
   "patchwork",
   "purrr",
+  "questionr",
   "rankFD",
   "readr",
   "scales",
@@ -927,7 +990,7 @@ pkgs_cran <- c(
   "tibble",
   "tidyr"
 )
-groundhog.library(pkgs_cran, groundhog.day, tolerate.R.version='4.4.1')
+groundhog.library(pkgs_cran, groundhog.day, tolerate.R.version='4.6.1')
 ```
 
 ```{r packages_list}

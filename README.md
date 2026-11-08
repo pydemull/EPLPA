@@ -48,7 +48,7 @@ please follow the steps as described below:
   platform (<https://osf.io/w3kmf/files/osfstorage>) and download on
   your machine all the required content by clicking on the ‘Download
   this folder’ link. Then, unzip the folder on your machine.
-- Step 2: [Install R](https://cran.rstudio.com/) (version: 4.4.1),
+- Step 2: [Install R](https://cran.rstudio.com/) (version: 4.6.1),
   [RStudio](https://posit.co/download/rstudio-desktop/), and [Rtools
   4.4](https://cran.r-project.org/bin/windows/Rtools/) (if your are a
   Windows user) on your machine. To retrieve past releases of R, you can
@@ -58,7 +58,7 @@ please follow the steps as described below:
   unzipped repository to open the project in RStudio.
 - Step 4: Configure RStudio to use the correct R version. To do this, go
   in RStudio to Tools \> Global Options… \> R Sessions \> Change… \>
-  Choose a specific version of R \> Select the version 4.4.1. Close
+  Choose a specific version of R \> Select the version 4.6.1. Close
   RStudio and restart as described in Step 3.
 - Step 5: Install the project’s package dependencies by reading the
   command lines shown below and running them in the Console. Please be
@@ -71,8 +71,7 @@ please follow the steps as described below:
 # --------------------------------------------------------------
 # Install {groundhog}
 # --------------------------------------------------------------
-require(devtools)
-install_version("groundhog", version = "3.2.3", repos = "http://cran.us.r-project.org")
+pak::pak("groundhog@3.2.3")
 
 # --------------------------------------------------------------
 # Set Git infos
@@ -95,7 +94,7 @@ git2r::config(global = TRUE, user.name = "default", user.email = "default")
 # Install {activAnalyzer} GitHub R package
 # --------------------------------------------------------------
 library("groundhog")
-groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.4.1')
+groundhog.library("pydemull/activAnalyzer", "2026-08-01", tolerate.R.version='4.6.1')
 
 # During this task, you could have some package installation problems for unclear 
 # reasons. During some trials for running the pipeline on other machines than the 
@@ -114,13 +113,13 @@ groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.
 # STEP 1:
 # Restart R, and then run the command lines below:
 # library("groundhog")
-# groundhog.library("cli", "2025-03-21", tolerate.R.version='4.4.1')
+# groundhog.library("cli", "2026-08-01", tolerate.R.version='4.6.1')
 # Repeat STEP 1 for each package that could not be found.
 
 # STEP 2:
 # Restart R, and then run the command lines below:
 # library("groundhog")
-# groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.4.1')
+# groundhog.library("pydemull/activAnalyzer", "2026-08-01", tolerate.R.version='4.6.1')
 
 # Problem n°2 - The package installation may fail because you are not allowed to replace
 # the current version of a package dependency. In the error message, it could be 
@@ -132,7 +131,7 @@ groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.
 # Restart R, and then run the command lines below:
 # install.packages("pacman")
 # pacman::p_unlock()
-# groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.4.1')
+# groundhog.library("pydemull/activAnalyzer", "2026-08-01", tolerate.R.version='4.6.1')
 
 # --------------------------------------------------------------
 # Restart R
@@ -143,7 +142,7 @@ groundhog.library("pydemull/activAnalyzer", "2025-03-21", tolerate.R.version='4.
 # Install {activAnalyzer.batch} GitHub R package
 # --------------------------------------------------------------
 library("groundhog")
-groundhog.library("pydemull/activAnalyzer.batch", "2025-03-21", tolerate.R.version='4.4.1')
+groundhog.library("pydemull/activAnalyzer.batch", "2026-08-01", tolerate.R.version='4.6.1')
 
 # During this task, you could have some package installation problems for unclear 
 # reasons. To try to resolve these problems, please process as suggested for the 
@@ -166,6 +165,7 @@ pkgs_cran <- c(
   "factoextra",
   "flextable",
   "forcats",
+  "GGIR",
   "ggpp",
   "ggplot2",
   "ggrain",
@@ -193,7 +193,7 @@ pkgs_cran <- c(
 
 ## Install packages
 library("groundhog")
-groundhog.library(pkgs_cran, "2025-03-21", tolerate.R.version='4.4.1')
+groundhog.library(pkgs_cran, "2026-08-01", tolerate.R.version='4.6.1')
 
 # --------------------------------------------------------------
 # Restart R
@@ -206,7 +206,7 @@ groundhog.library(pkgs_cran, "2025-03-21", tolerate.R.version='4.4.1')
 
 ``` r
 library("groundhog")
-groundhog.library("targets", "2025-03-21", tolerate.R.version='4.4.1')
+groundhog.library("targets", "2026-08-01", tolerate.R.version='4.6.1')
 tar_make()
 ```
 
