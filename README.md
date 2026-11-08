@@ -11,16 +11,13 @@ of the ‘EPLPA’ project, which aimed at conducting sex comparisons
 regarding physical literacy scores, as well as comparisons of movement
 behaviour metrics across physical literacy profiles in French children.
 
-The present repository is hosted on two different places: on GitHub
-(<https://github.com/pydemull/EPLPA>), and on Open Science Framework
-(<https://osf.io/w3kmf/>). Due to space constraints, the repository
-hosted on GitHub does not contain the raw data that should be used along
-with the code of the repository to obtain the results. Data are
-available only in the Open Science Framework repository. Thus, if you
-are interested in reading the code only, you can simply navigate online
-in the GitHub repository. However, if you want to run the code to
-reproduce the results of the project, you will have to go to the Open
-Science Framework repository and download its content.
+Due to space constraints, the repository does not contain the raw data
+that should be used along with the code of the repository to obtain the
+results. If you are interested in reading the code only, you can simply
+navigate online in the GitHub repository. However, if you want to run
+the code to reproduce the results of the project, you will have to go to
+the Zenodo repository (DOI: 10.5281/zenodo.24053778) and download its
+content.
 
 ## Running the analytical pipeline to reproduce the results of the ‘EPLPA’ project
 
@@ -31,7 +28,10 @@ package. Briefly, the pipeline consists of the following general steps:
 - Analyzing the .agd files from the accelerometer (ActiGraph
   wGT3X-BT)-based measurements of movement behaviours to get a series of
   various metrics for each participant included in the study. These .agd
-  files, which are anonymized, are available with 15-s epochs.
+  files, which are anonymized, are available with 1-s epochs.
+- Analyzing the .gt3x files from the accelerometer (ActiGraph
+  wGT3X-BT)-based measurements of movement behaviours to get a specific
+  metric: the intensity gradient.
 - Cleaning the databases that contain all the results from the field
   tests and questionnaires that were implemented to measure the
   dimensions of physical literacy.
@@ -44,13 +44,12 @@ package. Briefly, the pipeline consists of the following general steps:
 To run the pipeline and then reproduce the results of the project,
 please follow the steps as described below:
 
-- Step 1: Go to the repository hosted on the Open Science Framework
-  platform (<https://osf.io/w3kmf/files/osfstorage>) and download on
-  your machine all the required content by clicking on the ‘Download
-  this folder’ link. Then, unzip the folder on your machine.
+- Step 1: Go to the repository hosted on the Zenodo platform (DOI:
+  10.5281/zenodo.24053778) and download on your machine the ‘pipeline’
+  zipped folder. Then, unzip the folder on your machine.
 - Step 2: [Install R](https://cran.rstudio.com/) (version: 4.6.1),
   [RStudio](https://posit.co/download/rstudio-desktop/), and [Rtools
-  4.4](https://cran.r-project.org/bin/windows/Rtools/) (if your are a
+  4.5](https://cran.r-project.org/bin/windows/Rtools/) (if your are a
   Windows user) on your machine. To retrieve past releases of R, you can
   go [here](https://cran.r-project.org/bin/windows/base/old/) for
   Windows, and [here](https://cran.r-project.org/bin/macosx/) for Mac.
@@ -213,9 +212,8 @@ tar_make()
 This last step will produce all the objects related to the analytical
 process. It will also generate the materials that are intended to be
 used for a scientific publication. Because the pipeline will process 98
-accelerometer data files with 15-s epochs and will also generate high
-resolution figures related to each accelerometer data file, running the
-pipeline will take a lot of time, likely more than an hour.
+accelerometer data files with 15-s epochs, running the pipeline will
+take a lot of time, likely more than an hour.
 
 While the pipeline is running, the list of the objects that are created
 is shown in the Console. Once the analytical pipeline has finished, you
@@ -369,10 +367,6 @@ measurement are present in the dataset.
 | Variable | Definition |
 |:---|:---|
 | id | Participant identification number. Numbers go from 1 to 171. Missing identification numbers correspond to children who did not want to participate to the study or who did not complete any field test or questionnaire. |
-| valid_days | Number of days with 10 hours or more of wear time. |
-| wear_time | Daily average of wear time. |
-| ig | Daily average of the intensity gradient. |
-| alpha | Power-law exponent alpha. It provides information on the relative proportion of short and long sedentary bouts. The higher the alpha coefficient, the more the individual tends to accumulate sedentary time using relatively short bouts. Alpha is computed using all the sedentary bouts from the valid days of the measurement period using the formula provided by Chastin and Granat (2010; DOI: 10.1016/j.gaitpost.2009.09.002). |
 | school | Name of the school where the participant was recruited. |
 | gender | Sex of the participant. We are aware that gender is different from sex. While we used sex information reported by the participant, the package used to analyse physical literacy scores required a column called ‘gender’ to indicate whether the participant was a boy or a girl. |
 | age | Participant age in years. |
@@ -455,6 +449,7 @@ measurement are present in the dataset.
 | pc_score | CAPL-2 score corresponding to the physical competence domain. |
 | pc_interpretation | Interpretation of the score obtained for the physical competence domain. |
 | pc_status | Completion status regarding physical competence domain assessment. |
+| valid_days | Number of days with 10 hours or more of accelerometer wear. |
 | step_average | Average daily step count obtained using the valid days. |
 | step_score | CAPL-2 score corresponding to the average daily step count. |
 | step_interpretation | Interpretation of the score obtained for the average daily step count. |
@@ -480,6 +475,9 @@ measurement are present in the dataset.
 | capl_score | Total CAPL-2 score. |
 | capl_interpretation | Interpretation of the total CAPL-2 score. |
 | capl_status | Completion status regarding the whole CAPL-2 evaluation. |
+| wear_time | Daily average of wear time. |
+| alpha | Daily average of the intensity gradient. |
+| ig | Power-law exponent alpha. It provides information on the relative proportion of short and long sedentary bouts. The higher the alpha coefficient, the more the individual tends to accumulate sedentary time using relatively short bouts. Alpha is computed using all the sedentary bouts from the valid days of the measurement period using the formula provided by Chastin and Granat (2010; DOI: 10.1016/j.gaitpost.2009.09.002). |
 
 ## Licenses
 
@@ -492,9 +490,9 @@ Version 3.0 (please see LICENSE.md file).
 
 <p xmlns:cc="http://creativecommons.org/ns#">
 
-The raw data (accelerometer .agd files and Excel databases) and the
-materials exported to the `out/` directory while running the pipeline
-are licensed under
+The raw data (accelerometer .agd/.gt3x files and Excel databases) and
+the materials exported to the `out/` directory while running the
+pipeline are licensed under
 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative
 Commons Attribution-NonCommercial-NoDerivatives 4.0
 International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg?ref=chooser-v1" alt=""></a>

@@ -20,13 +20,14 @@ knitr::opts_chunk$set(
 
 The aim of the present repository is to allow the reproduction of the exploratory analyses and results from the first series of measurements of the 'EPLPA' project, which aimed at conducting sex comparisons regarding physical literacy scores, as well as comparisons of movement behaviour metrics across physical literacy profiles in French children.
 
-The present repository is hosted on two different places: on GitHub (https://github.com/pydemull/EPLPA), and on Open Science Framework (https://osf.io/w3kmf/). Due to space constraints, the repository hosted on GitHub does not contain the raw data that should be used along with the code of the repository to obtain the results. Data are available only in the Open Science Framework repository. Thus, if you are interested  in reading the code only, you can simply navigate online in the GitHub repository. However, if you want to run the code to reproduce the results of the project, you will have to go to the Open Science Framework repository and download its content.
+Due to space constraints, the repository does not contain the raw data that should be used along with the code of the repository to obtain the results. If you are interested  in reading the code only, you can simply navigate online in the GitHub repository. However, if you want to run the code to reproduce the results of the project, you will have to go to the Zenodo repository (DOI: 10.5281/zenodo.24053778) and download its content.
 
 ## Running the analytical pipeline to reproduce the results of the 'EPLPA' project
 
 To get the results of the 'EPLPA' project, an analytical pipeline based on R programming language has been implemented using the `{targets}` package. Briefly, the pipeline consists of the following general steps:
 
-- Analyzing the .agd files from the accelerometer (ActiGraph wGT3X-BT)-based measurements of movement behaviours to get a series of various metrics for each participant included in the study. These .agd files, which are anonymized, are available with 15-s epochs.
+- Analyzing the .agd files from the accelerometer (ActiGraph wGT3X-BT)-based measurements of movement behaviours to get a series of various metrics for each participant included in the study. These .agd files, which are anonymized, are available with 1-s epochs.
+- Analyzing the .gt3x files from the accelerometer (ActiGraph wGT3X-BT)-based measurements of movement behaviours to get a specific metric: the intensity gradient. 
 - Cleaning the databases that contain all the results from the field tests and questionnaires that were implemented to measure the dimensions of physical literacy.
 - Joining data from the different databases.
 - Performing statistical analyses.
@@ -35,8 +36,8 @@ To get the results of the 'EPLPA' project, an analytical pipeline based on R pro
 
 To run the pipeline and then reproduce the results of the project, please follow the steps as described below:
 
-* Step 1: Go to the repository hosted on the Open Science Framework platform (https://osf.io/w3kmf/files/osfstorage) and download on your machine all the required content by clicking on the 'Download this folder' link. Then, unzip the folder on your machine.
-* Step 2: [Install R](https://cran.rstudio.com/) (version: 4.6.1), [RStudio](https://posit.co/download/rstudio-desktop/), and [Rtools 4.4](https://cran.r-project.org/bin/windows/Rtools/)  (if your are a Windows user) on your machine. To retrieve past releases of R, you can go [here](https://cran.r-project.org/bin/windows/base/old/) for Windows, and [here](https://cran.r-project.org/bin/macosx/) for Mac.
+* Step 1: Go to the repository hosted on the Zenodo platform (DOI: 10.5281/zenodo.24053778) and download on your machine the 'pipeline' zipped folder. Then, unzip the folder on your machine.
+* Step 2: [Install R](https://cran.rstudio.com/) (version: 4.6.1), [RStudio](https://posit.co/download/rstudio-desktop/), and [Rtools 4.5](https://cran.r-project.org/bin/windows/Rtools/)  (if your are a Windows user) on your machine. To retrieve past releases of R, you can go [here](https://cran.r-project.org/bin/windows/base/old/) for Windows, and [here](https://cran.r-project.org/bin/macosx/) for Mac.
 * Step 3: Double-click  on the `EPLPA.Rproj` file from the downloaded and unzipped repository to open the project in RStudio.
 * Step 4: Configure RStudio to use the correct R version. To do this, go in RStudio to Tools > Global Options... > R Sessions > Change... > Choose a specific version of R > Select the version 4.6.1. Close RStudio and restart as described in Step 3.
 * Step 5: Install the project's package dependencies by reading the command lines shown below and running them in the Console. Please be careful about all the comments and DO NOT run all the command lines at a time. Instead, for each command line, run the line, answer when required to the questions asked in the Console, and then wait for the end of the actions currently performed.
@@ -183,7 +184,7 @@ groundhog.library("targets", "2026-08-01", tolerate.R.version='4.6.1')
 tar_make()
 ```
 
-This last step will produce all the objects related to the analytical process. It will also generate the materials that are intended to be used for a scientific publication. Because the pipeline will process 98 accelerometer data files with 15-s epochs and will also generate high resolution figures related to each accelerometer data file, running the pipeline will take a lot of time, likely more than an hour.
+This last step will produce all the objects related to the analytical process. It will also generate the materials that are intended to be used for a scientific publication. Because the pipeline will process 98 accelerometer data files with 15-s epochs, running the pipeline will take a lot of time, likely more than an hour.
 
 While the pipeline is running, the list of the objects that are created is shown in the Console. Once the analytical pipeline has finished, you can read any created object by running `targets::tar_read(OBJECT_NAME)` in the Console.  You can also load any object in the global environment by running `targets::tar_load(OBJECT_NAME)` in the Console and you can load all the created objects in one go by running `targets::tar_load_everything()` in the Console. All the exported materials will appear in the `out/` directory placed at the root of the project directory.
 
@@ -334,10 +335,6 @@ variables2 <- names(targets::tar_read(capl_res_4_valid_days))
 definitions2 <-
   c(
 "Participant identification number. Numbers go from 1 to 171. Missing identification numbers correspond to children who did not want to participate to the study or who did not complete any field test or questionnaire.",
-"Number of days with 10 hours or more of wear time.",   
-"Daily average of wear time.",
-"Daily average of the intensity gradient.",
-"Power-law exponent alpha. It provides information on the relative proportion of short and long sedentary bouts. The higher the alpha coefficient, the more the individual tends to accumulate sedentary time using relatively short bouts. Alpha is computed using all the sedentary bouts from the valid days of the measurement period using the formula provided by Chastin and Granat (2010; DOI: 10.1016/j.gaitpost.2009.09.002).",
     "Name of the school where the participant was recruited.",
     "Sex of the participant. We are aware that gender is different from sex. While we used sex information reported by the participant, the package used to analyse physical literacy scores required a column called 'gender' to indicate whether the participant was a boy or a girl.",
     "Participant age in years.",
@@ -420,6 +417,7 @@ definitions2 <-
   "CAPL-2 score corresponding to the physical competence domain.",
   "Interpretation of the score obtained for the physical competence domain.",
   "Completion status regarding physical competence domain assessment.",
+  "Number of days with 10 hours or more of accelerometer wear.",
   "Average daily step count obtained using the valid days.",
   "CAPL-2 score corresponding to the average daily step count.",
   "Interpretation of the score obtained for the average daily step count.",
@@ -444,7 +442,10 @@ definitions2 <-
   "Completion status regarding the knowledge and understanding domain.",
   "Total CAPL-2 score.",
   "Interpretation of the total CAPL-2 score.",
-  "Completion status regarding the whole CAPL-2 evaluation."
+  "Completion status regarding the whole CAPL-2 evaluation.",
+  "Daily average of wear time.",
+  "Daily average of the intensity gradient.",
+  "Power-law exponent alpha. It provides information on the relative proportion of short and long sedentary bouts. The higher the alpha coefficient, the more the individual tends to accumulate sedentary time using relatively short bouts. Alpha is computed using all the sedentary bouts from the valid days of the measurement period using the formula provided by Chastin and Granat (2010; DOI: 10.1016/j.gaitpost.2009.09.002)."
   )
   
 tibble::tibble(
@@ -462,4 +463,4 @@ The code of the pipeline is provided under GNU General Public License Version 3.
 
 ### Data
 
-<p xmlns:cc="http://creativecommons.org/ns#" >The raw data (accelerometer .agd files and Excel databases) and the materials exported to the `out/` directory while running the pipeline are licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg?ref=chooser-v1" alt=""></a></p>
+<p xmlns:cc="http://creativecommons.org/ns#" >The raw data (accelerometer .agd/.gt3x files and Excel databases) and the materials exported to the `out/` directory while running the pipeline are licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nd.svg?ref=chooser-v1" alt=""></a></p>
